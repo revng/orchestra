@@ -7,8 +7,7 @@ create-binaries:
   stage: build
   script:
     - echo -e "machine rev.ng\nlogin gitlab-ci-token\npassword ${CI_JOB_TOKEN}" > ~/.netrc
-    - ls -la
-    - ./ci/install-dependencies.sh
+    - ./orchestra/ci/install-dependencies.sh
     - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/${CI_PROJECT_NAMESPACE}/orchestra-v3.git /orchestra
     - |
       cd /orchestra && \
