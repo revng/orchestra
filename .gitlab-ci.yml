@@ -8,11 +8,14 @@ create-binaries:
   script:
     - echo -e "machine rev.ng\nlogin gitlab-ci-token\npassword ${CI_JOB_TOKEN}" > ~/.netrc
     - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/${CI_PROJECT_NAMESPACE}/orchestra-v3.git /orchestra
+    - ./ci/install-dependencies.sh
     - |
       cd /orchestra && \
-        .orchestra/ci/install-dependencies.sh && \
         python3 setup.py bdist_wheel && \
         pip install dist/orchestra*.whl
+    - pwd
+    - cd "$CI_PROJECT_DIR"
+    - pwd
     - git checkout -B "$CI_COMMIT_REF_NAME" "$CI_COMMIT_SHA"
     - |
       git remote add internal https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/revng-internal/revng-orchestra.git || \
