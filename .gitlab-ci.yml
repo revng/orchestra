@@ -15,7 +15,7 @@ create-binaries:
     - cd "$CI_PROJECT_DIR"
     - git checkout -B "$CI_COMMIT_REF_NAME" "$CI_COMMIT_SHA"
     - rm -rf .orchestra_binary_archives
-    - git clone "https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/${CI_PROJECT_NAMESPACE}/binary-archives.git" .orchestra/binary_archives
+    - GIT_LFS_SKIP_SMUDGE=1 git clone "https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/${CI_PROJECT_NAMESPACE}/binary-archives.git" .orchestra/binary_archives
     # - git config --file=.gitmodules submodule..orchestra/binary_archives.url "https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/${CI_PROJECT_NAMESPACE}/binary-archives.git"
     # - GIT_LFS_SKIP_SMUDGE=1 git submodule sync
     # - GIT_LFS_SKIP_SMUDGE=1 git submodule update --init --recursive --remote
