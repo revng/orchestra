@@ -27,7 +27,7 @@ create-binaries:
       git remote add private https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/revng-private/orchestra-v3.git || \
         git remote set-url private https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/revng-private/orchestra-v3.git || \
         true
-    - orchestra -b install --create-binary-archives toolchain/host/gcc
+    - orchestra -b install --create-binary-archives mpfr
     - cd .orchestra/binary_archives
     - git add .
     - git commit -m "Binary archives built on $(date)"
