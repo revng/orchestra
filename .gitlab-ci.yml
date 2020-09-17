@@ -12,7 +12,7 @@ create-binaries:
     - |
       cd /orchestra && \
         python3 setup.py bdist_wheel && \
-        pip install dist/orchestra*.whl
+        pip3 install dist/orchestra*.whl
     - pwd
     - cd "$CI_PROJECT_DIR"
     - pwd
