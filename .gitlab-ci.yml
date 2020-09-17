@@ -1,0 +1,25 @@
+image: registry.rev.ng:443/fcremo/revng-orchestra:latest
+
+stages:
+  - build
+
+create-binaries:
+  stage: build
+  script:
+    - /install-dependencies.sh
+    - echo -e "machine rev.ng\nlogin gitlab-ci-token\npassword ${CI_JOB_TOKEN}" > ~/.netrc
+    - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/${CI_PROJECT_NAMESPACE}/orchestra-v3.git /orchestra
+    - cd /orchestra
+    - python3 setup.py bdist_wheel
+    - pip install dist/orchestra*.whl
+    - cd "${CI_PROJECT_DIR}"
+    - git checkout -B "$CI_COMMIT_REF_NAME" "$CI_COMMIT_SHA"
+    - |
+      git remote add internal https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/revng-internal/revng-orchestra.git || \
+        git remote set-url internal https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/revng-internal/revng-orchestra.git || \
+        true
+    - |
+      git remote add private https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/revng-private/orchestra-v3.git || \
+        git remote set-url private https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/revng-private/orchestra-v3.git || \
+        true
+    - orchestra -b install --create-binary-archives ui/cold-revng
