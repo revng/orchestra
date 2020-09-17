@@ -14,8 +14,9 @@ create-binaries:
     - pip3 install dist/orchestra*.whl
     - cd "$CI_PROJECT_DIR"
     - git checkout -B "$CI_COMMIT_REF_NAME" "$CI_COMMIT_SHA"
-    - GIT_LFS_SKIP_SMUDGE=1 git submodule add "https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/${CI_PROJECT_NAMESPACE}/binary-archives.git" .orchestra/binary_archvies
-    - GIT_LFS_SKIP_SMUDGE=1 git submodule update
+    - git config --file=.gitmodules submodule..orchestra/binary_archives.url "https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/${CI_PROJECT_NAMESPACE}/binary-archives.git"
+    - GIT_LFS_SKIP_SMUDGE=1 git submodule sync
+    - GIT_LFS_SKIP_SMUDGE=1 git submodule update --init --recursive --remote
     - |
       git remote add internal https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/revng-internal/revng-orchestra.git || \
         git remote set-url internal https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/revng-internal/revng-orchestra.git || \
