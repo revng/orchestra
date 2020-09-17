@@ -29,6 +29,8 @@ create-binaries:
         true
     - orchestra -b install --create-binary-archives mpfr
     - cd .orchestra/binary_archives
+    - git config user.email "gitlabci@rev.ng"
+    - git config user.name "rev.ng Gitlab CI"
     - git add .
     - git commit -m "Binary archives built on $(date)"
     - git push
