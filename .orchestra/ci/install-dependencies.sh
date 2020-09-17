@@ -65,6 +65,8 @@ apt install --no-install-recommends --yes \
   libxkbcommon-x11-dev \
   libxrender-dev
 
+pip3 install setuptools wheel
+
 if ! which git-lfs >& /dev/null; then
   curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash
   apt-get install --no-install-recommends --yes git-lfs
