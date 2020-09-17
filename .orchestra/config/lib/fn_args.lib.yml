@@ -1,0 +1,9 @@
+#@ load("/lib/assert.lib.yml", "fail")
+
+#! This placeholder intended to be used as default value
+#! for mandatory keyword arguments.
+#! The interpreter will crash when trying to serialize
+#! the value if it is not provided.
+#@ def mandatory():
+#@     return fail("You called the default value of a mandatory argument")
+#@ end

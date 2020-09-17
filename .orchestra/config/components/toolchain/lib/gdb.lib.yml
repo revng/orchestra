@@ -1,0 +1,69 @@
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+#@ load("/components/toolchain/lib/common.lib.yml", "linker_flags")
+
+#@yaml/text-templated-strings
+
+#@ def gdb_source_url(version):
+#@   if ".50" in version:
+#@     return "https://sourceware.org/pub/gdb/snapshots/current/gdb-weekly-" + version + "tar.xz"
+#@   else:
+#@     return "https://ftp.gnu.org/gnu/gdb/gdb-" + version + ".tar.gz"
+#@   end
+#@ end
+
+---
+#@ def _gdb_build(**kwargs):
+#@   triple = kwargs["triple"]
+#@   version = kwargs["gdb_version"]
+
+#@   source_url = gdb_source_url(version)
+configure: |
+  extract.sh --into "$SOURCE_DIR" (@= source_url @)
+  mkdir -p "$BUILD_DIR"
+  cd "$BUILD_DIR" && "$SOURCE_DIR/configure" \
+    --build=x86_64-pc-linux-gnu \
+    --host=x86_64-pc-linux-gnu \
+    --target=(@= triple @) \
+    --with-sysroot=$ORCHESTRA_ROOT/(@= triple @) \
+    --prefix=$ORCHESTRA_ROOT \
+    --datadir=$ORCHESTRA_ROOT/share/binutils-data/(@= triple @)/(@= version @) \
+    --infodir=$ORCHESTRA_ROOT/share/binutils-data/(@= triple @)/(@= version @)/info \
+    --mandir=$ORCHESTRA_ROOT/share/binutils-data/(@= triple @)/(@= version @)/man \
+    --bindir=$ORCHESTRA_ROOT/x86_64-pc-linux-gnu/(@= triple @)/binutils-bin/(@= version @) \
+    --libdir=$ORCHESTRA_ROOT/lib64/binutils/(@= triple @)/(@= version @) \
+    --libexecdir=$ORCHESTRA_ROOT/lib64/binutils/(@= triple @)/(@= version @) \
+    --includedir=$ORCHESTRA_ROOT/lib64/gdb/(@= triple @)/(@= version @)/include \
+    --disable-werror \
+    --disable-binutils \
+    --disable-etc \
+    --disable-isl \
+    --disable-gas \
+    --disable-gold \
+    --disable-gprof \
+    --disable-ld \
+    --disable-gdbserver \
+    --enable-64-bit-bfd \
+    --disable-install-libbfd \
+    --disable-install-libiberty \
+    --without-guile \
+    --with-system-readline \
+    --with-system-zlib \
+    --with-expat \
+    --with-lzma \
+    --enable-nls \
+    --enable-tui=yes \
+    --with-mpfr="$ORCHESTRA_ROOT" \
+    --without-included-gettext \
+    --disable-shared \
+    --enable-obsolete \
+    --without-stage1-ldflags \
+    CFLAGS="-w -ggdb3 -O3" \
+    CXXFLAGS="-w -ggdb3 -O3" \
+    LDFLAGS="(@= linker_flags @)"
+build_system: make
+#@ end
+
+---
+#@ def create_gdb_component(**kwargs):
+#@    return single_build_component(**_gdb_build(**kwargs))
+#@ end

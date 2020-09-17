@@ -1,0 +1,161 @@
+#@ load("@ytt:template", "template")
+
+#@ load("/lib/make.lib.yml", "make", "serial_make")
+#@ load("/lib/fn_args.lib.yml", "mandatory")
+#@ load("/lib/shell.lib.yml", "expand_args")
+
+#@ load("/components/toolchain/lib/common.lib.yml", "linker_flags", "new_gcc_path")
+
+#@ load("/global_options.lib.yml", "options")
+
+#@yaml/text-templated-strings
+---
+#@ def gcc_dependencies(stage, toolchain_name, musl_version, uclibc_version, linux_version, mingw64_version):
+#@ if stage == 1:
+#@   build = "~headers"
+#@ elif stage == 2:
+#@   build = ""
+#@ else:
+#@   fail("GCC stage must be 1 or 2")
+#@ end
+
+- toolchain/(@= toolchain_name @)/binutils
+
+#@ if/end musl_version:
+- toolchain/(@= toolchain_name @)/musl(@= build @)
+#@ if/end uclibc_version:
+- toolchain/(@= toolchain_name @)/uclibc(@= build @)
+#@ if/end mingw64_version:
+- toolchain/(@= toolchain_name @)/mingw64(@= build @)
+
+#@ if/end linux_version:
+- toolchain/(@= toolchain_name @)/linux-headers
+#@ end
+
+#@yaml/text-templated-strings
+---
+#@ def gcc_build_dependencies(stage, toolchain_name):
+
+#@ if/end stage == 2:
+- toolchain/(@= toolchain_name @)/gcc~stage1
+
+- gmp
+- mpfr
+- mpc
+
+#@ end
+
+
+#@yaml/text-templated-strings
+---
+#@ def gcc_build(
+#@    stage=mandatory,
+#@    triple=mandatory,
+#@    gcc_version=mandatory,
+#@    toolchain_name=mandatory,
+#@    musl_version=None,
+#@    uclibc_version=None,
+#@    linux_version=None,
+#@    mingw64_version=None,
+#@    extra_gcc_configure_options="",
+#@    gcc_sysroot = None,
+#@    extra_gcc_make_variables = "",
+#@  ):
+
+#@    source_url = "https://ftp.gnu.org/gnu/gcc/gcc-" + gcc_version + "/gcc-" + gcc_version + ".tar.gz"
+#@    tmp_install_path = "$TMP_ROOT/x86_64-pc-linux-gnu/" + triple + "/gcc-bin/" + gcc_version
+#@    gcc_sysroot = gcc_sysroot or "$ORCHESTRA_ROOT/" + triple
+
+#@ if stage == 1:
+#@    build_specific_configure_options = "--enable-languages=c"
+#@ elif stage == 2:
+#@    build_specific_configure_options = "--enable-languages=c,c++"
+#@ else:
+#@   fail("GCC stage must be 1 or 2")
+#@ end
+#@ dependencies = gcc_dependencies(stage, toolchain_name, musl_version, uclibc_version, linux_version, mingw64_version)
+#@ build_dependencies = gcc_build_dependencies(stage, toolchain_name)
+
+#! The sed is required to make `--sysroot=/` work with `--with-gxx-include-dir`
+#! properly.
+configure: |
+  extract.sh --into "$SOURCE_DIR" "(@= source_url @)"
+  patch-if-exists "${PATCH_DIR}/gcc-(@= gcc_version @)-cfns-fix-mismatch-in-gnu_inline-attributes.patch" "$SOURCE_DIR"
+  patch-if-exists "${PATCH_DIR}/gcc-(@= gcc_version @)-cpp-musl-support.patch" "$SOURCE_DIR"
+  sed -i 's|gcc_gxx_include_dir="${gcc_gxx_without_sysroot}"|gcc_gxx_include_dir="/${gcc_gxx_without_sysroot#/}"|' "$SOURCE_DIR/gcc/configure"
+
+  mkdir -p "$BUILD_DIR"
+  cd "$BUILD_DIR" && "$SOURCE_DIR/configure" \
+    --host=x86_64-pc-linux-gnu \
+    --build=x86_64-pc-linux-gnu \
+    --target=(@= triple @) \
+    --prefix=$ORCHESTRA_ROOT \
+    --bindir=$ORCHESTRA_ROOT/x86_64-pc-linux-gnu/(@= triple @)/gcc-bin/(@= gcc_version @) \
+    --includedir=$ORCHESTRA_ROOT/lib/gcc/(@= triple @)/(@= gcc_version @)/include \
+    --datadir=$ORCHESTRA_ROOT/share/gcc-data/(@= triple @)/(@= gcc_version @) \
+    --mandir=$ORCHESTRA_ROOT/share/gcc-data/(@= triple @)/(@= gcc_version @)/man \
+    --infodir=$ORCHESTRA_ROOT/share/gcc-data/(@= triple @)/(@= gcc_version @)/info \
+    --with-sysroot=(@= gcc_sysroot @) \
+    --enable-obsolete \
+    --enable-secureplt \
+    --disable-werror \
+    --with-system-zlib \
+    --enable-nls \
+    --without-included-gettext \
+    --enable-checking=release \
+    --enable-libstdcxx-time \
+    --enable-poison-system-directories \
+    --disable-host-shared \
+    --enable-shared \
+    --disable-libatomic \
+    --disable-bootstrap \
+    --disable-multilib \
+    --disable-altivec \
+    --disable-fixed-point \
+    --disable-libgcj \
+    --disable-libgomp \
+    --disable-libmudflap \
+    --disable-libssp \
+    --disable-libcilkrts \
+    --disable-vtable-verify \
+    --disable-libvtv \
+    --disable-libquadmath \
+    --disable-rpath \
+    --enable-lto \
+    --disable-vtable-verify \
+    --disable-libsanitizer \
+    --with-gmp="$ORCHESTRA_ROOT" \
+    --with-mpfr="$ORCHESTRA_ROOT" \
+    --with-mpc="$ORCHESTRA_ROOT" \
+    (@= expand_args(extra_gcc_configure_options) @) \
+    (@= expand_args(build_specific_configure_options) @) \
+    CFLAGS="-w -ggdb3 -O3" \
+    CXXFLAGS="-w -ggdb3 -O3" \
+    LDFLAGS="(@= linker_flags @)"
+install: |
+  cd "$BUILD_DIR"
+  (@= make @) (@= extra_gcc_make_variables @)
+  (@= serial_make @) install (@= extra_gcc_make_variables @)
+
+  NEW_GCC_PATH="(@= new_gcc_path(triple=triple, gcc_version=gcc_version) @)"
+
+  if test -e "${DESTDIR}${NEW_GCC_PATH}/gcc" && ! test -e "${DESTDIR}${NEW_GCC_PATH}/cc"; then
+    ln -s gcc "${DESTDIR}${NEW_GCC_PATH}/cc"
+  fi
+  if test -e "${DESTDIR}${NEW_GCC_PATH}/g++" && ! test -e "${DESTDIR}${NEW_GCC_PATH}/c++"; then
+    ln -s g++ "${DESTDIR}${NEW_GCC_PATH}/c++"
+  fi
+  rm -f "${DESTDIR}${ORCHESTRA_ROOT}"/lib64/libcc1.*
+dependencies: #@ dependencies
+build_dependencies: #@ build_dependencies
+#@ end
+
+#@yaml/text-templated-strings
+---
+#@ def create_gcc_component(**kwargs):
+default_build: stage2
+builds:
+  stage1: #@ gcc_build(stage=1, **kwargs)
+  stage2: #@ gcc_build(stage=2, **kwargs)
+add_to_path: ${ORCHESTRA_ROOT}/x86_64-pc-linux-gnu/(@= kwargs["triple"] @)/gcc-bin/(@= kwargs["gcc_version"] @)
+#@ end

@@ -1,0 +1,35 @@
+#@ load("/lib/fn_args.lib.yml", "mandatory")
+#@ load("/lib/shell.lib.yml", "expand_args")
+
+#@ load("/global_options.lib.yml", "options")
+
+#@yaml/text-templated-strings
+---
+#@ def _configure_llvm(cmake_build_type=mandatory, cflags=mandatory, additional_cmake_options=mandatory, source_dir="$SOURCE_DIR"):
+- |
+  mkdir -p "$BUILD_DIR"
+  cd "$BUILD_DIR";
+  cmake "(@= source_dir @)/llvm" \
+    -GNinja \
+    -DCMAKE_BUILD_RPATH="\$ORIGIN/../lib:$ORCHESTRA_ROOT/lib" \
+    -DCMAKE_INSTALL_RPATH="$RPATH_PLACEHOLDER/lib" \
+    -DCMAKE_BUILD_TYPE="(@= cmake_build_type @)" \
+    -DCMAKE_EXE_LINKER_FLAGS="(@= cflags @) (@= options["modern_linker_flags"] @)" \
+    -DCMAKE_SHARED_LINKER_FLAGS="(@= cflags @) (@= options["modern_linker_flags"] @)" \
+    -DCMAKE_MODULE_LINKER_FLAGS="(@= cflags @) (@= options["modern_linker_flags"] @)" \
+    -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT" \
+    -DCMAKE_CXX_FLAGS="(@= cflags @)" \
+    -DLLVM_TARGETS_TO_BUILD="X86;AMDGPU" \
+    -DLLVM_ENABLE_DUMP=ON \
+    -DLLVM_ENABLE_TERMINFO=OFF \
+    -DLIBCXX_ENABLE_ABI_LINKER_SCRIPT=OFF \
+    -DLLVM_ENABLE_Z3_SOLVER=OFF \
+    (@= expand_args(additional_cmake_options) @) \
+    -Wno-dev
+#@ end
+
+---
+
+#@ def configure_llvm(**kwargs):
+#@   return _configure_llvm(**kwargs)[0]
+#@ end

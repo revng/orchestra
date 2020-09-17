@@ -1,0 +1,91 @@
+#@ load("/global_options.lib.yml", "options")
+
+#! returned values are wrapped with dict() so we can call items() on them
+
+#@ def _libc_optimization_flavors():
+default: -ggdb3
+o0: -ggdb3 -Wl,--gc-sections -ffunction-sections -O0
+o1: -ggdb3 -Wl,--gc-sections -ffunction-sections -O1
+o2: -ggdb3 -Wl,--gc-sections -ffunction-sections -O2
+o3: -ggdb3 -Wl,--gc-sections -ffunction-sections -O3
+#@ end
+
+#@ libc_optimization_flavors = dict(_libc_optimization_flavors())
+
+#@yaml/text-templated-strings
+---
+#@ def _typical_project_flavors(use_asan=False):
+#@   asan="-fsanitize=address" if use_asan else ""
+optimized:
+  cmake_build_type: Debug
+  extra_compiler_flags: -ggdb3 -O2 -fno-omit-frame-pointer (@= asan @)
+debug:
+  cmake_build_type: Debug
+  extra_compiler_flags: -ggdb3 -O0 (@= asan @)
+release:
+  cmake_build_type: Release
+  extra_compiler_flags: -ggdb3 -O2 (@= asan @)
+#@ end
+
+#@ def typical_project_flavors(use_asan=False):
+#@    return dict(_typical_project_flavors(use_asan=use_asan))
+#@ end
+
+---
+
+#@yaml/text-templated-strings
+---
+#@ def _typical_cmake_flavors(use_asan=False):
+#@   asan="-fsanitize=address" if use_asan else ""
+optimized:
+  cmake_build_type: Debug
+  extra_compiler_flags: -ggdb3 -O2 -fno-omit-frame-pointer (@= asan @)
+debug:
+  cmake_build_type: Debug
+  extra_compiler_flags: -ggdb3 -O0 (@= asan @)
+release:
+  cmake_build_type: Release
+  extra_compiler_flags: -ggdb3 -O2 (@= asan @)
+#@ end
+
+#@ def typical_cmake_flavors(use_asan=False):
+#@    return dict(_typical_cmake_flavors(use_asan=use_asan))
+#@ end
+
+---
+
+#@ def _qt_optimization_flavors():
+debug:
+  extra_qmake_options: -debug QMAKE_CXXFLAGS+="-fno-omit-frame-pointer"
+optimized:
+  extra_qmake_options: -debug QMAKE_CXXFLAGS+="-O2 -fno-omit-frame-pointer"
+release:
+  extra_qmake_options: -release
+#@ end
+
+#@ qt_optimization_flavors = dict(_qt_optimization_flavors())
+
+
+#@yaml/text-templated-strings
+---
+#@ def _qmake_optimization_flavors():
+debug:
+  extra_qmake_args:
+    - CONFIG+=debug
+    - CONFIG-=release
+    - QMAKE_CXXFLAGS_DEBUG+="-ggdb3 -O0 -fno-omit-frame-pointer (@= options["regular_cxx_flags"] @)"
+    - QMAKE_LFLAGS+="-ggdb3 -O0 (@= options["regular_linker_flags"] @) -Wl,-rpath=(@= options["rpath_placeholder"] @)/lib"
+optimized:
+  extra_qmake_args:
+    - CONFIG+=debug
+    - CONFIG-=release
+    - QMAKE_CXXFLAGS_DEBUG+="-ggdb3 -O2 -fno-omit-frame-pointer (@= options["regular_cxx_flags"] @)"
+    - QMAKE_LFLAGS+="-ggdb3 (@= options["regular_linker_flags"] @) -Wl,-rpath=(@= options["rpath_placeholder"] @)/lib"
+release:
+  extra_qmake_args:
+    - CONFIG+=release
+    - QMAKE_CXXFLAGS_RELEASE+="-ggdb3 -O2 (@= options["regular_cxx_flags"] @)"
+    - QMAKE_LFLAGS+="-ggdb3 (@= options["regular_linker_flags"] @) -Wl,-rpath=(@= options["rpath_placeholder"] @)/lib"
+#@ end
+
+#@ qmake_optimization_flavors = dict(_qmake_optimization_flavors())

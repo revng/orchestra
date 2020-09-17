@@ -1,0 +1,75 @@
+#@ load("@ytt:template", "template")
+
+#@ load("/lib/make.lib.yml", "make")
+#@ load("/lib/fn_args.lib.yml", "mandatory")
+#@ load("/lib/assert.lib.yml", "assert")
+
+#@ load("/components/toolchain/lib/common.lib.yml", "new_gcc_path")
+
+
+#@yaml/text-templated-strings
+---
+#@ def mingw64_build(
+#@    triple=mandatory,
+#@    gcc_version=mandatory,
+#@    mingw64_version=mandatory,
+#@    build_type=mandatory,
+#@  ):
+
+#@ assert(build_type in ["headers", "default"])
+#@ source_url = "https://downloads.sourceforge.net/project/mingw-w64/mingw-w64/mingw-w64-release/mingw-w64-v" + mingw64_version + ".tar.bz2"
+
+configure: |
+  extract.sh --into "$BUILD_DIR" "(@= source_url @)"
+  cd "$BUILD_DIR"
+  (@ if build_type == "default": @)
+  NEW_GCC_PATH="(@= new_gcc_path(triple=triple, gcc_version=gcc_version) @)"
+  NEW_GCC=${NEW_GCC_PATH}/(@= triple @)-gcc
+  export CC="${NEW_GCC}"
+  export CPPFLAGS="-I${ORCHESTRA_ROOT}/(@= triple @)/usr/include"
+  export CHOST="(@= triple @)"
+  (@ end -@)
+  "$BUILD_DIR/configure" \
+    --disable-silent-rules \
+    --target=(@= triple @) \
+    --with-sysroot=no \
+    --prefix="$ORCHESTRA_ROOT/(@= triple @)/usr" \
+    --with-headers \
+    --enable-sdk \
+    --without-libraries \
+    --without-tools \
+    (@- if build_type == "default": @)
+    --with-crt \
+    --host=(@= triple @) \
+    --disable-idl \
+    $($NEW_GCC -E -dM - < /dev/null | grep -q __MINGW64__ && echo --disable-lib32 --enable-lib64 || echo --enable-lib32 --disable-lib64)
+    (@- elif build_type == "headers": @)
+    --without-crt \
+    --without-idl
+    (@- end @)
+install: |
+  cd "$BUILD_DIR"
+  (@= make @)
+  (@= make @) install
+  rm -f "${TMP_ROOT}${ORCHESTRA_ROOT}/(@= triple @)/mingw"
+  ln -s usr "${TMP_ROOT}${ORCHESTRA_ROOT}/(@= triple @)/mingw"
+  rm -f "${TMP_ROOT}${ORCHESTRA_ROOT}/(@= triple @)/(@= triple @)"
+  ln -s usr "${TMP_ROOT}${ORCHESTRA_ROOT}/(@= triple @)/(@= triple @)"
+  rm -f usr/include "${TMP_ROOT}${ORCHESTRA_ROOT}/(@= triple @)/sys-include"
+  ln -s usr/include "${TMP_ROOT}${ORCHESTRA_ROOT}/(@= triple @)/sys-include"
+
+#@ if/end build_type == "default":
+dependencies:
+  - toolchain/win64/gcc~stage1
+  - toolchain/win64/mingw64~headers
+
+#@ end
+
+#@yaml/text-templated-strings
+---
+#@ def create_mingw64_component(toolchain_name=mandatory, **kwargs):
+default_build: default
+builds:
+  headers: #@ mingw64_build(build_type="headers", **kwargs)
+  default: #@ mingw64_build(build_type="default", **kwargs)
+#@ end

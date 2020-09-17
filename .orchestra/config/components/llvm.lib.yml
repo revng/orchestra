@@ -1,0 +1,39 @@
+#@ load("/lib/optimization_flavors.lib.yml", "typical_project_flavors")
+#@ load("/components/llvm_common.lib.yml", "configure_llvm")
+#@ load("/lib/fn_args.lib.yml", "mandatory")
+
+#@ load("/global_options.lib.yml", "options")
+
+#@yaml/text-templated-strings
+---
+#@ def cmake_opts():
+- -DBUILD_SHARED_LIBS=ON
+- -DLLVM_ENABLE_PROJECTS="clang"
+- -DCMAKE_C_COMPILER="(@= options["regular_c_compiler"] @)"
+- -DCMAKE_CXX_COMPILER="(@= options["regular_cxx_compiler"] @)"
+#@ end
+
+#@yaml/text-templated-strings
+---
+#@ def _llvm_component(use_asan=False):
+repository: llvm-project
+builds:
+  #@ for flavor, f_options in typical_project_flavors(use_asan=use_asan).items():
+    #@ build_type = f_options["cmake_build_type"]
+    #@ cflags = f_options["extra_compiler_flags"] + options["regular_cxx_flags"]
+    (@= flavor @):
+      configure: #@ configure_llvm(cmake_build_type=build_type, cflags=cflags, additional_cmake_options=cmake_opts(), source_dir="$SOURCE_DIR")
+      install: |
+        cd "$BUILD_DIR"
+        ninja ${JOBS:+-j$JOBS} install
+      build_dependencies:
+        - cmake
+      dependencies:
+        - toolchain/host/gcc
+        - clang-release
+        - libunwind
+  #@ end
+#@ end
+
+---
+#@ llvm_component = _llvm_component()

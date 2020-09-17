@@ -1,0 +1,98 @@
+#@ load("@ytt:template", "template")
+#@ load("@ytt:data", "data")
+
+#@ load("/components/gmp.lib.yml", "gmp_component")
+#@ load("/components/mpc.lib.yml", "mpc_component")
+#@ load("/components/mpfr.lib.yml", "mpfr_component")
+#@ load("/components/cmake.lib.yml", "cmake_component")
+#@ load("/components/zlib.lib.yml", "zlib_component")
+#@ load("/components/libunwind.lib.yml", "libunwind_component")
+#@ load("/components/llvm.lib.yml", "llvm_component")
+#@ load("/components/llvm_documentation.lib.yml", "llvm_documentation_component")
+#@ load("/components/llvmcpy.lib.yml", "llvmcpy_component")
+#@ load("/components/clang_release.lib.yml", "clang_release_component")
+#@ load("/components/glib.lib.yml", "glib_component")
+#@ load("/components/qemu.lib.yml", "qemu_component")
+#@ load("/components/boost.lib.yml", "boost_component")
+#@ load("/components/revng.lib.yml", "revng_component")
+#@ load("/components/revng_c.lib.yml", "revng_c_component")
+#@ load("/components/caliban.lib.yml", "caliban_component")
+#@ load("/components/revng_qa.lib.yml", "revng_qa_component")
+
+#@ load("/components/ui/qt.lib.yml", "qt_component")
+#@ load("/components/ui/quickqanava.lib.yml", "quickqanava_component")
+#@ load("/components/ui/qt_creator.lib.yml", "qt_creator_component")
+#@ load("/components/ui/graphviz.lib.yml", "graphviz_component")
+#@ load("/components/ui/adaptagrams.lib.yml", "adaptagrams_component")
+#@ load("/components/ui/cold_revng.lib.yml", "cold_revng_component")
+#@ load("/components/ui/mesa.lib.yml", "mesa_component")
+#@ load("/components/ui/libglvnd.lib.yml", "libglvnd_component")
+
+#@ load("/components/toolchain/arch/host.lib.yml", "host_toolchain_components")
+#@ load("/components/toolchain/arch/x86_64.lib.yml", "x86_64_toolchain_components")
+#@ load("/components/toolchain/arch/i386.lib.yml", "i386_toolchain_components")
+#@ load("/components/toolchain/arch/arm.lib.yml", "arm_toolchain_components")
+#@ load("/components/toolchain/arch/aarch64.lib.yml", "aarch64_toolchain_components")
+#@ load("/components/toolchain/arch/s390x.lib.yml", "s390x_toolchain_components")
+#@ load("/components/toolchain/arch/mips.lib.yml", "mips_toolchain_components")
+#@ load("/components/toolchain/arch/mipsel.lib.yml", "mipsel_toolchain_components")
+#@ load("/components/toolchain/arch/win32.lib.yml", "win32_toolchain_components")
+#@ load("/components/toolchain/arch/win64.lib.yml", "win64_toolchain_components")
+
+#@ load("/components/macos/macos.lib.yml", "macos_toolchain_components")
+
+#@ load("/global_options.lib.yml", "options")
+
+components:
+  gmp: #@ gmp_component
+  mpc: #@ mpc_component
+  mpfr: #@ mpfr_component
+  cmake: #@ cmake_component
+  zlib: #@ zlib_component
+  libunwind: #@ libunwind_component
+  llvm: #@ llvm_component
+  llvm-documentation: #@ llvm_documentation_component
+  llvmcpy: #@ llvmcpy_component
+  clang-release: #@ clang_release_component
+  glib: #@ glib_component
+  qemu: #@ qemu_component
+  boost: #@ boost_component
+  revng: #@ revng_component
+  revng-c: #@ revng_c_component
+  caliban: #@ caliban_component
+  revng-qa: #@ revng_qa_component
+
+  ui/qt: #@ qt_component
+  ui/quickqanava: #@ quickqanava_component
+  ui/qt-creator: #@ qt_creator_component
+  ui/graphviz: #@ graphviz_component
+  ui/adaptagrams: #@ adaptagrams_component
+  ui/cold-revng: #@ cold_revng_component
+  ui/mesa: #@ mesa_component
+  ui/libglvnd: #@ libglvnd_component
+
+  _: #@ template.replace(host_toolchain_components)
+  _: #@ template.replace(x86_64_toolchain_components)
+  _: #@ template.replace(i386_toolchain_components)
+  _: #@ template.replace(arm_toolchain_components)
+  _: #@ template.replace(aarch64_toolchain_components)
+  _: #@ template.replace(s390x_toolchain_components)
+  _: #@ template.replace(mips_toolchain_components)
+  _: #@ template.replace(mipsel_toolchain_components)
+
+  _: #@ template.replace(win64_toolchain_components)
+  _: #@ template.replace(win32_toolchain_components)
+
+  _: #@ template.replace(macos_toolchain_components)
+
+add_to_path:
+  - $ORCHESTRA_ROOT/bin
+  - $ORCHESTRA_DOTDIR/support
+environment:
+  - PATCH_DIR: $ORCHESTRA_DOTDIR/patches
+  - JOBS: #@ data.values.parallelism
+  #! TODO: maybe patching RPATH should not be a concern of Orchestra itself, but rather a post-install phase
+  #!       Otherwise, it should be Orchestra to provide an RPATH_PLACEHOLDER, not the other way around
+  - RPATH_PLACEHOLDER: #@ options["rpath_placeholder"]
+
+paths: #@ data.values.paths or {}

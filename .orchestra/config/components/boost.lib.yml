@@ -1,0 +1,35 @@
+#@ load("/global_options.lib.yml", "options")
+
+#@yaml/text-templated-strings
+---
+#@ def _boost_component():
+builds:
+  default:
+    configure: |
+      mkdir -p "$BUILD_DIR"
+
+      extract.sh --into "$BUILD_DIR" "https://dl.bintray.com/boostorg/release/1.71.0/source/boost_1_71_0.tar.bz2"
+      patch-if-exists "${PATCH_DIR}/boost-1.63.0-icl-disable-LessThanComparableConcept.patch" "$BUILD_DIR"
+      cd "$BUILD_DIR" && ./bootstrap.sh --prefix="$ORCHESTRA_ROOT" --with-libraries=test
+    install: |
+      cd "$BUILD_DIR"
+      export ORIGIN='$ORIGIN'
+      ./b2 \
+        --prefix="${DESTDIR}${ORCHESTRA_ROOT}" \
+        --ignore-site-config toolset='clang' \
+        cxxflags='(@= options["regular_cxx_flags"] @)' \
+        linkflags='(@= options["regular_linker_flags"] @) -Wl,-rpath=$ORIGIN/../lib'
+      ./b2 \
+        --prefix="${DESTDIR}${ORCHESTRA_ROOT}" \
+        --ignore-site-config toolset='clang' \
+        cxxflags='(@= options["regular_cxx_flags"] @)' \
+        linkflags='(@= options["regular_linker_flags"] @) -Wl,-rpath=$ORIGIN/../lib' \
+        install
+    dependencies:
+      - clang-release
+      - toolchain/host/gcc
+      - libunwind
+#@ end
+
+---
+#@ boost_component = _boost_component()

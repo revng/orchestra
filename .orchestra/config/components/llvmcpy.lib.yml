@@ -1,0 +1,18 @@
+#@ def _llvmcpy_component():
+repository: llvmcpy
+builds:
+  default:
+    depencencies:
+      - llvm
+    configure: |
+      mkdir -p "$BUILD_DIR"
+    install: |
+      export PYTHONPATH="$DESTDIR/lib/python"
+      mkdir -p "$PYTHONPATH"
+      cd "$SOURCE_DIR"
+      python3 setup.py build --build-base "$SOURCE_DIR"
+      python3 setup.py build --build-base "$SOURCE_DIR" install --home "$DESTDIR"
+#@ end
+
+---
+#@ llvmcpy_component = _llvmcpy_component()

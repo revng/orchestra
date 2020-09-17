@@ -1,0 +1,71 @@
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+
+#@ load("/global_options.lib.yml", "options")
+
+#@ source_url = "https://www2.graphviz.org/Packages/stable/portable_source/graphviz-2.44.1.tar.gz"
+
+#@yaml/text-templated-strings
+---
+#@ def _graphviz_args():
+configure: |
+  mkdir -p "$BUILD_DIR" "$BUILD_DIR"
+  extract.sh --into "$BUILD_DIR" "(@= source_url @)"
+
+  cd $BUILD_DIR
+  ./configure \
+    --disable-ltdl \
+    --disable-gdk-pixbuf \
+    --without-pangocairo \
+    --without-devil \
+    --without-gtk \
+    --without-gts \
+    --without-qt \
+    --without-lasi \
+    --without-poppler \
+    --without-ghostscript \
+    --disable-static \
+    --without-rsvg \
+    --without-x \
+    --without-xaw \
+    --without-lefty \
+    --without-digcola \
+    --without-fontconfig \
+    --without-freetype2 \
+    --without-ipsepcola \
+    --without-libgd \
+    --with-sfdp \
+    --without-ming \
+    --with-cgraph \
+    --without-glitz \
+    --without-ipsepcola \
+    --without-smyrna \
+    --without-visio \
+    --disable-guile \
+    --disable-java \
+    --disable-perl \
+    --disable-python2 \
+    --disable-python3 \
+    --disable-ruby \
+    --disable-tcl \
+    --disable-go \
+    --disable-io \
+    --disable-lua \
+    --disable-ocaml \
+    --disable-php \
+    --disable-python \
+    --disable-r \
+    --disable-sharp \
+    --without-included-ltdl \
+    --disable-ltdl-install \
+    --prefix="$ORCHESTRA_ROOT" \
+    LDFLAGS="(@= options["modern_linker_flags"] @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
+    CFLAGS="" \
+    CC="clang -fuse-ld=gold"
+build_system: make
+dependencies:
+  - clang-release
+#@ end
+
+---
+#@ graphviz_component = single_build_component(**_graphviz_args())
+

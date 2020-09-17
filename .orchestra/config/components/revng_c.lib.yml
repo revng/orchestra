@@ -1,0 +1,26 @@
+#@ load("/lib/optimization_flavors.lib.yml", "typical_project_flavors")
+#@ load("/lib/cmake.lib.yml", "cmake_boost_configuration", "typical_cmake_builds")
+
+#@ load("/global_options.lib.yml", "options")
+
+---
+#@ def build_args():
+extra_cmake_args: #@ cmake_boost_configuration
+build_dependencies:
+  - cmake
+dependencies:
+  - toolchain/host/gcc
+  - clang-release
+  - revng
+  - boost
+use_asan: false
+#@ end
+
+---
+#@ def _revng_c_component():
+repository: revng-c
+builds: #@ typical_cmake_builds(**build_args())
+#@ end
+
+---
+#@ revng_c_component = _revng_c_component()

@@ -1,0 +1,24 @@
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+
+#@ source_url = "https://ftp.gnu.org/gnu/mpc//mpc-1.1.0.tar.gz"
+
+#@yaml/text-templated-strings
+---
+#@ def _mpc_args():
+configure: |
+  mkdir -p "$BUILD_DIR"
+  extract.sh --into "$BUILD_DIR" (@= source_url @)
+  cd $BUILD_DIR && ./configure \
+    --prefix="$ORCHESTRA_ROOT" \
+    --with-gmp="$ORCHESTRA_ROOT" \
+    --with-mpfr="$ORCHESTRA_ROOT" \
+    --enable-shared=no CFLAGS="-fPIC" CXXFLAGS="-fPIC"
+build_system: make
+dependencies:
+  - gmp
+  - mpfr
+#@ end
+
+---
+
+#@ mpc_component = single_build_component(**_mpc_args())

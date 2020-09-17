@@ -1,0 +1,55 @@
+#@ load("/lib/make.lib.yml", "make")
+
+#@ source_url = "https://codeload.github.com/tpoechtrager/cctools-port/tar.gz/1e3f614aff4eaae01b6cc4d29c3237c93f3322f8"
+#@ source_url = "https://github.com/tpoechtrager/cctools-port/archive/cctools-877.8-ld64-253.9-1.tar.gz"
+
+---
+#@ def prefixes():
+- x86-64
+- i686
+- arm
+- aarch64
+#@ end
+
+
+#@yaml/text-templated-strings
+---
+#@ def _ld64_components():
+#@ for prefix in prefixes():
+macos/(@= prefix @)-ld64:
+  builds:
+    default:
+      configure: |
+        mkdir -p "$BUILD_DIR"
+
+        # extract.sh --into "$BUILD_DIR" --save-as "cctools-port.tar.gz" "(@= source_url @)"
+        # extract.sh --into "$BUILD_DIR" "(@= source_url @)"
+
+        git clone --depth 1 https://github.com/tpoechtrager/cctools-port.git "$BUILD_DIR"
+
+        cd "$BUILD_DIR/cctools"
+        ./autogen.sh
+        autoconf --force
+        libtoolize --force
+        ./configure \
+          --prefix="$ORCHESTRA_ROOT" \
+          --target=(@= prefix.replace("-", "_") @)-apple-darwin11 \
+          --enable-tapi-support \
+          CC="clang" \
+          CXX="clang++" \
+          OBJC="clang" \
+          CXXFLAGS="-I${BUILD_DIR}/include" \
+          LDFLAGS="-L${BUILD_DIR}/lib"
+      install: |
+        cd "$BUILD_DIR/cctools"
+        (@= make @)
+        (@= make @) install
+      dependencies:
+        - macos/libtapi
+        - clang-release
+        - toolchain/host/gcc
+#@ end
+#@ end
+
+---
+#@ ld64_components = _ld64_components()

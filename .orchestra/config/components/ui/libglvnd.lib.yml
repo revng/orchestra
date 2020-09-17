@@ -1,0 +1,32 @@
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+
+#@ source_url = "https://gitlab.freedesktop.org/glvnd/libglvnd/-/archive/v1.3.2/libglvnd-v1.3.2.tar.gz"
+
+#@yaml/text-templated-strings
+---
+#@ def _libglvnd_args():
+configure: |
+  mkdir -p "$BUILD_DIR" "$BUILD_DIR/source"
+  extract.sh --into "$BUILD_DIR/source" "(@= source_url @)"
+  find "$BUILD_DIR/source/" -name meson.build -exec sed -i "s|install\s*:\s*|install_rpath : '$RPATH_PLACEHOLDER/lib', \0|" {} \;
+
+  export CC=clang
+  meson setup \
+    --buildtype plain \
+    --prefix "$ORCHESTRA_ROOT" \
+    --wrap-mode nodownload \
+    -Dx11=enabled \
+    -Dglx=enabled \
+    -Dc_link_args="-ldl -w -Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath,$RPATH_PLACEHOLDER/lib -Wl,-rpath-link,/usr/lib" \
+    "$BUILD_DIR" \
+    "$BUILD_DIR/source"
+build_system: ninja
+build_dependencies:
+  - clang-release
+dependencies:
+  - toolchain/host/gcc
+#@ end
+
+---
+#@ libglvnd_component = single_build_component(**_libglvnd_args())
+

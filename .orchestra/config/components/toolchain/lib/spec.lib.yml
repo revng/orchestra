@@ -1,0 +1,77 @@
+#@ load("@ytt:data", "data")
+
+#@ load("/lib/optimization_flavors.lib.yml", "libc_optimization_flavors")
+#@ load("/lib/fn_args.lib.yml", "mandatory")
+
+#@ load("/global_options.lib.yml", "options")
+
+#@ spec_archive_name = "spec2006_int_fp.tar.gz"
+#@ spec_archive_url = data.values.nonredistributable_base_url + spec_archive_name
+#! Flags for runspec
+#@ spec_flags = "int"
+#@ link_flags = "-static"
+
+---
+#@ def types():
+- native
+- qemu
+- revng
+- revngisolated
+#@ end
+
+#@yaml/text-templated-strings
+---
+#@ def create_spec_components(
+#@    triple=mandatory,
+#@    toolchain_name=mandatory,
+#@ ):
+
+#@ for build_type in types():
+#@ for step in ["make", "use"]:
+toolchain/(@= toolchain_name @)/spec/(@= build_type @)/(@= step @):
+  builds:
+    #@ for flavor, f_options in libc_optimization_flavors.items():
+    (@= flavor @):
+      configure: |
+        mkdir -p "$BUILD_DIR"
+        extract.sh --into "$BUILD_DIR" "(@= spec_archive_url @)"
+        cd "$BUILD_DIR";
+        SPEC_INSTALL_NOCHECK=1 ./install.sh -d "$BUILD_URL" -f
+        (@ if step == "make": @)
+        cd "$BUILD_DIR"
+        rm -rf config/
+        cp -ar "$ORCHESTRA_DOTDIR/support/spec-config/" config/
+        sed -i 's|C\(XX\)\?OPTIMIZE\s*=\s*|\0(@= f_options @) (@= link_flags @) |' config/gcc-base.cfg)
+        (@- end @)
+      install: |
+        cd "$BUILD_DIR"
+        source shrc
+        (@ if step == "use": @)
+        cp -a "$ORCHESTRA_ROOT/(@= triple @)/(@= triple @)-(@= build_type @)-int-bundle.cpu2006bundle.bz2" "$BUILD_DIR/"
+        (@ else: @)
+        rm -f "$BUILD_DIR/(@= triple @)-(@= build_type @)-int-bundle.cpu2006bundle.bz2"
+        (@ end @)
+        yes | runspec --config="(@= triple @)-(@= build_type @).cfg" --(@= step @)_bundle "(@= triple @)-(@= build_type @)-int-bundle" (@= spec_flags @)
+        (@ if step == "make": @)
+        mkdir -p "${DESTDIR}${ORCHESTRA_ROOT}/(@= triple @)/"
+        cp -a "$BUILD_DIR/(@= triple @)-(@= build_type @)-int-bundle.cpu2006bundle.bz2" "${DESTDIR}${ORCHESTRA_ROOT}/(@= triple @)/")
+        (@ else: @)
+        cd "$BUILD_DIR"
+        mkdir -p "${DESTDIR}${ORCHESTRA_ROOT}/(@= triple @)/"
+        tar caf "${DESTDIR}${ORCHESTRA_ROOT}/(@= triple @)/(@= triple @)-(@= build_type @)-int-bundle-results.tar.gz" --owner=0 --group=0 result/)
+        (@- end @)
+      dependencies:
+        #@ if/end step == "use":
+        - toolchain/(@= toolchain_name @)/spec/(@= build_type @)/make@(@= flavor @)
+        #@ if/end step == "use" and build_type == "qemu":
+        - qemu
+
+        #@ if/end step == "make":
+        - toolchain/(@= toolchain_name @)/gcc
+        #@ if/end step == "make" and build_type in ["revng", "revng-optimized"]:
+        - revng
+    #@ end
+#@ end
+#@ end
+
+#@ end

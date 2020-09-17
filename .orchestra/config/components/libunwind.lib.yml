@@ -1,0 +1,36 @@
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+
+#@ load("/global_options.lib.yml", "options")
+
+#@ source_url = "https://download.savannah.nongnu.org/releases/libunwind/libunwind-1.4.0.tar.gz"
+
+#@yaml/text-templated-strings
+---
+#@ def _libunwind_args():
+configure: |
+  mkdir -p "$BUILD_DIR"
+  extract.sh --into "$BUILD_DIR" (@= source_url @)
+  cd "$BUILD_DIR"
+  export CC="cc -fcommon"
+  ./configure \
+    --enable-cxx-exceptions \
+    --disable-coredump \
+    --disable-ptrace \
+    --enable-setjmp \
+    --disable-debug-frame \
+    --disable-documentation \
+    --disable-minidebuginfo \
+    --disable-static \
+    --disable-conservative_checks \
+    --disable-debug \
+    --prefix="$ORCHESTRA_ROOT" \
+    CFLAGS="" \
+    LDFLAGS="(@= options["modern_linker_flags"] @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib"
+build_system: make
+dependencies:
+  - toolchain/host/gcc
+#@ end
+
+---
+
+#@ libunwind_component = single_build_component(**_libunwind_args())

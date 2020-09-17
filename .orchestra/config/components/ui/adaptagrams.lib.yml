@@ -1,0 +1,20 @@
+#@ load("/lib/cmake.lib.yml", "typical_cmake_builds")
+
+---
+#@ def build_args():
+build_dependencies:
+  - cmake
+dependencies:
+  - toolchain/host/gcc
+  - clang-release
+use_asan: false
+#@ end
+
+---
+#@ def _adaptagrams_component():
+repository: ui/adaptagrams
+builds: #@ typical_cmake_builds(**build_args())
+#@ end
+
+---
+#@ adaptagrams_component = _adaptagrams_component()

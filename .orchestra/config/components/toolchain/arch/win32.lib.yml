@@ -1,0 +1,21 @@
+#@ load("/components/toolchain/lib/toolchain.lib.yml", "create_toolchain_components")
+
+#@ def _params():
+toolchain_name: win32
+triple: i686-w64-mingw32
+binutils_version: "2.35"
+gdb_version: "8.2.1"
+mingw64_version: "6.0.0"
+gcc_version: "7.3.0"
+extra_gcc_configure_options:
+  - --without-cloog
+  - --without-isl
+  - --disable-libsanitizer
+  - --disable-libssp
+  - --disable-shared
+dynamic: "0"
+#@ end
+
+---
+
+#@ win32_toolchain_components = create_toolchain_components(**_params())

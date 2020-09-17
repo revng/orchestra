@@ -1,0 +1,31 @@
+#@ load("/components/toolchain/lib/toolchain.lib.yml", "create_toolchain_components")
+
+#@ def _params():
+toolchain_name: arm
+triple: armv7a-hardfloat-linux-uclibceabi
+linux_arch_name: arm
+linux_version: "4.5.2"
+uclibc_arch_name: arm
+uclibc_version: "0.9.33.2"
+binutils_version: "2.35"
+gdb_version: "8.2.1"
+gcc_version: "4.9.3"
+coreutils_version: "8.29"
+extra_gcc_configure_options:
+  - --enable-__cxa_atexit
+  - --enable-tls
+  - --enable-clocale=gnu
+  - --with-float=softfp
+  - --with-arch=armv7-a
+  - --without-cloog
+  - --disable-libsanitizer
+  - --disable-libssp
+  - --disable-shared
+dynamic: "0"
+spec: true
+
+#@ end
+
+---
+
+#@ arm_toolchain_components = create_toolchain_components(**_params())

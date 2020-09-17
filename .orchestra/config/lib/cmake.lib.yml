@@ -1,0 +1,98 @@
+#@ load("/lib/fn_args.lib.yml", "mandatory")
+#@ load("/lib/shell.lib.yml", "expand_args")
+#@ load("/lib/optimization_flavors.lib.yml", "typical_cmake_flavors")
+
+#@ load("/global_options.lib.yml", "options")
+
+#@yaml/text-templated-strings
+---
+#@ def cmake_base_configuration(
+#@        cmake_build_type=mandatory,
+#@        extra_compiler_flags="",
+#@        extra_c_flags="",
+#@        extra_cxx_flags="",
+#@  ):
+#@ rpath = options["rpath_placeholder"]
+- -DCMAKE_C_COMPILER="(@= options["regular_c_compiler"] @)"
+- -DCMAKE_CXX_COMPILER="(@= options["regular_cxx_compiler"] @)"
+- -DCMAKE_C_FLAGS="(@= extra_compiler_flags @) (@= extra_c_flags @) (@= options["regular_c_flags"] @)"
+- -DCMAKE_CXX_FLAGS="(@= extra_compiler_flags @) (@= extra_cxx_flags @) (@= options["regular_cxx_flags"] @)"
+- -DCMAKE_EXE_LINKER_FLAGS="(@= options["regular_linker_flags"] @)"
+- -DCMAKE_MODULE_LINKER_FLAGS="(@= options["regular_linker_flags"] @)"
+- -DCMAKE_SHARED_LINKER_FLAGS="(@= options["regular_linker_flags"] @)"
+- -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+- -DCMAKE_BUILD_RPATH="(@= rpath @)/lib:(@= rpath @)/(@= options["sanitizers_libs_path"] @):(@= rpath @)/lib/revng/analyses"
+- -DCMAKE_INSTALL_RPATH="(@= rpath @)/lib:(@= rpath @)/(@= options["sanitizers_libs_path"] @):(@= rpath @)/lib/revng/analyses"
+- -DCMAKE_BUILD_TYPE="(@= cmake_build_type @)"
+- -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT"
+#@ end
+
+---
+
+#@ def _cmake_boost_configuration():
+- -DBOOST_ROOT="$ORCHESTRA_ROOT"
+- -DBoost_NO_BOOST_CMAKE=On
+- -DBoost_NO_SYSTEM_PATHS=On
+#@ end
+
+#@ cmake_boost_configuration = _cmake_boost_configuration()
+
+---
+
+#@yaml/text-templated-strings
+---
+#@ def typical_cmake_builds(
+#@        extra_cmake_args=[],
+#@        build_system="Ninja",
+#@        dependencies=[],
+#@        build_dependencies=[],
+#@        use_asan=False,
+#@        source_url=None,
+#@        pre_configure_script="",
+#@        post_configure_script="",
+#@        pre_install_script="",
+#@        post_install_script="",
+#@ ):
+
+#@ for flavor, opts in typical_cmake_flavors(use_asan=use_asan).items():
+(@= flavor @):
+  configure: |
+    (@- if pre_configure_script: @)
+    (@= pre_configure_script @)
+    (@ end -@)
+
+    (@- if source_url: @)
+    extract.sh "(@= source_url @)"
+    (@ end -@)
+
+    mkdir -p "$BUILD_DIR"
+    cd "$BUILD_DIR";
+    cmake "$SOURCE_DIR" \
+      (@ if build_system != "Ninja": @)-G(@= build_system @)(@ end @) \
+      (@= expand_args(cmake_base_configuration(**opts)) @) \
+      (@= expand_args(extra_cmake_args) @)
+
+    (@- if post_configure_script: @)
+    (@= post_configure_script @)
+    (@ end -@)
+
+  install: |
+    (@- if pre_install_script: @)
+    (@= pre_install_script @)
+    (@ end -@)
+
+    cmake --build "$BUILD_DIR" ${JOBS:+-j$JOBS}
+    cmake --install "$BUILD_DIR"
+
+    (@- if post_install_script: @)
+    (@= post_install_script @)
+    (@ end -@)
+
+  #@ if/end dependencies:
+  dependencies: #@ dependencies
+
+  #@ if/end build_dependencies:
+  build_dependencies: #@ build_dependencies
+#@ end
+
+#@ end

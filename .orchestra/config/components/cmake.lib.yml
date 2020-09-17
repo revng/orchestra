@@ -1,0 +1,27 @@
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+
+#@yaml/text-templated-strings
+---
+#@ def _cmake_args():
+#@    source_url = "https://github.com/Kitware/CMake/releases/download/v3.16.2/cmake-3.16.2.tar.gz"
+configure: |
+  mkdir -p "$BUILD_DIR"
+  extract.sh --into "$BUILD_DIR" (@= source_url @)
+  cd "$BUILD_DIR" && ./bootstrap \
+    --prefix="$ORCHESTRA_ROOT" \
+    --parallel=16 \
+    LDFLAGS="-static-libstdc++ -static-libgcc" \
+    -- -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT" \
+    -DCMAKE_SHARED_LINKER_FLAGS="-static-libstdc++ -static-libgcc" \
+    -DCMAKE_MODULE_LINKER_FLAGS="-static-libstdc++ -static-libgcc" \
+    -DCMAKE_EXE_LINKER_FLAGS="-static-libstdc++ -static-libgcc" \
+    -DCMAKE_USE_OPENSSL=OFF
+build_system: make
+dependencies:
+  - toolchain/host/gcc
+#@ end
+
+---
+
+#@ cmake_component = single_build_component(**_cmake_args())

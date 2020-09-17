@@ -1,0 +1,49 @@
+#@ load("/lib/make.lib.yml", "make")
+#@ load("/lib/optimization_flavors.lib.yml", "typical_project_flavors")
+
+#@ load("/global_options.lib.yml", "options")
+
+#@yaml/text-templated-strings
+---
+#@ def _qemu_component(use_asan=False):
+repository: qemu
+builds:
+  #@ for flavor, f_options in typical_project_flavors(use_asan=use_asan).items():
+    #@ build_type = f_options["cmake_build_type"]
+    #@ cflags = f_options["extra_compiler_flags"]
+    (@= flavor @):
+      configure: |
+        mkdir -p "$BUILD_DIR"
+        cd "$BUILD_DIR";
+        export LLVM_CONFIG="$ORCHESTRA_ROOT/bin/llvm-config";
+        "$SOURCE_DIR/configure" \
+          --cc="(@= options["regular_c_compiler"] @)" \
+          --prefix="$ORCHESTRA_ROOT" \
+          --target-list=" arm-libtinycode arm-linux-user aarch64-libtinycode aarch64-linux-user i386-libtinycode i386-linux-user mips-libtinycode mips-linux-user mipsel-libtinycode mipsel-linux-user s390x-libtinycode s390x-linux-user x86_64-libtinycode x86_64-linux-user " \
+          --disable-werror \
+          --enable-llvm-helpers \
+          --disable-kvm \
+          --without-pixman \
+          --disable-tools \
+          --disable-system \
+          --disable-libnfs \
+          --disable-vde \
+          --disable-gnutls \
+          --disable-smartcard-nss \
+          --python="(@= options["python2"] @)" \
+          (@ if build_type == "Debug": @)--enable-debug (@ end @)\
+          --extra-cflags="(@= cflags @)" \
+          --extra-ldflags='(@= options["modern_linker_flags"] @) -Wl,-rpath,\$$ORIGIN/../lib'
+      install: |
+        cd "$BUILD_DIR"
+        (@= make @) install
+      dependencies:
+        - llvm
+        - clang-release
+        - zlib
+        - glib
+  #@ end
+#@ end
+
+---
+#@ qemu_component = _qemu_component()

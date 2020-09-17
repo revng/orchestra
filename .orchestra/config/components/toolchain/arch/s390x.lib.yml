@@ -1,0 +1,25 @@
+#@ load("/components/toolchain/lib/toolchain.lib.yml", "create_toolchain_components")
+
+#@ def _params():
+toolchain_name: s390x
+triple: s390x-ibm-linux-musl
+linux_version: "4.14.18"
+linux_arch_name: s390
+binutils_version: "2.35"
+gdb_version: "8.2.1"
+musl_version: "1.1.19"
+gcc_version: "7.3.0"
+coreutils_version: "8.29"
+extra_gcc_configure_options:
+  - --without-cloog
+  - --without-isl
+  - --with-long-double-128
+  - --disable-libsanitizer
+  - --disable-libssp
+  - --disable-shared
+dynamic: "0"
+#@ end
+
+---
+
+#@ s390x_toolchain_components = create_toolchain_components(**_params())

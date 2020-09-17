@@ -1,0 +1,25 @@
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+
+#@ load("/global_options.lib.yml", "options")
+
+#@ source_url = "https://zlib.net/zlib-1.2.11.tar.gz"
+
+#@yaml/text-templated-strings
+---
+#@ def _zlib_args():
+configure: |
+  mkdir -p "$BUILD_DIR"
+  extract.sh --into "$BUILD_DIR" (@= source_url @)
+  cd "$BUILD_DIR"
+  ./configure \
+    --shared \
+    --uname=linux \
+    --prefix="$ORCHESTRA_ROOT"
+build_system: make
+dependencies:
+  - toolchain/host/gcc
+#@ end
+
+---
+
+#@ zlib_component = single_build_component(**_zlib_args())

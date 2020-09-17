@@ -1,0 +1,65 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+import subprocess
+from xml.dom.minidom import parse, Element
+import sqlite3
+
+def main():
+    assert len(sys.argv) == 3
+    assert sys.argv[1] == "index"
+    base_path = sys.argv[2]
+    resources_path = os.path.join(base_path, "Contents", "Resources")
+    print("Loading Tokens.xml")
+    xml_root = parse(os.path.join(resources_path, "Tokens.xml"))
+
+    print("Extracting data")
+    data = set()
+    index = -1
+    for token in filter(lambda x: type(x) is Element,
+                        xml_root.childNodes[0].childNodes):
+        name = token.getElementsByTagName("Name")[0].childNodes[0].nodeValue
+        item_type = ""
+        element_type = token.getElementsByTagName("Type")
+        if element_type:
+            item_type = element_type[0].childNodes[0].nodeValue
+        path = token.getElementsByTagName("Path")[0].childNodes[0].nodeValue
+        anchor = token.getElementsByTagName("Anchor")
+        if len(anchor) != 0:
+            anchor = anchor[0].childNodes[0].nodeValue
+            path += "#" + anchor
+
+        index += 1
+        data.add((index, name, item_type, path))
+
+        if name.startswith("llvm::"):
+            index += 1
+            data.add((index, name.replace("llvm::", ""), item_type, path))
+
+    print("Creating docSet.dsidx")
+    index_path = os.path.join(resources_path, "docSet.dsidx")
+    if os.path.exists(index_path):
+        os.remove(index_path)
+    connection = sqlite3.connect(index_path)
+    c = connection.cursor()
+    c.execute("""CREATE TABLE searchIndex(id INTEGER PRIMARY KEY,
+                                          name TEXT,
+                                          type TEXT,
+                                          path TEXT)""")
+
+    print("Inserting {} elements".format(len(data)))
+    c.executemany("""INSERT INTO searchIndex(id, name, type, path)
+                     VALUES(?, ?, ?, ?)""", data);
+
+    print("Checking we inserted everything")
+    c.execute("SELECT COUNT(*) FROM searchIndex")
+    assert c.fetchall()[0][0] == len(data)
+
+    print("Committing and closing database")
+    connection.commit()
+    c.close()
+    print("All done")
+
+if __name__ == "__main__":
+    main()

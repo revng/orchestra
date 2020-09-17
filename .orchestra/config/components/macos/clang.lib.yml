@@ -1,0 +1,36 @@
+#@ load("/lib/make.lib.yml", "make")
+#@ load("/lib/cmake.lib.yml", "cmake_base_configuration")
+#@ load("/lib/shell.lib.yml", "expand_args")
+
+#@ source_url = "https://codeload.github.com/tpoechtrager/cctools-port/tar.gz/1e3f614aff4eaae01b6cc4d29c3237c93f3322f8"
+
+---
+#@ def prefixes():
+- x86-64
+- i686
+#@ end
+
+
+#@yaml/text-templated-strings
+---
+#@ def _macosx_clang_components():
+#@ for prefix in prefixes():
+macos/(@= prefix @)-clang:
+  builds:
+    default:
+      configure: |
+        mkdir -p "$BUILD_DIR"
+      install: |
+        rm -f "${TMP_ROOT}${ORCHESTRA_ROOT}/bin/(@= prefix @)-apple-darwin11-clang"
+        cp "$ORCHESTRA_DOTDIR/support/add-sysroot-wrapper.sh" "${TMP_ROOT}${ORCHESTRA_ROOT}/bin/(@= prefix @)-apple-darwin11-clang"
+        rm -f "${TMP_ROOT}${ORCHESTRA_ROOT}/bin/(@= prefix @)-apple-darwin11-clang++"
+        cp "$ORCHESTRA_DOTDIR/support/add-sysroot-wrapper.sh" "${TMP_ROOT}${ORCHESTRA_ROOT}/bin/(@= prefix @)-apple-darwin11-clang++"
+      dependencies:
+        - macos/sdk
+        - clang-release
+        - macos/(@= prefix @)-ld64
+#@ end
+#@ end
+
+---
+#@ macosx_clang_components = _macosx_clang_components()

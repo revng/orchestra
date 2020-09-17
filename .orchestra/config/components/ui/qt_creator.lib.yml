@@ -1,0 +1,65 @@
+#@ load("/lib/make.lib.yml", "make")
+#@ load("/lib/shell.lib.yml", "expand_args")
+#@ load("/lib/optimization_flavors.lib.yml", "qmake_optimization_flavors")
+
+#@ load("/global_options.lib.yml", "options")
+
+---
+#@ def qt_creator_plugins():
+- coreplugin
+- texteditor
+- projectexplorer
+- resourceeditor
+- cpptools
+- qmakeprojectmanager
+- qtsupport
+- cppeditor
+- bineditor
+#@ end
+
+#@yaml/text-templated-strings
+---
+#@ def _configure_base(extra_qmake_args=[]):
+#! TODO: In legacy Orchestra QMAKE_RPATHDIR has +="" in debug and release but ="" in optimized. Is it intentional?
+- |
+  mkdir -p "$BUILD_DIR"
+  cd "$BUILD_DIR";
+  qmake -r "$SOURCE_DIR" \
+    -spec linux-clang \
+    (@= expand_args(extra_qmake_args) @) \
+    QMAKE_LFLAGS_RPATH= \
+    QMAKE_RPATHDIR+="" \
+    ONLY_PLUGINS="(@= " ".join(qt_creator_plugins()) @)"
+#@ end
+
+#@ def configure_base(**kwargs):
+#@    return _configure_base(**kwargs)[0].strip()
+#@ end
+
+#@yaml/text-templated-strings
+---
+#@ def _qt_creator_component():
+repository: ui/qt-creator
+default_build: optimized
+builds:
+  #@ for flavor, opts in qmake_optimization_flavors.items():
+  #@ extra_qmake_args = opts["extra_qmake_args"]
+  (@= flavor @):
+    configure: #@ configure_base(extra_qmake_args=extra_qmake_args)
+    install: |
+      cd "$BUILD_DIR"
+      (@= make @)
+      (@= make @) install INSTALL_ROOT="$DESTDIR$ORCHESTRA_ROOT"
+      # TODO: debug why qtcreator looks for platform plugins in bin when the root is moved
+      ln -s ../plugins/platforms "$DESTDIR$ORCHESTRA_ROOT/bin/platforms"
+    dependencies:
+      - clang-release
+      - toolchain/host/gcc
+      - llvm
+      - ui/qt
+  #@ end
+#@ end
+
+---
+
+#@ qt_creator_component = _qt_creator_component()

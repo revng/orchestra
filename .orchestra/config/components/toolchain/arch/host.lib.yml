@@ -1,0 +1,43 @@
+#@ load("/components/toolchain/lib/toolchain.lib.yml", "create_toolchain_components")
+#@ load("/components/toolchain/lib/common.lib.yml", "linker_flags")
+
+#@yaml/text-templated-strings
+---
+#@ def _params():
+toolchain_name: host
+triple: x86_64-pc-linux-gnu
+binutils_version: "2.35"
+gdb_version: "9.2"
+gcc_version: "10.1.0"
+gcc_sysroot: /
+extra_gcc_configure_options:
+  - --without-cloog
+  - --enable-libsanitizer
+  - --enable-libssp
+  - --enable-shared
+  - --enable-libatomic
+  - --enable-libquadmath
+  - --enable-esp
+  - --disable-libstdcxx-pch
+  - --enable-threads=posix
+  - --enable-__cxa_atexit
+  - --enable-clocale=gnu
+  - --disable-altivec
+  - --disable-fixed-point
+  - --enable-targets=all
+  - --enable-libgomp
+  - --disable-libmudflap
+  - --disable-libssp
+  - --disable-systemtap
+  - --enable-lto
+  - --without-isl
+  - --enable-default-pie
+  - --enable-default-ssp
+  - --enable-libmpx
+  - LDFLAGS_FOR_TARGET="(@= linker_flags @)"
+extra_gcc_make_variables: LIBRARY_PATH=/usr/lib/x86_64-linux-gnu
+#@ end
+
+---
+
+#@ host_toolchain_components = create_toolchain_components(**_params())

@@ -1,0 +1,19 @@
+#@yaml/text-templated-strings
+---
+#@ def _expand_args(args_list):
+- |2
+    (@ for arg in args_list: @)
+    (@= arg @) \
+    (@- end @)
+#@ end
+
+---
+#@ def expand_args(args_list):
+#@   if not args_list:
+#@     return ""
+#@   elif type(args_list) in ["str", "string"]:
+#@     return args_list
+#@   else:
+#@     return _expand_args(list(args_list))[0].strip().rstrip(" \\")
+#@   end
+#@ end

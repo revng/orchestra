@@ -1,0 +1,20 @@
+#@ load("/lib/make.lib.yml", "make")
+#@ load("/lib/fn_args.lib.yml", "mandatory")
+
+#@yaml/text-templated-strings
+---
+#@ def create_linux_headers_component(triple=mandatory, linux_version=mandatory, arch_name=mandatory):
+
+#@   source_url = "https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-" + linux_version + ".tar.xz"
+
+builds:
+  default:
+    configure: |
+      mkdir -p "$BUILD_DIR"
+      extract.sh --into "$BUILD_DIR" (@= source_url @)
+    install: |
+      cd "$BUILD_DIR"
+      (@= make @) -C "$BUILD_DIR" \
+        ARCH=(@= arch_name @) \
+        INSTALL_HDR_PATH="${DESTDIR}${ORCHESTRA_ROOT}/(@= triple @)/usr" headers_install
+#@ end

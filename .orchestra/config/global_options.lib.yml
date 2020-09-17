@@ -1,0 +1,24 @@
+#@ load("@ytt:data", "data")
+
+#@ modern_linker_flags = "-fuse-ld=gold -Wl,--gdb-index -Wl,-z,origin -Wl,--enable-new-dtags"
+#@ clang_release_version = "10.0.0"
+
+#@yaml/text-templated-strings
+---
+#@ def _options():
+parallelism: #@ data.values.parallelism
+python2: /usr/bin/python2
+clang_release_version: #@ clang_release_version
+
+rpath_placeholder: ////////////////////////////////////////////////$ORCHESTRA_ROOT
+regular_c_compiler: clang
+regular_cxx_compiler: clang++
+regular_c_flags: ""
+regular_cxx_flags: -stdlib=libc++
+modern_linker_flags: (@= modern_linker_flags @)
+regular_linker_flags: -stdlib=libc++ (@= modern_linker_flags @)
+sanitizers_libs_path: lib64/clang/(@= clang_release_version @)/lib/linux
+
+#@ end
+
+#@ options = _options()

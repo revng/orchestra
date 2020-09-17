@@ -1,0 +1,63 @@
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+
+#@ source_url = "https://mesa.freedesktop.org/archive/mesa-20.1.2.tar.xz"
+
+#@yaml/text-templated-strings
+---
+#@ def _mesa_args():
+configure: |
+  mkdir -p "$BUILD_DIR" "$BUILD_DIR/source"
+  extract.sh --into "$BUILD_DIR/source" "(@= source_url @)"
+  find "$BUILD_DIR/source/" -name meson.build -exec sed -i "s|install\s*:\s*|install_rpath : '$RPATH_PLACEHOLDER/lib', \0|" {} \;
+
+  export CC=clang
+  export CXX=clang++
+  meson setup \
+    --buildtype plain \
+    --prefix "$ORCHESTRA_ROOT" \
+    --wrap-mode nodownload \
+    -Dplatforms=x11,wayland,drm,surfaceless \
+    -Dllvm=true \
+    -Dlmsensors=false \
+    -Dlibunwind=false \
+    -Dgallium-nine=false \
+    -Dgallium-va=false \
+    -Dgallium-vdpau=false \
+    -Dgallium-xa=false \
+    -Dgallium-xvmc=false \
+    -Dgallium-opencl=disabled \
+    -Dosmesa=none \
+    -Dbuild-tests=false \
+    -Dglx=dri \
+    -Dshared-glapi=true \
+    -Ddri3=true \
+    -Degl=true \
+    -Dgbm=true \
+    -Dgles1=false \
+    -Dgles2=true \
+    -Dglvnd=true \
+    -Dselinux=false \
+    -Dzstd=true \
+    -Dvalgrind=false \
+    -Ddri-drivers=i915,i965,r100,r200 \
+    -Dgallium-drivers=iris,r300,r600,radeonsi,svga,swrast,virgl \
+    -Dvulkan-drivers= \
+    -Dvulkan-overlay-layer=false \
+    -Db_ndebug=true \
+    -Dc_args="-w" \
+    -Dcpp_args="-w -stdlib=libc++ -fno-rtti -fno-exceptions" \
+    -Dcpp_link_args="-stdlib=libc++ -fno-rtti -fno-exceptions -L$ORCHESTRA_ROOT/lib -Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
+    -Dc_link_args="-L$ORCHESTRA_ROOT/lib -Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
+    "$BUILD_DIR" \
+    "$BUILD_DIR/source"
+build_system: ninja
+build_dependencies:
+  - clang-release
+dependencies:
+  - llvm
+  - ui/libglvnd
+  - toolchain/host/gcc
+#@ end
+
+---
+#@ mesa_component = single_build_component(**_mesa_args())

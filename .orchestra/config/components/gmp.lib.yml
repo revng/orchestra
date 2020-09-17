@@ -1,0 +1,21 @@
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+
+#@ source_url = "https://gmplib.org/download/gmp/gmp-6.1.2.tar.xz"
+
+#@yaml/text-templated-strings
+---
+#@ def _gmp_args():
+configure: |
+  mkdir -p "$BUILD_DIR"
+  extract.sh --into "$BUILD_DIR" "(@= source_url @)"
+  cd $BUILD_DIR && ./configure \
+    --prefix="$ORCHESTRA_ROOT" \
+    --enable-shared=no \
+    --enable-fat \
+    CFLAGS="-fPIC" \
+    CXXFLAGS="-fPIC"
+build_system: make
+#@ end
+
+---
+#@ gmp_component = single_build_component(**_gmp_args())

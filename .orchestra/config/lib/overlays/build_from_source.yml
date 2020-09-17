@@ -1,0 +1,12 @@
+#@ load("@ytt:overlay", "overlay")
+#@ load("@ytt:data", "data")
+
+#@yaml/text-templated-strings
+#@overlay/match by=overlay.all
+---
+components:
+  #@ for component in data.values.build_from_source:
+  (@= component @):
+    #@overlay/match missing_ok=True
+    build_from_source: true
+  #@ end

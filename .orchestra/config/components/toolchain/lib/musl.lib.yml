@@ -1,0 +1,82 @@
+#@ load("@ytt:template", "template")
+#@ load("@ytt:overlay", "overlay")
+
+#@ load("/lib/make.lib.yml", "make", "serial_make")
+#@ load("/lib/fn_args.lib.yml", "mandatory")
+#@ load("/lib/optimization_flavors.lib.yml", "libc_optimization_flavors")
+#@ load("/components/toolchain/lib/common.lib.yml", "new_gcc")
+
+#@ load("/global_options.lib.yml", "options")
+
+#@yaml/text-templated-strings
+---
+#@ def musl_build(
+#@      triple=mandatory,
+#@      musl_version=mandatory,
+#@      toolchain_name=mandatory,
+#@      gcc_version=mandatory,
+#@      additional_cflags=""
+#@ ):
+
+#@   source_url = "http://www.musl-libc.org/releases/musl-" + musl_version + ".tar.gz"
+configure: |
+  mkdir -p "$BUILD_DIR"
+
+  extract.sh --into "$BUILD_DIR" "(@= source_url @)"
+  patch-if-exists "${PATCH_DIR}/musl-(@= musl_version @)-printf-floating-point-rounding.patch" "$BUILD_DIR"
+
+  cd "$BUILD_DIR" && CC="(@= new_gcc(triple=triple, gcc_version=gcc_version) @)" CFLAGS=" (@= additional_cflags @)" "$BUILD_DIR/configure" \
+    --target=(@= triple @) \
+    --prefix="$ORCHESTRA_ROOT/(@= triple @)/usr" \
+    --syslibdir="$ORCHESTRA_ROOT/(@= triple @)/lib" \
+    --disable-gcc-wrapper
+install: |
+  cd "$BUILD_DIR"
+  (@= make @)
+  (@= serial_make @) install
+build_dependencies:
+  - toolchain/(@= toolchain_name @)/gcc~stage1
+#@ end
+
+#@yaml/text-templated-strings
+---
+#@ def musl_headers(toolchain_name=mandatory, triple=mandatory, musl_version=mandatory):
+#! Recent versions of musl have changed the path of the generated file alltypes.h
+#! and we want take it into account without checking explicitly for specific musl
+
+#@   source_url = "http://www.musl-libc.org/releases/musl-" + musl_version + ".tar.gz"
+build: |
+  cd "$BUILD_DIR"
+  (@= make @) include/bits/alltypes.h || (@= make @) obj/include/bits/alltypes.h
+install: |
+  cd "$BUILD_DIR"
+  (@= make @) include/bits/alltypes.h || (@= make @) obj/include/bits/alltypes.h
+  (@= make @) install-headers
+configure: |
+  mkdir -p "$BUILD_DIR"
+
+  extract.sh --into "$BUILD_DIR" "(@= source_url @)"
+  patch-if-exists "${PATCH_DIR}/musl-(@= musl_version @)-printf-floating-point-rounding.patch" "$BUILD_DIR"
+
+  cd "$BUILD_DIR" && CC="true" "$BUILD_DIR/configure" \
+    --target=(@= triple @) \
+    --prefix="$ORCHESTRA_ROOT/(@= triple @)/usr" \
+    --syslibdir="$ORCHESTRA_ROOT/(@= triple @)/lib" \
+    --disable-gcc-wrapper
+#@ end
+
+#@yaml/text-templated-strings
+---
+#@ def create_musl_component(
+#@      triple=mandatory,
+#@      musl_version=mandatory,
+#@      toolchain_name=mandatory,
+#@      gcc_version=mandatory
+#@ ):
+default_build: default
+builds:
+  headers: #@ musl_headers(triple=triple, musl_version=musl_version, toolchain_name=toolchain_name)
+  #@ for flavor, flags in libc_optimization_flavors.items():
+  (@= flavor @): #@ musl_build(triple=triple, musl_version=musl_version, toolchain_name=toolchain_name, additional_cflags=flags, gcc_version=gcc_version)
+  #@ end
+#@ end

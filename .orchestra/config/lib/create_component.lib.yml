@@ -1,0 +1,48 @@
+#@ load("@ytt:template", "template")
+
+#@ load("/lib/fn_args.lib.yml", "mandatory")
+#@ load("/lib/assert.lib.yml", "fail")
+#@ load("/lib/make.lib.yml", "make")
+
+#@ load("/global_options.lib.yml", "options")
+
+#@yaml/text-templated-strings
+---
+#@ def single_build_component(
+#@      configure=mandatory,
+#@      build_system=mandatory,
+#@      dependencies=[],
+#@      build_dependencies=[],
+#@      repository=None,
+#@      add_to_path=[],
+#@  ):
+
+#@ if/end repository:
+repository: #@ repository
+
+builds:
+  default:
+    #@ if/end dependencies:
+    dependencies: #@ dependencies
+
+    #@ if/end build_dependencies:
+    build_dependencies: #@ build_dependencies
+
+    configure: #@ configure
+
+    #@ if build_system == "make":
+    install: |
+      cd "$BUILD_DIR"
+      (@= make @)
+      (@= make @) install
+    #@ elif build_system == "ninja":
+    install: |
+      cd "$BUILD_DIR"
+      ninja install
+    #@ else:
+    #@   fail("build_system must be either make or ninja")
+    #@ end
+
+#@ if/end add_to_path:
+add_to_path: #@ add_to_path
+#@ end

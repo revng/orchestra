@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# $1: .patch file
+# $2: directory to patch
+if test -e "$1"; then
+    cd "$2"
+    patch -p1 < "$1"
+fi

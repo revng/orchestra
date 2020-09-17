@@ -1,0 +1,36 @@
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+
+#@yaml/text-templated-strings
+---
+#@ def _revng_qa_args():
+repository: revng-qa
+configure: |
+  mkdir -p "$BUILD_DIR"
+  cd "$BUILD_DIR"; \
+  cmake "$SOURCE_DIR" \
+    -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT" \
+    -DTRIPLE_x86_64="x86_64-gentoo-linux-musl" \
+    -DTRIPLE_mips="mips-unknown-linux-musl" \
+    -DTRIPLE_mipsel="mipsel-unknown-linux-musl" \
+    -DTRIPLE_i386="i386-gentoo-linux-musl" \
+    -DTRIPLE_arm="armv7a-hardfloat-linux-uclibceabi" \
+    -DTRIPLE_aarch64="aarch64-unknown-linux-musl" \
+    -DTRIPLE_s390x="s390x-ibm-linux-musl"
+build_system: make
+build_dependencies:
+  - cmake
+dependencies:
+  - clang-release
+  - qemu
+  - toolchain/x86-64/gcc
+  - toolchain/i386/gcc
+  - toolchain/arm/gcc
+  - toolchain/aarch64/gcc
+  - toolchain/s390x/gcc
+  - toolchain/mips/gcc
+  - toolchain/mipsel/gcc
+#@ end
+
+---
+
+#@ revng_qa_component = single_build_component(**_revng_qa_args())

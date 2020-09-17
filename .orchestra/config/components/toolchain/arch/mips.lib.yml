@@ -1,0 +1,26 @@
+#@ load("/components/toolchain/lib/toolchain.lib.yml", "create_toolchain_components")
+
+#@ def _params():
+toolchain_name: mips
+triple: mips-unknown-linux-musl
+linux_version: "4.5.2"
+linux_arch_name: mips
+binutils_version: "2.35"
+gdb_version: "8.2.1"
+musl_version: "1.1.12"
+gcc_version: "9.2.0"
+coreutils_version: "8.29"
+extra_gcc_configure_options:
+  - --with-abi=
+  - --without-isl
+  - --disable-libsanitizer
+  - --disable-libssp
+  - --disable-shared
+dynamic: "0"
+spec: true
+
+#@ end
+
+---
+
+#@ mips_toolchain_components = create_toolchain_components(**_params())

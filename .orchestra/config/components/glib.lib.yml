@@ -1,0 +1,54 @@
+#@ load("/lib/ninja.lib.yml", "ninja")
+
+#@ source_url = "https://download.gnome.org/sources/glib/2.64/glib-2.64.5.tar.xz"
+
+#@yaml/text-templated-strings
+---
+#@ def _glib_component():
+builds:
+  default:
+    configure: |
+      mkdir -p "$BUILD_DIR/source"
+      extract.sh --into "$BUILD_DIR/source" (@= source_url @)
+      find "$BUILD_DIR/source/" -name meson.build -exec sed -i "s|install\s*:\s*|install_rpath : '$RPATH_PLACEHOLDER/lib', \0|" {} \;
+      sed -i 's|^.*HAVE_LANGINFO_.*1.*$||' "$BUILD_DIR/source/meson.build"
+
+      export LIBFFI_CFLAGS="-I$ORCHESTRA_ROOT/include"
+      export LIBFFI_LIBS="-L$ORCHESTRA_ROOT/lib64 -lffi"
+
+      CC=clang \
+      CXX=clang++ \
+      meson setup \
+        --buildtype plain \
+        --prefix "$ORCHESTRA_ROOT" \
+        --wrap-mode nodownload \
+        -Ddefault_library=shared \
+        -Dselinux=disabled \
+        -Dxattr=false \
+        -Dlibmount=disabled \
+        -Dinternal_pcre=true \
+        -Dman=false \
+        -Ddtrace=false \
+        -Dsystemtap=false \
+        -Dgtk_doc=false \
+        -Dfam=false \
+        -Dinstalled_tests=false \
+        -Dnls=disabled \
+        -Dc_args="-w" \
+        -Dc_link_args="-Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath,$RPATH_PLACEHOLDER/lib -Wl,-rpath-link,$ORCHESTRA_ROOT/lib" \
+        "$BUILD_DIR" \
+        "$BUILD_DIR/source"
+    install: |
+      cd "$BUILD_DIR"
+      export LANG=
+      export LIBFFI_CFLAGS="-I$ORCHESTRA_ROOT/include"
+      export LIBFFI_LIBS="-L$ORCHESTRA_ROOT/lib64 -lffi"
+      (@= ninja @)
+      (@= ninja @) install
+    dependencies:
+      - clang-release
+#@ end
+
+---
+
+#@ glib_component = _glib_component()

@@ -1,0 +1,27 @@
+#@ load("/components/toolchain/lib/toolchain.lib.yml", "create_toolchain_components")
+
+#@ def _params():
+toolchain_name: i386
+triple: i386-gentoo-linux-musl
+linux_version: "4.5.2"
+linux_arch_name: i386
+binutils_version: "2.35"
+gdb_version: "8.2.1"
+musl_version: "1.1.12"
+gcc_version: "4.9.3"
+coreutils_version: "8.29"
+extra_gcc_configure_options:
+  - --without-cloog
+  - --enable-targets=all
+  - --without-isl
+  - --disable-libsanitizer
+  - --disable-libssp
+  - --disable-shared
+dynamic: "0"
+spec: true
+
+#@ end
+
+---
+
+#@ i386_toolchain_components = create_toolchain_components(**_params())

@@ -1,0 +1,22 @@
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+
+#@ mpfr_version = "4.0.2"
+#@ source_url = "https://www.mpfr.org/mpfr-" + mpfr_version + "/mpfr-" + mpfr_version + ".tar.xz"
+
+#@yaml/text-templated-strings
+---
+#@ def _mpfr_args():
+configure: |
+  mkdir -p "$BUILD_DIR"
+  extract.sh --into "$BUILD_DIR" (@= source_url @)
+  cd $BUILD_DIR && ./configure \
+    --prefix="$ORCHESTRA_ROOT" \
+    --with-gmp="$ORCHESTRA_ROOT" \
+    --enable-shared=no CFLAGS="-fPIC" CXXFLAGS="-fPIC"
+build_system: make
+dependencies:
+  - gmp
+#@ end
+
+---
+#@ mpfr_component = single_build_component(**_mpfr_args())

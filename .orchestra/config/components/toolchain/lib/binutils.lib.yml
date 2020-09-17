@@ -1,0 +1,52 @@
+#@ load("/lib/fn_args.lib.yml", "mandatory")
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+#@ load("/components/toolchain/lib/common.lib.yml", "linker_flags")
+
+#@yaml/text-templated-strings
+---
+#@ def _binutils_args(triple=mandatory, binutils_version=mandatory):
+
+#@   source_url = "https://ftp.gnu.org/gnu/binutils/binutils-" + binutils_version + ".tar.bz2"
+configure: |
+  extract.sh --into "$SOURCE_DIR" (@= source_url @)
+  mkdir -p "$BUILD_DIR"
+  cd "$BUILD_DIR" && "$SOURCE_DIR/configure" \
+    --build=x86_64-pc-linux-gnu \
+    --host=x86_64-pc-linux-gnu \
+    --target=(@= triple @) \
+    --with-sysroot=$ORCHESTRA_ROOT/(@= triple @) \
+    --prefix=$ORCHESTRA_ROOT \
+    --datadir=$ORCHESTRA_ROOT/share/binutils-data/(@= triple @)/(@= binutils_version @) \
+    --infodir=$ORCHESTRA_ROOT/share/binutils-data/(@= triple @)/(@= binutils_version @)/info \
+    --mandir=$ORCHESTRA_ROOT/share/binutils-data/(@= triple @)/(@= binutils_version @)/man \
+    --bindir=$ORCHESTRA_ROOT/x86_64-pc-linux-gnu/(@= triple @)/binutils-bin/(@= binutils_version @) \
+    --libdir=$ORCHESTRA_ROOT/lib64/binutils/(@= triple @)/(@= binutils_version @) \
+    --libexecdir=$ORCHESTRA_ROOT/lib64/binutils/(@= triple @)/(@= binutils_version @) \
+    --includedir=$ORCHESTRA_ROOT/lib64/binutils/(@= triple @)/(@= binutils_version @)/include \
+    --without-included-gettext \
+    --with-zlib \
+    --enable-poison-system-directories \
+    --enable-secureplt \
+    --enable-obsolete \
+    --enable-gold \
+    --disable-shared \
+    --enable-threads \
+    --enable-install-libiberty \
+    --disable-werror \
+    --disable-static \
+    --disable-gdb \
+    --disable-libdecnumber \
+    --disable-readline \
+    --disable-sim \
+    --without-stage1-ldflags \
+    CFLAGS="-w -ggdb3 -O3" \
+    CXXFLAGS="-w -ggdb3 -O3" \
+    LDFLAGS="(@= linker_flags @)"
+build_system: make
+add_to_path: ${ORCHESTRA_ROOT}/x86_64-pc-linux-gnu/(@= triple @)/binutils-bin/(@= binutils_version @)
+#@ end
+
+---
+#@ def create_binutils_component(**kwargs):
+#@    return single_build_component(**_binutils_args(**kwargs))
+#@ end

@@ -1,0 +1,11 @@
+#@ load("@ytt:assert", builtin_assert="assert")
+
+#@ def fail(msg):
+#@     return builtin_assert.fail(msg)
+#@ end
+
+#@ def assert(cond, msg="Assertion failed"):
+#@     if not cond:
+#@         return fail(msg)
+#@     end
+#@ end

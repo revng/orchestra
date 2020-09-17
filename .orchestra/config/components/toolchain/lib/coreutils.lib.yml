@@ -1,0 +1,47 @@
+#@ load("/lib/fn_args.lib.yml", "mandatory")
+#@ load("/lib/make.lib.yml", "make")
+
+#@ load("/lib/optimization_flavors.lib.yml", "libc_optimization_flavors")
+
+#@yaml/text-templated-strings
+---
+#@ def coreutils_build(triple=mandatory, coreutils_version=mandatory, additional_cflags="", additional_ldflags=""):
+
+#@   source_url = "https://ftp.gnu.org/gnu/coreutils/coreutils-" + coreutils_version + ".tar.xz"
+configure: |
+  mkdir -p "$BUILD_DIR"
+
+  extract.sh --into "$BUILD_DIR" "(@= source_url @)"
+  cd "$BUILD_DIR"
+  sed -i 's|stdbuf_supported=yes|stdbuf_supported=no|g' "$BUILD_DIR/configure"
+
+  "$BUILD_DIR/configure" \
+    --disable-dependency-tracking \
+    --disable-nls \
+    --disable-acl \
+    --disable-single-binary \
+    --disable-xattr \
+    --without-gmp \
+    --without-selinux \
+    --disable-libcap \
+    --host=(@= triple @) \
+    --prefix=$ORCHESTRA_ROOT/(@= triple @) \
+    LDFLAGS="(@= additional_ldflags @)" \
+    CFLAGS=" (@= additional_cflags @) -Wno-error" \
+    TIME_T_32_BIT_OK=yes \
+    FORCE_UNSAFE_CONFIGURE=1
+install: |
+  (@= make @)
+  (@= make @) install
+#@ end
+
+#@yaml/text-templated-strings
+---
+#@ def create_coreutils_component(triple=mandatory, coreutils_version=mandatory):
+default_build: default_static
+builds:
+  #@ for flavor, flags in libc_optimization_flavors.items():
+  (@= flavor @)_static: #@ coreutils_build(triple=triple, coreutils_version=coreutils_version, additional_cflags=flags, additional_ldflags="-static")
+  (@= flavor @): #@ coreutils_build(triple=triple, coreutils_version=coreutils_version, additional_cflags=flags)
+  #@ end
+#@ end

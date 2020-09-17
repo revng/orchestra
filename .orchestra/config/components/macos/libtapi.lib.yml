@@ -1,0 +1,42 @@
+#@ load("/lib/make.lib.yml", "make")
+#@ load("/lib/cmake.lib.yml", "cmake_base_configuration")
+#@ load("/lib/shell.lib.yml", "expand_args")
+
+#@ clang_source_url = "https://opensource.apple.com/tarballs/clang/clang-800.0.42.1.tar.gz"
+#@ libtapi_source_url = "https://opensource.apple.com/tarballs/tapi/tapi-1.30.tar.gz"
+
+#@yaml/text-templated-strings
+---
+#@ def _libtapi_component():
+builds:
+  default:
+    configure: |
+      mkdir -p "$BUILD_DIR"
+      cd "$BUILD_DIR"
+
+      extract.sh --into "$BUILD_DIR" "(@= clang_source_url @)"
+      extract.sh --into "$BUILD_DIR/src/projects/libtapi" "(@= libtapi_source_url @)"
+
+      sed -i 's|NOT APPLE|FALSE|' src/projects/libtapi/CMakeLists.txt
+      sed -i 's|^|#include <limits>\n|' src/projects/libtapi/include/tapi/Core/ArchitectureSupport.h
+      cmake src/ \
+        (@= expand_args(cmake_base_configuration(cmake_build_type="Release")) @) \
+        -DLLVM_INCLUDE_TESTS=OFF
+    install: |
+      cd "$BUILD_DIR"
+      (@= make @) libtapi
+      mkdir -p "${TMP_ROOT}${ORCHESTRA_ROOT}/lib"
+      mkdir -p "${TMP_ROOT}${ORCHESTRA_ROOT}/include"
+      rm -rf "${TMP_ROOT}${ORCHESTRA_ROOT}/include/tapi/"
+      cp lib/libtapi.so "${TMP_ROOT}${ORCHESTRA_ROOT}/lib/"
+      cp -ar src/projects/libtapi/include/tapi/ "${TMP_ROOT}${ORCHESTRA_ROOT}/include/"
+      cp -a projects/libtapi/include/tapi/Version.inc "${TMP_ROOT}${ORCHESTRA_ROOT}/include/tapi/"
+    build_dependencies:
+      - cmake
+    dependencies:
+      - clang-release
+      - toolchain/host/gcc
+#@ end
+
+---
+#@ libtapi_component = _libtapi_component()

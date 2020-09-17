@@ -1,0 +1,74 @@
+#@ load("/lib/make.lib.yml", "make")
+
+#@yaml/text-templated-strings
+---
+#@ def _llvm_documentation_component():
+repository: llvm-project
+builds:
+  default:
+    depencencies:
+      - llvm
+    configure: |
+      rm -rf "$BUILD_DIR"
+      mkdir -p $(dirname "$BUILD_DIR")
+      cp -farl "$SOURCE_DIR" "$BUILD_DIR"
+      mkdir -p "$BUILD_DIR/build"
+
+      sed 's|FILE_PATTERNS|#FILE_PATTERNS|' -i "$BUILD_DIR"/*/docs/doxygen.cfg.in
+
+      cd "$BUILD_DIR/build";
+      cmake "$BUILD_DIR/llvm" \
+        -DCMAKE_BUILD_TYPE="Debug" \
+        -DLLVM_BUILD_DOCS=ON \
+        -DLLVM_ENABLE_DOXYGEN=ON \
+        -DLLVM_TARGETS_TO_BUILD="X86" \
+        -DBUILD_SHARED_LIBS=ON \
+        -DLLVM_ENABLE_PROJECTS="clang" \
+        -Wno-dev
+    install: |
+      if ! test -s "$BUILD_DIR/build/docs/doxygen/html/Makefile"; then
+        (@= make @) -C "$BUILD_DIR/build" doxygen-llvm
+        (@= make @) -C "$BUILD_DIR/build" doxygen-clang
+      fi
+
+      cd $BUILD_DIR/build/docs/doxygen/html
+      sed -i 's|$(XCODE_INSTALL)/usr/bin/docsetutil|'$ORCHESTRA_DOTDIR'/support/docsetutil|' Makefile
+      sed -i 's|XCODE_INSTALL="$(shell xcode-select -print-path)"||' Makefile
+      sed -i 's|<string>doxygen</string>|<string>llvm</string>|' Info.plist
+      (@= make @)
+      sed -i -s 's/ inherit / /' llvm.docset/Contents/Resources/Documents/*.html
+
+
+      download_file.sh "$BUILD_DIR/build/docs/doxygen/html/llvm.docset/Contents/Resources/Documents" \
+                        "https://opensource.apple.com/source/lldb/lldb-310.2.36/www/cpp_reference/html" \
+                        "dynsections.js"
+
+
+      cd $BUILD_DIR/build/tools/clang/docs/doxygen/html
+      sed -i 's|$(XCODE_INSTALL)/usr/bin/docsetutil|'$ORCHESTRA_DOTDIR'/support/docsetutil|' Makefile
+      sed -i 's|XCODE_INSTALL="$(shell xcode-select -print-path)"||' Makefile
+      sed -i 's|<string>doxygen</string>|<string>clang</string>|' Info.plist
+      (@= make @)
+      sed -i -s 's/ inherit / /' clang.docset/Contents/Resources/Documents/*.html
+
+      download_file.sh "$BUILD_DIR/build/tools/clang/docs/doxygen/html/clang.docset/Contents/Resources/Documents" \
+                        "https://opensource.apple.com/source/lldb/lldb-310.2.36/www/cpp_reference/html" \
+                        "dynsections.js"
+
+      mkdir -p "${DESTDIR}${ORCHESTRA_ROOT}/share/doc/llvm"
+      cp -farl "$BUILD_DIR/build/docs/doxygen/html/llvm.docset" "${DESTDIR}${ORCHESTRA_ROOT}/share/doc/llvm"
+
+      mkdir -p "${DESTDIR}${ORCHESTRA_ROOT}/share/doc/clang"
+      cp -farl "$BUILD_DIR/build/tools/clang/docs/doxygen/html/clang.docset" "${DESTDIR}${ORCHESTRA_ROOT}/share/doc/clang"
+
+      cat <<EOF
+      To install the Zeal docset run do the following:
+      ZEAL_PATH="\${XDG_DATA_HOME:-\$HOME/.local/share}/Zeal/Zeal/docsets/"
+      ln -s \$(realpath -m --relative-to "\$ZEAL_PATH" \$ORCHESTRA_ROOT/share/doc/llvm/llvm.docset) "\$ZEAL_PATH"
+      ln -s \$(realpath -m --relative-to "\$ZEAL_PATH" \$ORCHESTRA_ROOT/share/doc/llvm/clang.docset) "\$ZEAL_PATH"
+      EOF
+#@ end
+
+---
+#@ llvm_documentation_component = _llvm_documentation_component()
+

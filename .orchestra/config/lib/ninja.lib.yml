@@ -1,0 +1,2 @@
+#@ ninja = "ninja ${JOBS:+-j$JOBS}"
+#@ serial_ninja = "ninja -j1"
