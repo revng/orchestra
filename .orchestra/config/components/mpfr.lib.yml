@@ -9,7 +9,7 @@
 configure: |
   mkdir -p "$BUILD_DIR"
   extract.sh --into "$BUILD_DIR" (@= source_url @)
-  cd $BUILD_DIR && ./configure \
+  cd "$BUILD_DIR" && ./configure \
     --prefix="$ORCHESTRA_ROOT" \
     --with-gmp="$ORCHESTRA_ROOT" \
     --enable-shared=no CFLAGS="-fPIC" CXXFLAGS="-fPIC"
