@@ -96,3 +96,5 @@ environment:
   - RPATH_PLACEHOLDER: #@ options["rpath_placeholder"]
 
 paths: #@ data.values.paths or {}
+remote_base_urls: #@ data.values.remote_base_urls or []
+binary_archives: #@ data.values.binary_archives or []

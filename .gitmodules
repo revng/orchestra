@@ -1,3 +1,0 @@
-[submodule ".orchestra/binary_archives"]
-	path = .orchestra/binary_archives
-	url = git@rev.ng:fcremo/binary-archives.git
