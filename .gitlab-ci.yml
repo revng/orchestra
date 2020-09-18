@@ -14,11 +14,6 @@ create-binaries:
     - pip3 install dist/orchestra*.whl
     - cd "$CI_PROJECT_DIR"
     - git checkout -B "$CI_COMMIT_REF_NAME" "$CI_COMMIT_SHA"
-    - rm -rf .orchestra_binary_archives
-    - GIT_LFS_SKIP_SMUDGE=1 git clone "https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/${CI_PROJECT_NAMESPACE}/binary-archives.git" .orchestra/binary_archives
-    # - git config --file=.gitmodules submodule..orchestra/binary_archives.url "https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/${CI_PROJECT_NAMESPACE}/binary-archives.git"
-    # - GIT_LFS_SKIP_SMUDGE=1 git submodule sync
-    # - GIT_LFS_SKIP_SMUDGE=1 git submodule update --init --recursive --remote
     - |
       git remote add internal https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/revng-internal/revng-orchestra.git || \
         git remote set-url internal https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/revng-internal/revng-orchestra.git || \
@@ -27,11 +22,11 @@ create-binaries:
       git remote add private https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/revng-private/orchestra-v3.git || \
         git remote set-url private https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/revng-private/orchestra-v3.git || \
         true
-    - orchestra -b install --create-binary-archives mpfr
-    - cd .orchestra/binary_archives
-    - git config user.email "gitlabci@rev.ng"
-    - git config user.name "rev.ng Gitlab CI"
-    - git add .
-    - git commit -m "Binary archives built on $(date)"
-    - git push
-    - git-lfs push
+    - orchestra -b install --create-binary-archives ui/cold-revng
+    # - cd .orchestra/binary_archives
+    # - git config user.email "gitlabci@rev.ng"
+    # - git config user.name "rev.ng Gitlab CI"
+    # - git add .
+    # - git commit -m "Binary archives built on $(date)"
+    # - git push
+    # - git-lfs push
