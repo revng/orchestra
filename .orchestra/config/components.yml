@@ -12,6 +12,7 @@
 #@ load("/components/llvmcpy.lib.yml", "llvmcpy_component")
 #@ load("/components/clang_release.lib.yml", "clang_release_component")
 #@ load("/components/glib.lib.yml", "glib_component")
+#@ load("/components/libffi.lib.yml", "libffi_component")
 #@ load("/components/qemu.lib.yml", "qemu_component")
 #@ load("/components/boost.lib.yml", "boost_component")
 #@ load("/components/revng.lib.yml", "revng_component")
@@ -55,6 +56,7 @@ components:
   llvmcpy: #@ llvmcpy_component
   clang-release: #@ clang_release_component
   glib: #@ glib_component
+  libffi: #@ libffi_component
   qemu: #@ qemu_component
   boost: #@ boost_component
   revng: #@ revng_component

@@ -1,0 +1,36 @@
+#@ load("/lib/make.lib.yml", "make")
+#@ load("/global_options.lib.yml", "options")
+
+#@ source_url = "https://github.com/libffi/libffi/releases/download/v3.3/libffi-3.3.tar.gz"
+
+#@yaml/text-templated-strings
+---
+#@ def _libffi_component():
+builds:
+  default:
+    configure: |
+      mkdir -p "$BUILD_DIR/source"
+      extract.sh --into "$BUILD_DIR/source" (@= source_url @)
+
+      cd "$BUILD_DIR"
+      export CC=clang
+      export CXX=clang++
+      "$BUILD_DIR/source/configure" \
+        --disable-multi-os-directory \
+        --disable-static \
+        --disable-pax_emutramp \
+        --disable-debug \
+        --prefix="$ORCHESTRA_ROOT" \
+        LDFLAGS="(@= options["modern_linker_flags"] @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib"
+
+    install: |
+      cd "$BUILD_DIR"
+      (@= make @)
+      (@= make @) install
+    dependencies:
+      - toolchain/host/gcc
+#@ end
+
+---
+
+#@ libffi_component = _libffi_component()
