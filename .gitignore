@@ -6,5 +6,6 @@ sources
 .orchestra/source_archives
 .orchestra/installed_components
 .orchestra/config_cache
+.orchestra/remote_refs_cache.json
 .orchestra/config/user_*.yml
 .idea
