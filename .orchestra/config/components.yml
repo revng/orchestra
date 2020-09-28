@@ -96,6 +96,8 @@ environment:
   #! TODO: maybe patching RPATH should not be a concern of Orchestra itself, but rather a post-install phase
   #!       Otherwise, it should be Orchestra to provide an RPATH_PLACEHOLDER, not the other way around
   - RPATH_PLACEHOLDER: #@ options["rpath_placeholder"]
+  - QML2_IMPORT_PATH: $ORCHESTRA_ROOT/qml${QML2_IMPORT_PATH:+:${QML2_IMPORT_PATH}}
+  - PKG_CONFIG_PATH: $ORCHESTRA_ROOT/lib/pkgconfig${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
 
 paths: #@ data.values.paths or {}
 remote_base_urls: #@ data.values.remote_base_urls or []
