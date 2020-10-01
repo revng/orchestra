@@ -6,7 +6,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def cmake_base_configuration(
+#@ def cmdline_cmake_base_configuration(
 #@        cmake_build_type=mandatory,
 #@        extra_compiler_flags="",
 #@        extra_c_flags="",
@@ -25,6 +25,35 @@
 - -DCMAKE_INSTALL_RPATH="(@= rpath @)/lib:(@= rpath @)/(@= options["sanitizers_libs_path"] @):(@= rpath @)/lib/revng/analyses"
 - -DCMAKE_BUILD_TYPE="(@= cmake_build_type @)"
 - -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT"
+#@ end
+
+#@yaml/text-templated-strings
+---
+#@ def _cmake_base_configuration(
+#@        cmake_build_type=mandatory,
+#@        extra_compiler_flags="",
+#@        extra_c_flags="",
+#@        extra_cxx_flags="",
+#@  ):
+#@ rpath = options["rpath_placeholder"]
+- |
+  set(CMAKE_INSTALL_SO_NO_EXE 0)
+  set(CMAKE_C_COMPILER "(@= options["regular_c_compiler"] @)")
+  set(CMAKE_CXX_COMPILER "(@= options["regular_cxx_compiler"] @)")
+  set(CMAKE_C_FLAGS "(@= extra_compiler_flags @) (@= extra_c_flags @) (@= options["regular_c_flags"] @) (@= options["use_old_glibc_cflags"] @)")
+  set(CMAKE_CXX_FLAGS "(@= extra_compiler_flags @) (@= extra_cxx_flags @) (@= options["regular_cxx_flags"] @) (@= options["use_old_glibc_cflags"] @)")
+  set(CMAKE_EXE_LINKER_FLAGS "(@= options["regular_linker_flags"] @) (@= options["use_old_glibc_lflags"] @)")
+  set(CMAKE_MODULE_LINKER_FLAGS "(@= options["regular_linker_flags"] @) (@= options["use_old_glibc_lflags"] @)")
+  set(CMAKE_SHARED_LINKER_FLAGS "(@= options["regular_linker_flags"] @) (@= options["use_old_glibc_lflags"] @)")
+  set(CMAKE_EXPORT_COMPILE_COMMANDS=ON)
+  set(CMAKE_BUILD_RPATH "(@= rpath @)/lib:(@= rpath @)/(@= options["sanitizers_libs_path"] @):(@= rpath @)/lib/revng/analyses")
+  set(CMAKE_INSTALL_RPATH "(@= rpath @)/lib:(@= rpath @)/(@= options["sanitizers_libs_path"] @):(@= rpath @)/lib/revng/analyses")
+  set(CMAKE_BUILD_TYPE "(@= cmake_build_type @)")
+#@ end
+
+---
+#@ def cmake_base_configuration(**opts):
+#@   return _cmake_base_configuration(**opts)[0]
 #@ end
 
 ---
@@ -66,10 +95,16 @@
     (@ end -@)
 
     mkdir -p "$BUILD_DIR"
+
+    cat > "$BUILD_DIR/toolchain.cmake" <<eof
+    (@= cmake_base_configuration(**opts) @)
+    eof
+
     cd "$BUILD_DIR";
     cmake "$SOURCE_DIR" \
       (@ if build_system != "Ninja": @)-G(@= build_system @)(@ end @) \
-      (@= expand_args(cmake_base_configuration(**opts)) @) \
+      -DCMAKE_TOOLCHAIN_FILE="$BUILD_DIR/toolchain.cmake" \
+      -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT" \
       (@= expand_args(extra_cmake_args) @)
 
     (@- if post_configure_script: @)
