@@ -1,0 +1,145 @@
+#@ load("@ytt:template", "template")
+
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+#@ load("/lib/make.lib.yml", "make")
+
+#@ load("/global_options.lib.yml", "options")
+
+#@ xcb_proto_source_url = "https://xorg.freedesktop.org/archive/individual/proto/xcb-proto-1.14.tar.gz"
+#@ libxcb_source_url = "https://xorg.freedesktop.org/archive/individual/lib/libxcb-1.14.tar.gz"
+#@ libx11_source_url = "https://www.x.org/releases/individual/lib/libX11-1.6.12.tar.gz"
+#@ xtrans_source_url = "https://xorg.freedesktop.org/releases/individual/lib/xtrans-1.4.0.tar.bz2"
+#@ xcbutil_source_url = "https://xcb.freedesktop.org/dist/xcb-util-0.4.0.tar.gz"
+#@ xcbutil_image_source_url = "https://xcb.freedesktop.org/dist/xcb-util-image-0.4.0.tar.gz"
+#@ xcbutil_renderutil_source_url = "https://xcb.freedesktop.org/dist/xcb-util-renderutil-0.3.9.tar.gz"
+#@ xcbutil_wm_source_url = "https://xcb.freedesktop.org/dist/xcb-util-wm-0.4.1.tar.gz"
+#@ xcbutil_keysyms_source_url = "https://xcb.freedesktop.org/dist/xcb-util-keysyms-0.4.0.tar.gz"
+#@ libxshmfence_source_url = "https://www.x.org/releases/individual/lib/libxshmfence-1.3.tar.bz2"
+
+#@yaml/text-templated-strings
+---
+#@ def _xcb_proto_args():
+configure: |
+  mkdir -p "$BUILD_DIR"
+  extract.sh --into "$BUILD_DIR" "(@= xcb_proto_source_url @)"
+
+  cd "$BUILD_DIR"
+  ./configure \
+    --prefix="$ORCHESTRA_ROOT" \
+    LDFLAGS="(@= options["use_old_glibc_lflags"] @) (@= options["modern_linker_flags"] @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
+    CFLAGS="(@= options["use_old_glibc_cflags"] @)"
+build_system: make
+dependencies:
+  - clang-release
+#@ end
+
+#@yaml/text-templated-strings
+---
+#@ def _libxcb_args():
+configure: |
+  mkdir -p "$BUILD_DIR"
+  extract.sh --into "$BUILD_DIR" "(@= libxcb_source_url @)"
+
+  cd "$BUILD_DIR"
+  ./configure \
+    --disable-selective-werror \
+    --disable-devel-docs \
+    --disable-selinux \
+    --enable-shared \
+    --disable-static \
+    --prefix="$ORCHESTRA_ROOT" \
+    LDFLAGS="(@= options["use_old_glibc_lflags"] @) (@= options["modern_linker_flags"] @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
+    CFLAGS="(@= options["use_old_glibc_cflags"] @)"
+build_system: make
+dependencies:
+  - clang-release
+  - ui/xcb-proto
+#@ end
+
+#@yaml/text-templated-strings
+---
+#@ def _libx11_args():
+configure: |
+  mkdir -p "$BUILD_DIR"
+  extract.sh --into "$BUILD_DIR" "(@= libx11_source_url @)"
+
+  cd "$BUILD_DIR"
+  ./configure \
+    --disable-selective-werror \
+    --without-xmlto \
+    --disable-specs \
+    --enable-ipv6 \
+    --without-fop \
+    --enable-shared \
+    --disable-static \
+    --prefix="$ORCHESTRA_ROOT" \
+    CC="cc -fuse-ld=gold" \
+    LDFLAGS="(@= options["use_old_glibc_lflags"] @) (@= options["modern_linker_flags"] @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
+    CFLAGS="(@= options["use_old_glibc_cflags"] @)"
+build_system: make
+dependencies:
+  - clang-release
+  - ui/xtrans
+#@ end
+
+#@yaml/text-templated-strings
+---
+#@ def _xcbutil_args(source_url, additional_dependencies=[]):
+configure: |
+  mkdir -p "$BUILD_DIR"
+  extract.sh --into "$BUILD_DIR/source" "(@= source_url @)"
+
+  cd "$BUILD_DIR"
+  ./source/configure \
+    --disable-selective-werror \
+    --enable-shared \
+    --disable-static \
+    --prefix="$ORCHESTRA_ROOT" \
+    CC="cc -fuse-ld=gold" \
+    LDFLAGS="(@= options["use_old_glibc_lflags"] @) (@= options["modern_linker_flags"] @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
+    CFLAGS="(@= options["use_old_glibc_cflags"] @)"
+build_system: make
+dependencies:
+  - clang-release
+  - ui/libxcb
+  - #@ template.replace(additional_dependencies)
+#@ end
+
+---
+#@ def _xcbutil_sublibrary_args(source_url):
+#@ return _xcbutil_args(source_url, additional_dependencies=["ui/xcbutil"])
+#@ end
+
+#@yaml/text-templated-strings
+---
+#@ def _xtrans_component():
+builds:
+  default:
+    configure: |
+      mkdir -p "$BUILD_DIR"
+      extract.sh --into "$BUILD_DIR" "(@= xtrans_source_url @)"
+
+      cd "$BUILD_DIR"
+      ./configure \
+        --disable-selective-werror \
+        --prefix="$ORCHESTRA_ROOT" \
+        CC="cc -fuse-ld=gold" \
+        LDFLAGS="(@= options["modern_linker_flags"] @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib"
+    install: |
+      cd "$BUILD_DIR"
+      (@= make @) install
+#@ end
+
+---
+
+#@ xcb_proto_component = single_build_component(**_xcb_proto_args())
+#@ libxcb_component = single_build_component(**_libxcb_args())
+#@ libx11_component = single_build_component(**_libx11_args())
+#@ xtrans_component = _xtrans_component()
+#@ xcbutil_component = single_build_component(**_xcbutil_args(xcbutil_source_url))
+#@ xcbutil_image_component = single_build_component(**_xcbutil_sublibrary_args(xcbutil_image_source_url))
+#@ xcbutil_renderutil_component = single_build_component(**_xcbutil_sublibrary_args(xcbutil_renderutil_source_url))
+#@ xcbutil_wm_component = single_build_component(**_xcbutil_sublibrary_args(xcbutil_wm_source_url))
+#@ xcbutil_keysyms_component = single_build_component(**_xcbutil_sublibrary_args(xcbutil_keysyms_source_url))
+#@ libxshmfence_component = single_build_component(**_xcbutil_sublibrary_args(libxshmfence_source_url))
+

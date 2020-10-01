@@ -1,0 +1,29 @@
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+
+#@ load("/global_options.lib.yml", "options")
+
+#@ source_url = "https://libbsd.freedesktop.org/releases/libbsd-0.10.0.tar.xz"
+
+#@yaml/text-templated-strings
+---
+#@ def _libbsd_args():
+configure: |
+  extract.sh --into "$BUILD_DIR" "(@= source_url @)"
+  mkdir -p "$BUILD_DIR"
+  cd "$BUILD_DIR"
+  ./configure \
+    --disable-static \
+    --prefix="$ORCHESTRA_ROOT" \
+    LDFLAGS="(@= options["use_old_glibc_lflags"] @) (@= options["modern_linker_flags"] @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
+    CFLAGS="(@= options["use_old_glibc_cflags"] @)"
+build_system: make
+dependencies:
+  - clang-release
+#@ end
+
+#@overlay/match by=overlay.all
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  ui/libbsd: #@ single_build_component(**_libbsd_args())

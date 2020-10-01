@@ -1,0 +1,35 @@
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+
+#@ load("/global_options.lib.yml", "options")
+
+#@ source_url = "https://sourceware.org/elfutils/ftp/elfutils-0.148.tar.bz2"
+
+#@yaml/text-templated-strings
+---
+#@ def _elfutils_args():
+configure: |
+  mkdir -p "$BUILD_DIR"
+  extract.sh --into "$BUILD_DIR" "(@= source_url @)"
+  cd "$BUILD_DIR"
+  ./configure \
+    --disable-nls \
+    --disable-thread-safety \
+    --program-prefix=eu- \
+    --with-zlib \
+    --without-bzlib \
+    --without-lzma \
+    --prefix="$ORCHESTRA_ROOT" \
+    CFLAGS="(@= options["use_old_glibc_cflags"] @) -Wno-error" \
+    LDFLAGS="(@= options["use_old_glibc_lflags"] @) (@= options["modern_linker_flags"] @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib"
+build_system: make
+dependencies:
+  - toolchain/host/gcc
+  - zlib
+#@ end
+
+#@overlay/match by=overlay.all
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  elfutils: #@ single_build_component(**_elfutils_args())

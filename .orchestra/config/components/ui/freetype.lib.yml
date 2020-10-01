@@ -1,0 +1,35 @@
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+
+#@ load("/global_options.lib.yml", "options")
+
+#@ source_url = "https://download.savannah.gnu.org/releases/freetype/freetype-2.10.2.tar.gz"
+
+#@yaml/text-templated-strings
+---
+#@ def _freetype_args():
+configure: |
+  mkdir -p "$BUILD_DIR"
+  extract.sh --into "$BUILD_DIR" "(@= source_url @)"
+
+  cd "$BUILD_DIR"
+  ./configure \
+    --disable-freetype-config \
+    --enable-biarch-config \
+    --enable-shared \
+    --without-brotli \
+    --without-bzip2 \
+    --without-harfbuzz \
+    --without-png \
+    --disable-static \
+    --prefix="$ORCHESTRA_ROOT" \
+    CC="cc -fuse-ld=gold" \
+    LDFLAGS="(@= options["use_old_glibc_lflags"] @) (@= options["modern_linker_flags"] @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
+    CFLAGS="(@= options["use_old_glibc_cflags"] @)"
+build_system: make
+dependencies:
+  - clang-release
+#@ end
+
+---
+#@ freetype_component = single_build_component(**_freetype_args())
+

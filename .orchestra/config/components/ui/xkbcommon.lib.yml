@@ -1,0 +1,42 @@
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+
+#@ load("/global_options.lib.yml", "options")
+
+#@ source_url = "https://xkbcommon.org/download/libxkbcommon-0.10.0.tar.xz"
+
+#@yaml/text-templated-strings
+---
+#@ def _xkbcommon_args():
+configure: |
+  mkdir -p "$BUILD_DIR/source"
+  extract.sh --into "$BUILD_DIR/source" "(@= source_url @)"
+
+  cd "$BUILD_DIR"
+
+  find "$BUILD_DIR/source/" -name meson.build -exec sed -i "s|install\s*:\s*|install_rpath : '$RPATH_PLACEHOLDER/lib', \0|" {} \;
+
+  CC=clang \
+  meson setup \
+    --buildtype plain \
+    --libdir=lib \
+    --prefix "$ORCHESTRA_ROOT" \
+    --wrap-mode nodownload \
+    -Db_ndebug=true \
+    -Dc_args="(@= options["use_old_glibc_cflags"] @) -w" \
+    -Dc_link_args="(@= options["use_old_glibc_lflags"] @) -L$ORCHESTRA_ROOT/lib -Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
+    -Ddefault_library=shared \
+    -Denable-wayland=false \
+    -Denable-x11=true \
+    -Denable-docs=false \
+    "$BUILD_DIR" \
+    "$BUILD_DIR/source"
+
+build_system: ninja
+dependencies:
+  - clang-release
+  - ui/libbsd
+#@ end
+
+---
+#@ xkbcommon_component = single_build_component(**_xkbcommon_args())
+

@@ -57,7 +57,8 @@
     -egl \
     -no-eglfs \
     -xkb \
-    -qt-xcb \
+    -system-xcb \
+    -xkbcommon \
     -no-icu \
     -libinput \
     -qt-libpng \
@@ -119,7 +120,17 @@ builds:
     dependencies:
       - clang-release
       - toolchain/host/gcc
+      - ui/freetype
+      - ui/libdrm
       - ui/mesa
+      - ui/libxcb
+      - ui/xcbutil-image
+      - ui/xcbutil-renderutil
+      - ui/xcbutil-wm
+      - ui/xcbutil-keysyms
+      - ui/libxshmfence
+      - ui/libx11
+      - ui/xkbcommon
       - zlib
   #@ end
 

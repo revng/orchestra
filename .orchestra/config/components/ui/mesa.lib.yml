@@ -56,8 +56,12 @@ build_system: ninja
 build_dependencies:
   - clang-release
 dependencies:
+  - elfutils
   - llvm
   - ui/libglvnd
+  - ui/libdrm
+  - ui/libx11
+  - ui/libxshmfence
   - toolchain/host/gcc
 #@ end
 
