@@ -71,11 +71,13 @@
     -system-xcb \
     -xkbcommon \
     -no-icu \
+    -no-zstd \
     -libinput \
     -qt-libpng \
     -qt-libjpeg \
     -qt-sqlite \
     -qt-pcre \
+    -qt-zlib \
     -qt-doubleconversion \
     -sql-sqlite \
     -no-sql-odbc \
