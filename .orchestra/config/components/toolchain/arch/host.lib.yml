@@ -39,6 +39,8 @@ extra_gcc_configure_options:
   - CFLAGS_FOR_TARGET="-I/usr/include/tirpc (@= options["use_old_glibc_cflags"] @)"
   - CXXFLAGS_FOR_TARGET="-I/usr/include/tirpc (@= options["use_old_glibc_cflags"] @)"
   - LDFLAGS_FOR_TARGET="(@= options["use_old_glibc_lflags"] @) -Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath,$RPATH_PLACEHOLDER/lib"
+extra_binutils_configure_options:
+  - --enable-gold=default
 extra_gcc_make_variables: LIBRARY_PATH=/usr/lib/x86_64-linux-gnu
 #@ end
 

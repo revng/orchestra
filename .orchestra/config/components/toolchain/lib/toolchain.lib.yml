@@ -29,13 +29,14 @@
 #@    gcc_sysroot=None,
 #@    mingw64_version=None,
 #@    extra_gcc_configure_options=None,
+#@    extra_binutils_configure_options=None,
 #@    extra_gcc_make_variables="",
 #@    dynamic=None,
 #@    spec=False,
 #@ ):
 
 #@ if/end binutils_version:
-(@= "toolchain/" + toolchain_name + "/binutils" @): #@ create_binutils_component(triple=triple, binutils_version=binutils_version)
+(@= "toolchain/" + toolchain_name + "/binutils" @): #@ create_binutils_component(triple=triple, binutils_version=binutils_version, extra_binutils_configure_options=extra_binutils_configure_options)
 
 #@ if/end gdb_version:
 (@= "toolchain/" + toolchain_name + "/gdb" @): #@ create_gdb_component(triple=triple, gdb_version=gdb_version)

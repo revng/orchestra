@@ -1,10 +1,11 @@
 #@ load("/lib/fn_args.lib.yml", "mandatory")
 #@ load("/lib/create_component.lib.yml", "single_build_component")
+#@ load("/lib/shell.lib.yml", "expand_args")
 #@ load("/components/toolchain/lib/common.lib.yml", "linker_flags")
 
 #@yaml/text-templated-strings
 ---
-#@ def _binutils_args(triple=mandatory, binutils_version=mandatory):
+#@ def _binutils_args(triple=mandatory, binutils_version=mandatory, extra_binutils_configure_options=""):
 
 #@   source_url = "https://ftp.gnu.org/gnu/binutils/binutils-" + binutils_version + ".tar.bz2"
 configure: |
@@ -39,6 +40,7 @@ configure: |
     --disable-readline \
     --disable-sim \
     --without-stage1-ldflags \
+    (@= expand_args(extra_binutils_configure_options) @) \
     CFLAGS="-w -ggdb3 -O3" \
     CXXFLAGS="-w -ggdb3 -O3" \
     LDFLAGS="(@= linker_flags @)"
