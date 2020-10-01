@@ -17,8 +17,8 @@ builds:
       ./b2 \
         --prefix="${DESTDIR}${ORCHESTRA_ROOT}" \
         --ignore-site-config toolset='clang' \
-        cxxflags='(@= options["regular_cxx_flags"] @)' \
-        linkflags='(@= options["regular_linker_flags"] @) -Wl,-rpath=$ORIGIN/../lib'
+        cxxflags='(@= options["use_old_glibc_cflags"] @) (@= options["regular_cxx_flags"] @)' \
+        linkflags='(@= options["use_old_glibc_lflags"] @) (@= options["regular_linker_flags"] @) -Wl,-rpath=$ORIGIN/../lib'
       ./b2 \
         --prefix="${DESTDIR}${ORCHESTRA_ROOT}" \
         --ignore-site-config toolset='clang' \

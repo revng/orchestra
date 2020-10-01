@@ -11,6 +11,8 @@ configure: |
   mkdir -p "$BUILD_DIR"
   extract.sh --into "$BUILD_DIR" (@= source_url @)
   cd "$BUILD_DIR"
+  export CFLAGS="(@= options["use_old_glibc_cflags"] @)"
+  export LDFLAGS="(@= options["use_old_glibc_lflags"] @)"
   ./configure \
     --shared \
     --uname=linux \

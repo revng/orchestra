@@ -14,11 +14,11 @@
     -DCMAKE_BUILD_RPATH="\$ORIGIN/../lib:$ORCHESTRA_ROOT/lib" \
     -DCMAKE_INSTALL_RPATH="$RPATH_PLACEHOLDER/lib" \
     -DCMAKE_BUILD_TYPE="(@= cmake_build_type @)" \
-    -DCMAKE_EXE_LINKER_FLAGS="(@= cflags @) (@= options["modern_linker_flags"] @)" \
-    -DCMAKE_SHARED_LINKER_FLAGS="(@= cflags @) (@= options["modern_linker_flags"] @)" \
-    -DCMAKE_MODULE_LINKER_FLAGS="(@= cflags @) (@= options["modern_linker_flags"] @)" \
+    -DCMAKE_EXE_LINKER_FLAGS="(@= options["use_old_glibc_lflags"] @) (@= cflags @) (@= options["modern_linker_flags"] @)" \
+    -DCMAKE_SHARED_LINKER_FLAGS="(@= options["use_old_glibc_lflags"] @) (@= cflags @) (@= options["modern_linker_flags"] @)" \
+    -DCMAKE_MODULE_LINKER_FLAGS="(@= options["use_old_glibc_lflags"] @) (@= cflags @) (@= options["modern_linker_flags"] @)" \
     -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT" \
-    -DCMAKE_CXX_FLAGS="(@= cflags @)" \
+    -DCMAKE_CXX_FLAGS="(@= options["use_old_glibc_cflags"] @) (@= cflags @)" \
     -DLLVM_TARGETS_TO_BUILD="X86;AMDGPU" \
     -DLLVM_ENABLE_DUMP=ON \
     -DLLVM_ENABLE_TERMINFO=OFF \

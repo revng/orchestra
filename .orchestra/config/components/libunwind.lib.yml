@@ -24,8 +24,8 @@ configure: |
     --disable-conservative_checks \
     --disable-debug \
     --prefix="$ORCHESTRA_ROOT" \
-    CFLAGS="" \
-    LDFLAGS="(@= options["modern_linker_flags"] @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib"
+    CFLAGS="(@= options["use_old_glibc_cflags"] @)" \
+    LDFLAGS="(@= options["use_old_glibc_lflags"] @) (@= options["modern_linker_flags"] @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib"
 build_system: make
 dependencies:
   - toolchain/host/gcc

@@ -1,5 +1,7 @@
 #@ load("/lib/create_component.lib.yml", "single_build_component")
 
+#@ load("/global_options.lib.yml", "options")
+
 #@ source_url = "https://mesa.freedesktop.org/archive/mesa-20.1.2.tar.xz"
 
 #@yaml/text-templated-strings
@@ -44,10 +46,10 @@ configure: |
     -Dvulkan-drivers= \
     -Dvulkan-overlay-layer=false \
     -Db_ndebug=true \
-    -Dc_args="-w" \
-    -Dcpp_args="-w -stdlib=libc++ -fno-rtti -fno-exceptions" \
-    -Dcpp_link_args="-stdlib=libc++ -fno-rtti -fno-exceptions -L$ORCHESTRA_ROOT/lib -Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
-    -Dc_link_args="-L$ORCHESTRA_ROOT/lib -Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
+    -Dc_args="(@= options["use_old_glibc_cflags"] @) -w" \
+    -Dcpp_args="(@= options["use_old_glibc_cflags"] @) -w -stdlib=libc++ -fno-rtti -fno-exceptions" \
+    -Dcpp_link_args="(@= options["use_old_glibc_lflags"] @) -fuse-ld=gold -stdlib=libc++ -fno-rtti -fno-exceptions -L$ORCHESTRA_ROOT/lib -Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
+    -Dc_link_args="(@= options["use_old_glibc_lflags"] @) -fuse-ld=gold -L$ORCHESTRA_ROOT/lib -Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
     "$BUILD_DIR" \
     "$BUILD_DIR/source"
 build_system: ninja
