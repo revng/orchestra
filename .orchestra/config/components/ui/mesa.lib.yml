@@ -47,6 +47,7 @@ configure: |
     -Dvulkan-drivers= \
     -Dvulkan-overlay-layer=false \
     -Db_ndebug=true \
+    -Dxlib-lease=false \
     -Dc_args="(@= options["use_old_glibc_cflags"] @) -w" \
     -Dcpp_args="(@= options["use_old_glibc_cflags"] @) -w -stdlib=libc++ -fno-rtti -fno-exceptions" \
     -Dcpp_link_args="(@= options["use_old_glibc_lflags"] @) -fuse-ld=gold -stdlib=libc++ -fno-rtti -fno-exceptions -L$ORCHESTRA_ROOT/lib -Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
