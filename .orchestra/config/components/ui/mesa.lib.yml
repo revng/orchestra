@@ -19,7 +19,7 @@ configure: |
     --libdir=lib \
     --prefix "$ORCHESTRA_ROOT" \
     --wrap-mode nodownload \
-    -Dplatforms=x11,wayland,drm,surfaceless \
+    -Dplatforms=x11,drm,surfaceless \
     -Dllvm=true \
     -Dlmsensors=false \
     -Dlibunwind=false \
