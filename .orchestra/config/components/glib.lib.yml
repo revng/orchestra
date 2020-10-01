@@ -14,6 +14,7 @@ builds:
       extract.sh --into "$BUILD_DIR/source" (@= source_url @)
       find "$BUILD_DIR/source/" -name meson.build -exec sed -i "s|install\s*:\s*|install_rpath : '$RPATH_PLACEHOLDER/lib', \0|" {} \;
       sed -i 's|^.*HAVE_LANGINFO_.*1.*$||' "$BUILD_DIR/source/meson.build"
+      sed -i -e '/subdir.*tests/d' "$BUILD_DIR"/source/{.,gio,glib}/meson.build
 
       CC=clang \
       CXX=clang++ \
