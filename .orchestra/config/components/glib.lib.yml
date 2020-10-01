@@ -20,6 +20,7 @@ builds:
       CXX=clang++ \
       meson setup \
         --buildtype plain \
+        --libdir=lib \
         --prefix "$ORCHESTRA_ROOT" \
         --wrap-mode nodownload \
         -Ddefault_library=shared \

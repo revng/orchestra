@@ -15,6 +15,7 @@ configure: |
   export CC=clang
   meson setup \
     --buildtype plain \
+    --libdir=lib \
     --prefix "$ORCHESTRA_ROOT" \
     --wrap-mode nodownload \
     -Dx11=enabled \

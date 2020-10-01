@@ -16,6 +16,7 @@ configure: |
   export CXX=clang++
   meson setup \
     --buildtype plain \
+    --libdir=lib \
     --prefix "$ORCHESTRA_ROOT" \
     --wrap-mode nodownload \
     -Dplatforms=x11,wayland,drm,surfaceless \
