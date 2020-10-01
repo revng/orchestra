@@ -13,7 +13,7 @@ configure: |
 
   cd $BUILD_DIR
   ./configure \
-    --disable-ltdl \
+    --enable-ltdl \
     --disable-gdk-pixbuf \
     --without-pangocairo \
     --without-devil \
@@ -64,6 +64,7 @@ configure: |
 build_system: make
 dependencies:
   - clang-release
+  - libltdl
 #@ end
 
 ---
