@@ -1,6 +1,4 @@
 #@ load("/lib/make.lib.yml", "make")
-#@ load("/lib/cmake.lib.yml", "cmake_base_configuration")
-#@ load("/lib/shell.lib.yml", "expand_args")
 
 #@ source_url = "https://codeload.github.com/tpoechtrager/cctools-port/tar.gz/1e3f614aff4eaae01b6cc4d29c3237c93f3322f8"
 
