@@ -124,6 +124,7 @@ environment:
   - QML2_IMPORT_PATH: $ORCHESTRA_ROOT/qml${QML2_IMPORT_PATH:+:${QML2_IMPORT_PATH}}
   - PKG_CONFIG_PATH: $ORCHESTRA_ROOT/lib/pkgconfig:$ORCHESTRA_ROOT/share/pkgconfig${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
   - INSTALL_LINK_ONLY_PATH: $ORCHESTRA_ROOT/link-only
+  - LIBGL_DRIVERS_PATH: $ORCHESTRA_ROOT/lib/dri${LIBGL_DRIVERS_PATH:+:${LIBGL_DRIVERS_PATH}}
 
 paths: #@ data.values.paths or {}
 remote_base_urls: #@ data.values.remote_base_urls or []
