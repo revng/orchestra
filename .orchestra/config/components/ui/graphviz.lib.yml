@@ -63,6 +63,12 @@ configure: |
     CC="clang -fuse-ld=gold" \
     PS2PDF=/bin/true \
     GROFF=/bin/true
+post_install: |
+  export GVBINDIR="$DESTDIR$ORCHESTRA_ROOT/lib/graphviz"
+  "$DESTDIR$ORCHESTRA_ROOT/bin/dot" -c
+  if [ -e "$GVBINDIR/config6a" ]; then
+    mv "$GVBINDIR/config6a" "$GVBINDIR/config6"
+  fi
 build_system: make
 dependencies:
   - clang-release
