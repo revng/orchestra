@@ -40,7 +40,7 @@ configure: |
     -Dgles2=true \
     -Dglvnd=true \
     -Dselinux=false \
-    -Dzstd=true \
+    -Dzstd=false \
     -Dvalgrind=false \
     -Ddri-drivers=i915,i965,r100,r200 \
     -Dgallium-drivers=iris,r300,r600,radeonsi,svga,swrast,virgl \
