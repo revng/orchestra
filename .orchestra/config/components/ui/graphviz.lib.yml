@@ -60,7 +60,9 @@ configure: |
     --prefix="$ORCHESTRA_ROOT" \
     LDFLAGS="(@= options["use_old_glibc_lflags"] @) (@= options["modern_linker_flags"] @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
     CFLAGS="(@= options["use_old_glibc_cflags"] @)" \
-    CC="clang -fuse-ld=gold"
+    CC="clang -fuse-ld=gold" \
+    PS2PDF=/bin/true \
+    GROFF=/bin/true
 build_system: make
 dependencies:
   - clang-release
