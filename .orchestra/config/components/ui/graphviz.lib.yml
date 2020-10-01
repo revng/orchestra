@@ -8,7 +8,7 @@
 ---
 #@ def _graphviz_args():
 configure: |
-  mkdir -p "$BUILD_DIR" "$BUILD_DIR"
+  mkdir -p "$BUILD_DIR"
   extract.sh --into "$BUILD_DIR" "(@= source_url @)"
 
   cd $BUILD_DIR
