@@ -1,6 +1,6 @@
 #@ load("/lib/create_component.lib.yml", "single_build_component")
 
-#@ mpfr_version = "4.0.2"
+#@ mpfr_version = "4.1.0"
 #@ source_url = "https://www.mpfr.org/mpfr-" + mpfr_version + "/mpfr-" + mpfr_version + ".tar.xz"
 
 #@yaml/text-templated-strings
