@@ -47,6 +47,7 @@ builds:
     dependencies:
       - clang-release
       - libffi
+      - zlib
 #@ end
 
 ---
