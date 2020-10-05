@@ -15,8 +15,9 @@
 #@      build_dependencies=[],
 #@      repository=None,
 #@      add_to_path=[],
-#@      pre_install="",
-#@      post_install="",
+#@      install=None,
+#@      pre_install=None,
+#@      post_install=None,
 #@  ):
 
 #@ if/end repository:
@@ -33,17 +34,24 @@ builds:
     configure: #@ configure
 
     install: |
-      (@-= pre_install -@)
-      cd "$BUILD_DIR"
+      (@- if pre_install: @)
+      (@-= pre_install @)
+      (@ end -@)
       (@- if build_system == "make": @)
+      cd "$BUILD_DIR"
       (@= make @)
       (@= make @) install
       (@- elif build_system == "ninja": @)
+      cd "$BUILD_DIR"
       ninja install
-      (@ else: @)
-      (@ fail("build_system must be either make or ninja") @)
-      (@- end @)
+      (@- elif install: @)
+      (@-= install -@)
+      (@- else: @)
+      (@- fail("build_system must be either make or ninja or you must specify an install script") @)
+      (@- end -@)
+      (@- if post_install: -@)
       (@= post_install -@)
+      (@- end -@)
 #@ if/end add_to_path:
 add_to_path: #@ add_to_path
 #@ end
