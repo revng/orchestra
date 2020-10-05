@@ -67,7 +67,7 @@ dependencies:
   - ui/libpciaccess
 #@ end
 
-#@overlay/match by=overlay.all
+#@overlay/match by=overlay.all, expects=1
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
