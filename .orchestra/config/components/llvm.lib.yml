@@ -26,6 +26,13 @@ builds:
       install: |
         cd "$BUILD_DIR"
         ninja ${JOBS:+-j$JOBS} install
+
+        CLANG_RELEASE_IDX="$ORCHESTRA_ROOT/share/orchestra/clang-release.idx"
+        if [ -e "$CLANG_RELEASE_IDX" ]; then
+          cat "$CLANG_RELEASE_IDX" | while read f; do
+            rm "${TMP_ROOT}${ORCHESTRA_ROOT}/$f" || true
+          done
+        fi
       build_dependencies:
         - cmake
       dependencies:
