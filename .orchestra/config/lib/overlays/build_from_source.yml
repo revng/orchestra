@@ -2,7 +2,7 @@
 #@ load("@ytt:data", "data")
 
 #@yaml/text-templated-strings
-#@overlay/match by=overlay.all, expects="1+"
+#@overlay/match by=overlay.all, expects=1
 ---
 components:
   #@ for component in data.values.build_from_source:
