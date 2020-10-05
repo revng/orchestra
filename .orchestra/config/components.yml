@@ -17,7 +17,6 @@
 #@ load("/components/qemu.lib.yml", "qemu_component")
 #@ load("/components/revng.lib.yml", "revng_component")
 #@ load("/components/revng_c.lib.yml", "revng_c_component")
-#@ load("/components/caliban.lib.yml", "caliban_component")
 #@ load("/components/revng_qa.lib.yml", "revng_qa_component")
 
 #@ load("/components/ui/qt.lib.yml", "qt_component")
@@ -72,7 +71,6 @@ components:
   qemu: #@ qemu_component
   revng: #@ revng_component
   revng-c: #@ revng_c_component
-  caliban: #@ caliban_component
   revng-qa: #@ revng_qa_component
 
   ui/qt: #@ qt_component

@@ -1,3 +1,5 @@
+#@ load("@ytt:overlay", "overlay")
+
 #@ load("/lib/optimization_flavors.lib.yml", "typical_project_flavors")
 #@ load("/lib/cmake.lib.yml", "cmake_boost_configuration", "typical_cmake_builds")
 
@@ -17,11 +19,10 @@ dependencies:
 use_asan: false
 #@ end
 
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
 ---
-#@ def _caliban_component():
-repository: caliban
-builds: #@ typical_cmake_builds(**build_args())
-#@ end
-
----
-#@ caliban_component = _caliban_component()
+components:
+  caliban:
+    repository: caliban
+    builds: #@ typical_cmake_builds(**build_args())
