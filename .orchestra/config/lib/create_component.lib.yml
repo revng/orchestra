@@ -49,7 +49,7 @@ builds:
       (@- else: @)
       (@- fail("build_system must be either make or ninja or you must specify an install script") @)
       (@- end -@)
-      (@- if post_install: -@)
+      (@- if post_install: @)
       (@= post_install -@)
       (@- end -@)
 #@ if/end add_to_path:
