@@ -30,10 +30,11 @@ builds:
           --disable-vde \
           --disable-gnutls \
           --disable-smartcard-nss \
+          --disable-uuid \
           --python="(@= options["python2"] @)" \
           (@ if build_type == "Debug": @)--enable-debug (@ end @)\
           --extra-cflags="(@= cflags @) (@= options["use_old_glibc_cflags"] @)" \
-          --extra-ldflags='(@= options["modern_linker_flags"] @) -L$ORCHESTRA_ROOT/lib --sysroot / (@= options["use_old_glibc_lflags"] @) -Wl,-rpath,\$$ORIGIN/../lib'
+          --extra-ldflags="(@= options["modern_linker_flags"] @) -L$ORCHESTRA_ROOT/lib --sysroot / (@= options["use_old_glibc_lflags"] @) -Wl,-rpath,\\\$\$ORIGIN/../lib"
       install: |
         cd "$BUILD_DIR"
         (@= make @) install
