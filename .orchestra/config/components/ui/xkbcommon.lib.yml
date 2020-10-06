@@ -35,6 +35,7 @@ build_system: ninja
 dependencies:
   - clang-release
   - ui/libbsd
+  - ui/libxcb
 #@ end
 
 ---
