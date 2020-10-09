@@ -20,6 +20,8 @@ dependencies:
   - ui/quickqanava
   - ui/qt-creator
   - autoupdater
+post_install_script: |
+  ln -s qtcreator "${TMP_ROOT}${ORCHESTRA_ROOT}/bin/revng-ui"
 use_asan: false
 #@ end
 
