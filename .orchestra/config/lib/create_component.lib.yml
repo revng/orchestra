@@ -18,6 +18,7 @@
 #@      install=None,
 #@      pre_install=None,
 #@      post_install=None,
+#@      skip_post_install=False,
 #@  ):
 
 #@ if/end repository:
@@ -54,4 +55,7 @@ builds:
       (@- end -@)
 #@ if/end add_to_path:
 add_to_path: #@ add_to_path
+
+#@ if/end skip_post_install:
+skip_post_install: true
 #@ end
