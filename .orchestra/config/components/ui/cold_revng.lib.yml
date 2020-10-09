@@ -19,6 +19,7 @@ dependencies:
   - ui/adaptagrams
   - ui/quickqanava
   - ui/qt-creator
+  - autoupdater
 use_asan: false
 #@ end
 
