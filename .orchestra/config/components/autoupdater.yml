@@ -1,0 +1,20 @@
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+
+---
+#@ def _autoupdater():
+repository: revng-updater
+configure: |
+  mkdir -p "$BUILD_DIR" && cd "$BUILD_DIR"
+  touch empty_directory_ignore_it
+install: |
+  cp $SOURCE_DIR/revng-update.py "${TMP_ROOT}${ORCHESTRA_ROOT}/bin/revng-update"
+  chmod +x "${TMP_ROOT}${ORCHESTRA_ROOT}/bin/revng-update"
+skip_post_install: true
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  autoupdater: #@ single_build_component(**_autoupdater())
