@@ -13,6 +13,7 @@ dependencies:
   - clang-release
   - revng
   - boost
+  - revng-qa
 use_asan: false
 #@ end
 
