@@ -1,0 +1,101 @@
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+
+#@yaml/text-templated-strings
+---
+#@ def _revng_distributable():
+configure: |
+  mkdir -p "$BUILD_DIR" && cd "$BUILD_DIR"
+  touch empty_directory_ignore_it
+install: |
+  echo "Copying root"
+  mkdir -p "${TMP_ROOT}${ORCHESTRA_ROOT}/revng"
+  cp -avr --reflink=auto "$ORCHESTRA_ROOT" "${TMP_ROOT}${ORCHESTRA_ROOT}/revng/root"
+
+  cd "$TMP_ROOT/$ORCHESTRA_ROOT/revng"
+
+  echo "Copying environment"
+  cp "$ORCHESTRA_ROOT/environment" .
+
+  echo "Preparing scripts"
+  cat > revng <<EOF
+  #!/bin/bash
+  DIR="\$( cd "\$( dirname "\${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+  source "\$DIR/environment"
+  export REAL_ARGV0="\$0"
+  exec "\$DIR/root/bin/revng" "\$@"
+  EOF
+  chmod +x revng
+
+  cd root
+
+  echo "Removing build-only components"
+  cat "share/orchestra/glibc.idx" | xargs -n1000 rm -f
+  cat "share/orchestra/boost.idx" | xargs -n1000 rm -f
+  cat "share/orchestra/toolchain_host_binutils.idx" | xargs -n1000 rm -f
+  cat "share/orchestra/toolchain_host_gcc.idx" | grep -v libgcc_s.so | xargs -n1000 rm -f
+  cat "share/orchestra/clang-release.idx" | grep -v 'libc++.so' | grep -v 'libc++abi.so' | xargs -n1000 rm -f
+
+  echo "Stripping components"
+  find "share/orchestra" -name "*.idx" -type f | grep -vE 'revng|caliban'| xargs cat | while read EXECUTABLE; do
+    if head -c 4 "$EXECUTABLE" | grep '^.ELF' > /dev/null && file "$EXECUTABLE" | grep x86-64 | grep -E '(shared|dynamic)' > /dev/null; then
+      echo strip "$EXECUTABLE"
+      strip "$EXECUTABLE"
+    fi
+  done
+
+  echo "Remove superflous directories"
+  rm -rf "share/revng/qa"
+  rm -rf "include"
+  rm -rf "share/man"
+  rm -rf "share/qemu"
+  rm -rf "share/graphviz"
+
+  echo "Remove superflous libraries"
+  rm -f lib64/libclang-cpp.so*
+  find . -type f -name "libQt*.a" -delete
+
+  echo "Final cleanups"
+  find . -type d -empty -delete
+build_dependencies:
+  - ui/cold-revng
+  - environment
+skip_post_install: true
+#@ end
+
+---
+#@ def _environment():
+configure: |
+  mkdir -p "$BUILD_DIR" && cd "$BUILD_DIR"
+  touch empty_directory_ignore_it
+install: |
+  mkdir -p "${TMP_ROOT}${ORCHESTRA_ROOT}"
+  cd "${TMP_ROOT}${ORCHESTRA_ROOT}"
+
+  cat > environment <<<'
+  if test -n "$BASH" ; then SCRIPT=$BASH_SOURCE
+  elif test -n "$TMOUT"; then SCRIPT=${.sh.file}
+  elif test -n "$ZSH_NAME" ; then SCRIPT=${(%):-%x}
+  elif test ${0##*/} = dash; then x=$(lsof -p $$ -Fn 2>/dev/null | grep environment | tail -1); SCRIPT=${x#n}; unset x
+  else echo "Unsupported shell"
+  fi
+  ORCHESTRA_ROOT="$(realpath -s $(dirname $SCRIPT))/root"
+  ORCHESTRA_DOTDIR="/nonexistent_directory_ignore_this"
+  unset SCRIPT
+  export PYTHONPATH="$ORCHESTRA_ROOT/lib/python${PYTHONPATH:+:${PYTHONPATH}}"
+  export PS1="[orchestra] $PS1"
+  '
+
+  cat >> environment <<EOF
+  $(orchestra environment | grep -E "^export (PATH|LIBGL_DRIVERS_PATH|PKG_CONFIG_PATH|QML2_IMPORT_PATH|QT_PLUGIN_PATH)")
+  EOF
+
+skip_post_install: true
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  environment: #@ single_build_component(**_environment())
+  revng-distributable: #@ single_build_component(**_revng_distributable())
