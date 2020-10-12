@@ -1,3 +1,4 @@
+#@ load("@ytt:overlay", "overlay")
 #@ load("/lib/create_component.lib.yml", "single_build_component")
 
 #@yaml/text-templated-strings
@@ -31,6 +32,8 @@ dependencies:
   - toolchain/mipsel/gcc
 #@ end
 
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
 ---
-
-#@ revng_qa_component = single_build_component(**_revng_qa_args())
+components:
+  revng-qa: #@ single_build_component(**_revng_qa_args())

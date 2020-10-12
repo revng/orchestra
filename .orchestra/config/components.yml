@@ -1,8 +1,6 @@
 #@ load("@ytt:template", "template")
 #@ load("@ytt:data", "data")
 
-#@ load("/components/revng_qa.lib.yml", "revng_qa_component")
-
 #@ load("/components/ui/qt.lib.yml", "qt_component")
 #@ load("/components/ui/quickqanava.lib.yml", "quickqanava_component")
 #@ load("/components/ui/qt_creator.lib.yml", "qt_creator_component")
@@ -29,8 +27,6 @@
 
 #@ load("/global_options.lib.yml", "options")
 components:
-  revng-qa: #@ revng_qa_component
-
   ui/qt: #@ qt_component
   ui/quickqanava: #@ quickqanava_component
   ui/qt-creator: #@ qt_creator_component
