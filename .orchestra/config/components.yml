@@ -17,16 +17,6 @@
 #@ load("/components/ui/mesa.lib.yml", "mesa_component")
 #@ load("/components/ui/libglvnd.lib.yml", "libglvnd_component")
 #@ load("/components/ui/freetype.lib.yml", "freetype_component")
-#@ load("/components/ui/libX.lib.yml", "xcb_proto_component")
-#@ load("/components/ui/libX.lib.yml", "libxcb_component")
-#@ load("/components/ui/libX.lib.yml", "libx11_component")
-#@ load("/components/ui/libX.lib.yml", "xtrans_component")
-#@ load("/components/ui/libX.lib.yml", "xcbutil_component")
-#@ load("/components/ui/libX.lib.yml", "xcbutil_image_component")
-#@ load("/components/ui/libX.lib.yml", "xcbutil_renderutil_component")
-#@ load("/components/ui/libX.lib.yml", "xcbutil_wm_component")
-#@ load("/components/ui/libX.lib.yml", "xcbutil_keysyms_component")
-#@ load("/components/ui/libX.lib.yml", "libxshmfence_component")
 #@ load("/components/ui/xkbcommon.lib.yml", "xkbcommon_component")
 
 #@ load("/components/toolchain/arch/host.lib.yml", "host_toolchain_components")
@@ -60,16 +50,6 @@ components:
   ui/mesa: #@ mesa_component
   ui/libglvnd: #@ libglvnd_component
   ui/freetype: #@ freetype_component
-  ui/xcb-proto: #@ xcb_proto_component
-  ui/libxcb: #@ libxcb_component
-  ui/libx11: #@ libx11_component
-  ui/xtrans: #@ xtrans_component
-  ui/xcbutil: #@ xcbutil_component
-  ui/xcbutil-image: #@ xcbutil_image_component
-  ui/xcbutil-renderutil: #@ xcbutil_renderutil_component
-  ui/xcbutil-wm: #@ xcbutil_wm_component
-  ui/xcbutil-keysyms: #@ xcbutil_keysyms_component
-  ui/libxshmfence: #@ libxshmfence_component
   ui/xkbcommon: #@ xkbcommon_component
 
   _: #@ template.replace(host_toolchain_components)
