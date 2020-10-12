@@ -6,7 +6,7 @@
 #@yaml/text-templated-strings
 ---
 #@ def _options():
-parallelism: #@ data.values.parallelism
+parallelism: #@ str(data.values.parallelism)
 python2: /usr/bin/python2
 clang_release_version: #@ clang_release_version
 

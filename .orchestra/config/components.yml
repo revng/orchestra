@@ -113,7 +113,7 @@ add_to_path:
   - $ORCHESTRA_DOTDIR/support
 environment:
   - PATCH_DIR: $ORCHESTRA_DOTDIR/patches
-  - JOBS: #@ data.values.parallelism
+  - JOBS: #@ str(data.values.parallelism)
   #! TODO: maybe patching RPATH should not be a concern of Orchestra itself, but rather a post-install phase
   #!       Otherwise, it should be Orchestra to provide an RPATH_PLACEHOLDER, not the other way around
   - RPATH_PLACEHOLDER: #@ options["rpath_placeholder"]
