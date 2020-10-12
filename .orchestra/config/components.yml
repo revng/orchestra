@@ -1,14 +1,10 @@
 #@ load("@ytt:template", "template")
 #@ load("@ytt:data", "data")
 
-#@ load("/components/toolchain/arch/win64.lib.yml", "win64_toolchain_components")
-
 #@ load("/components/macos/macos.lib.yml", "macos_toolchain_components")
 
 #@ load("/global_options.lib.yml", "options")
 components:
-  _: #@ template.replace(win32_toolchain_components)
-
   _: #@ template.replace(macos_toolchain_components)
 
 add_to_path:
