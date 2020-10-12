@@ -1,3 +1,4 @@
+#@ load("@ytt:overlay", "overlay")
 #@ load("/lib/optimization_flavors.lib.yml", "typical_project_flavors")
 #@ load("/components/llvm_common.lib.yml", "configure_llvm")
 #@ load("/lib/fn_args.lib.yml", "mandatory")
@@ -45,5 +46,8 @@ builds:
   #@ end
 #@ end
 
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
 ---
-#@ llvm_component = _llvm_component()
+components:
+  llvm: #@ _llvm_component()
