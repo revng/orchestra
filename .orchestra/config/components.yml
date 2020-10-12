@@ -3,6 +3,8 @@
 
 #@ load("/global_options.lib.yml", "options")
 
+#! Do not push upstream components defined here.
+#! You should define them in a separate file and use overlay annotations.
 components: {}
 add_to_path:
   - $ORCHESTRA_ROOT/bin
