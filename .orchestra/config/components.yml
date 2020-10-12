@@ -1,7 +1,6 @@
 #@ load("@ytt:template", "template")
 #@ load("@ytt:data", "data")
 
-#@ load("/components/ui/mesa.lib.yml", "mesa_component")
 #@ load("/components/ui/libglvnd.lib.yml", "libglvnd_component")
 
 #@ load("/components/toolchain/arch/host.lib.yml", "host_toolchain_components")
@@ -19,7 +18,6 @@
 
 #@ load("/global_options.lib.yml", "options")
 components:
-  ui/mesa: #@ mesa_component
   ui/libglvnd: #@ libglvnd_component
 
   _: #@ template.replace(host_toolchain_components)

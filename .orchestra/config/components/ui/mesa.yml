@@ -1,3 +1,4 @@
+#@ load("@ytt:overlay", "overlay")
 #@ load("/lib/create_component.lib.yml", "single_build_component")
 
 #@ load("/global_options.lib.yml", "options")
@@ -67,5 +68,8 @@ dependencies:
   - toolchain/host/gcc
 #@ end
 
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
 ---
-#@ mesa_component = single_build_component(**_mesa_args())
+components:
+  ui/mesa: #@ single_build_component(**_mesa_args())
