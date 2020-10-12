@@ -1,3 +1,4 @@
+#@ load("@ytt:overlay", "overlay")
 #@ load("/lib/create_component.lib.yml", "single_build_component")
 
 #@ mpfr_version = "4.1.0"
@@ -18,5 +19,8 @@ dependencies:
   - gmp
 #@ end
 
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
 ---
-#@ mpfr_component = single_build_component(**_mpfr_args())
+components:
+  mpfr: #@ single_build_component(**_mpfr_args())

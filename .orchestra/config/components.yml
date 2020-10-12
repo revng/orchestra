@@ -1,7 +1,6 @@
 #@ load("@ytt:template", "template")
 #@ load("@ytt:data", "data")
 
-#@ load("/components/mpfr.lib.yml", "mpfr_component")
 #@ load("/components/cmake.lib.yml", "cmake_component")
 #@ load("/components/zlib.lib.yml", "zlib_component")
 #@ load("/components/libunwind.lib.yml", "libunwind_component")
@@ -52,7 +51,6 @@
 
 #@ load("/global_options.lib.yml", "options")
 components:
-  mpfr: #@ mpfr_component
   cmake: #@ cmake_component
   zlib: #@ zlib_component
   libunwind: #@ libunwind_component
