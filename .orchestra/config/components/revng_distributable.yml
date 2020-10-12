@@ -82,12 +82,13 @@ install: |
   ORCHESTRA_ROOT="$(realpath -s $(dirname $SCRIPT))/root"
   ORCHESTRA_DOTDIR="/nonexistent_directory_ignore_this"
   unset SCRIPT
-  export PYTHONPATH="$ORCHESTRA_ROOT/lib/python${PYTHONPATH:+:${PYTHONPATH}}"
   export PS1="[orchestra] $PS1"
   '
 
   cat >> environment <<EOF
-  $(orchestra environment | grep -E "^export (PATH|LIBGL_DRIVERS_PATH|PKG_CONFIG_PATH|QML2_IMPORT_PATH|QT_PLUGIN_PATH)")
+  $(orchestra environment | grep -E "^export (PATH|LIBGL_DRIVERS_PATH|PKG_CONFIG_PATH|QML2_IMPORT_PATH|QT_PLUGIN_PATH|PYTHONPATH)")
+  unset ORCHESTRA_DOTDIR
+  unset ORCHESTRA_ROOT
   EOF
 
 skip_post_install: true
