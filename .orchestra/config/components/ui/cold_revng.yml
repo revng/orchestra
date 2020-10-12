@@ -1,3 +1,4 @@
+#@ load("@ytt:overlay", "overlay")
 #@ load("@ytt:template", "template")
 
 #@ load("/lib/cmake.lib.yml", "typical_cmake_builds", "cmake_boost_configuration")
@@ -25,11 +26,10 @@ post_install_script: |
 use_asan: false
 #@ end
 
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
 ---
-#@ def _cold_revng_component():
-repository: ui/cold-revng
-builds: #@ typical_cmake_builds(**build_args())
-#@ end
-
----
-#@ cold_revng_component = _cold_revng_component()
+components:
+  ui/cold-revng:
+    repository: ui/cold-revng
+    builds: #@ typical_cmake_builds(**build_args())
