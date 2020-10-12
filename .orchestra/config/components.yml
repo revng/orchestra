@@ -1,7 +1,6 @@
 #@ load("@ytt:template", "template")
 #@ load("@ytt:data", "data")
 
-#@ load("/components/ui/quickqanava.lib.yml", "quickqanava_component")
 #@ load("/components/ui/qt_creator.lib.yml", "qt_creator_component")
 #@ load("/components/ui/graphviz.lib.yml", "graphviz_component")
 #@ load("/components/ui/adaptagrams.lib.yml", "adaptagrams_component")
@@ -26,7 +25,6 @@
 
 #@ load("/global_options.lib.yml", "options")
 components:
-  ui/quickqanava: #@ quickqanava_component
   ui/qt-creator: #@ qt_creator_component
   ui/graphviz: #@ graphviz_component
   ui/adaptagrams: #@ adaptagrams_component
