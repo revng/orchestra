@@ -1,3 +1,4 @@
+#@ load("@ytt:overlay", "overlay")
 #@ load("/lib/create_component.lib.yml", "single_build_component")
 
 #@ load("/global_options.lib.yml", "options")
@@ -38,6 +39,8 @@ dependencies:
   - ui/libxcb
 #@ end
 
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
 ---
-#@ xkbcommon_component = single_build_component(**_xkbcommon_args())
-
+components:
+  ui/xkbcommon: #@ single_build_component(**_xkbcommon_args())
