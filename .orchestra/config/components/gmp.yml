@@ -1,3 +1,4 @@
+#@ load("@ytt:overlay", "overlay")
 #@ load("/lib/create_component.lib.yml", "single_build_component")
 
 #@ source_url = "https://gmplib.org/download/gmp/gmp-6.1.2.tar.xz"
@@ -17,5 +18,8 @@ configure: |
 build_system: make
 #@ end
 
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
 ---
-#@ gmp_component = single_build_component(**_gmp_args())
+components:
+  gmp: #@ single_build_component(**_gmp_args())
