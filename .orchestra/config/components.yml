@@ -1,8 +1,6 @@
 #@ load("@ytt:template", "template")
 #@ load("@ytt:data", "data")
 
-#@ load("/components/ui/libglvnd.lib.yml", "libglvnd_component")
-
 #@ load("/components/toolchain/arch/host.lib.yml", "host_toolchain_components")
 #@ load("/components/toolchain/arch/x86_64.lib.yml", "x86_64_toolchain_components")
 #@ load("/components/toolchain/arch/i386.lib.yml", "i386_toolchain_components")
@@ -18,8 +16,6 @@
 
 #@ load("/global_options.lib.yml", "options")
 components:
-  ui/libglvnd: #@ libglvnd_component
-
   _: #@ template.replace(host_toolchain_components)
   _: #@ template.replace(x86_64_toolchain_components)
   _: #@ template.replace(i386_toolchain_components)
