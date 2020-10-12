@@ -1,7 +1,6 @@
 #@ load("@ytt:template", "template")
 #@ load("@ytt:data", "data")
 
-#@ load("/components/clang_release.lib.yml", "clang_release_component")
 #@ load("/components/glib.lib.yml", "glib_component")
 #@ load("/components/glibc.lib.yml", "glibc_component")
 #@ load("/components/qemu.lib.yml", "qemu_component")
@@ -45,7 +44,6 @@
 
 #@ load("/global_options.lib.yml", "options")
 components:
-  clang-release: #@ clang_release_component
   glib: #@ glib_component
   glibc: #@ glibc_component
   qemu: #@ qemu_component
