@@ -1,7 +1,6 @@
 #@ load("@ytt:template", "template")
 #@ load("@ytt:data", "data")
 
-#@ load("/components/revng_c.lib.yml", "revng_c_component")
 #@ load("/components/revng_qa.lib.yml", "revng_qa_component")
 
 #@ load("/components/ui/qt.lib.yml", "qt_component")
@@ -30,7 +29,6 @@
 
 #@ load("/global_options.lib.yml", "options")
 components:
-  revng-c: #@ revng_c_component
   revng-qa: #@ revng_qa_component
 
   ui/qt: #@ qt_component
