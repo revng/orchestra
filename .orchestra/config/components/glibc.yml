@@ -1,0 +1,54 @@
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+#@ load("/lib/make.lib.yml", "make")
+#@ load("/global_options.lib.yml", "options")
+
+#@ source_url = "https://ftp.gnu.org/gnu/glibc/glibc-2.13.tar.xz"
+
+#@yaml/text-templated-strings
+---
+#@ def _glibc_args():
+configure: |
+  mkdir -p "$BUILD_DIR/source"
+  extract.sh --into "$BUILD_DIR/source" (@= source_url @)
+
+  sed -i 's|test -n ".critic_missing"|false|g' "$BUILD_DIR/source/configure"
+  sed -i 's|struct obstack ._obstack_compat|\0 = 0|g' "$BUILD_DIR/source/malloc/obstack.c"
+
+  cd $BUILD_DIR
+  export CC="cc -no-pie -fuse-ld=bfd -Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath,$RPATH_PLACEHOLDER/link-only/lib"
+  ./source/configure \
+    --disable-profile \
+    --without-gd \
+    --enable-crypt \
+    --disable-static-pie \
+    --disable-systemtap \
+    --disable-nscd \
+    --disable-timezone-tools \
+    --enable-stack-protector=strong \
+    --enable-stackguard-randomization \
+    --disable-cet \
+    --without-selinux \
+    --without-cvs \
+    --disable-werror \
+    --enable-bind-now \
+    --disable-sanity-checks \
+    --prefix="$INSTALL_LINK_ONLY_PATH" \
+    CFLAGS="-w -O2 -fno-stack-protector -DNDEBUG -march=core2 -U_FORTIFY_SOURCE"
+
+install: |
+  cd "$BUILD_DIR"
+  (@= make @)
+  (@= make @) install_root="$DESTDIR" install
+  sed -i "s|$INSTALL_LINK_ONLY_PATH/lib/||g" \
+    "$DESTDIR$INSTALL_LINK_ONLY_PATH/lib/libpthread.so" \
+    "$DESTDIR$INSTALL_LINK_ONLY_PATH/lib/libc.so"
+  ln -s . "$DESTDIR$INSTALL_LINK_ONLY_PATH/usr"
+  rm -f "$DESTDIR$INSTALL_LINK_ONLY_PATH"/libexec/getconf/POSIX_V7_LP64_OFF64*
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  glibc: #@ single_build_component(**_glibc_args())

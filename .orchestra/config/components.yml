@@ -1,7 +1,6 @@
 #@ load("@ytt:template", "template")
 #@ load("@ytt:data", "data")
 
-#@ load("/components/glibc.lib.yml", "glibc_component")
 #@ load("/components/qemu.lib.yml", "qemu_component")
 #@ load("/components/revng.lib.yml", "revng_component")
 #@ load("/components/revng_c.lib.yml", "revng_c_component")
@@ -33,7 +32,6 @@
 
 #@ load("/global_options.lib.yml", "options")
 components:
-  glibc: #@ glibc_component
   qemu: #@ qemu_component
   revng: #@ revng_component
   revng-c: #@ revng_c_component
