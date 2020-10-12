@@ -1,3 +1,5 @@
+#@ load("@ytt:overlay", "overlay")
+
 #@ def _llvmcpy_component():
 repository: llvmcpy
 builds:
@@ -14,5 +16,8 @@ builds:
       python3 setup.py build --build-base "$SOURCE_DIR" install --home "$DESTDIR"
 #@ end
 
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
 ---
-#@ llvmcpy_component = _llvmcpy_component()
+components:
+  llvmcpy: #@ _llvmcpy_component()
