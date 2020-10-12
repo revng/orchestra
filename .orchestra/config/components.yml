@@ -1,7 +1,6 @@
 #@ load("@ytt:template", "template")
 #@ load("@ytt:data", "data")
 
-#@ load("/components/ui/graphviz.lib.yml", "graphviz_component")
 #@ load("/components/ui/adaptagrams.lib.yml", "adaptagrams_component")
 #@ load("/components/ui/cold_revng.lib.yml", "cold_revng_component")
 #@ load("/components/ui/mesa.lib.yml", "mesa_component")
@@ -22,7 +21,6 @@
 
 #@ load("/global_options.lib.yml", "options")
 components:
-  ui/graphviz: #@ graphviz_component
   ui/adaptagrams: #@ adaptagrams_component
   ui/cold-revng: #@ cold_revng_component
   ui/mesa: #@ mesa_component
