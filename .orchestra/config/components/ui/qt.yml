@@ -1,3 +1,4 @@
+#@ load("@ytt:overlay", "overlay")
 #@ load("/lib/make.lib.yml", "make")
 #@ load("/lib/shell.lib.yml", "expand_args")
 #@ load("/lib/optimization_flavors.lib.yml", "qt_optimization_flavors")
@@ -152,6 +153,8 @@ builds:
 
 #@ end
 
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
 ---
-
-#@ qt_component = _qt_component()
+components:
+  ui/qt: #@ _qt_component()
