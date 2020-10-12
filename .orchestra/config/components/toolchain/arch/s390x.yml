@@ -1,3 +1,4 @@
+#@ load("@ytt:overlay", "overlay")
 #@ load("/components/toolchain/lib/toolchain.lib.yml", "create_toolchain_components")
 
 #@ def _params():
@@ -20,6 +21,7 @@ extra_gcc_configure_options:
 dynamic: "0"
 #@ end
 
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
 ---
-
-#@ s390x_toolchain_components = create_toolchain_components(**_params())
+components: #@ create_toolchain_components(**_params())
