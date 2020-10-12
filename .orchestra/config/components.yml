@@ -1,7 +1,6 @@
 #@ load("@ytt:template", "template")
 #@ load("@ytt:data", "data")
 
-#@ load("/components/zlib.lib.yml", "zlib_component")
 #@ load("/components/libunwind.lib.yml", "libunwind_component")
 #@ load("/components/llvm.lib.yml", "llvm_component")
 #@ load("/components/llvm_documentation.lib.yml", "llvm_documentation_component")
@@ -50,7 +49,6 @@
 
 #@ load("/global_options.lib.yml", "options")
 components:
-  zlib: #@ zlib_component
   libunwind: #@ libunwind_component
   llvm: #@ llvm_component
   llvm-documentation: #@ llvm_documentation_component
