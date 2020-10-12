@@ -1,7 +1,6 @@
 #@ load("@ytt:template", "template")
 #@ load("@ytt:data", "data")
 
-#@ load("/components/ui/adaptagrams.lib.yml", "adaptagrams_component")
 #@ load("/components/ui/mesa.lib.yml", "mesa_component")
 #@ load("/components/ui/libglvnd.lib.yml", "libglvnd_component")
 
@@ -20,7 +19,6 @@
 
 #@ load("/global_options.lib.yml", "options")
 components:
-  ui/adaptagrams: #@ adaptagrams_component
   ui/mesa: #@ mesa_component
   ui/libglvnd: #@ libglvnd_component
 
