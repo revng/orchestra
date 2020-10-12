@@ -97,7 +97,7 @@
     mkdir -p "$BUILD_DIR"
 
     cat > "$BUILD_DIR/toolchain.cmake" <<eof
-    (@= cmake_base_configuration(**opts) @)
+    (@= cmake_base_configuration(cmake_build_type=opts["cmake_build_type"], extra_compiler_flags=opts["extra_compiler_flags"]) @)
     eof
 
     cd "$BUILD_DIR";
@@ -128,6 +128,9 @@
 
   #@ if/end build_dependencies:
   build_dependencies: #@ build_dependencies
+
+  #@ if/end opts["ndebug"] == False:
+  ndebug: false
 #@ end
 
 #@ end

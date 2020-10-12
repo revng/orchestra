@@ -19,12 +19,15 @@ o3: -ggdb3 -Wl,--gc-sections -ffunction-sections -O3
 optimized:
   cmake_build_type: Debug
   extra_compiler_flags: -ggdb3 -O2 -fno-omit-frame-pointer (@= asan @)
+  ndebug: false
 debug:
   cmake_build_type: Debug
   extra_compiler_flags: -ggdb3 -O0 (@= asan @)
+  ndebug: false
 release:
   cmake_build_type: Release
   extra_compiler_flags: -ggdb3 -O2 (@= asan @)
+  ndebug: true
 #@ end
 
 #@ def typical_project_flavors(use_asan=False):
@@ -40,12 +43,15 @@ release:
 optimized:
   cmake_build_type: Debug
   extra_compiler_flags: -ggdb3 -O2 -fno-omit-frame-pointer (@= asan @)
+  ndebug: false
 debug:
   cmake_build_type: Debug
   extra_compiler_flags: -ggdb3 -O0 (@= asan @)
+  ndebug: false
 release:
   cmake_build_type: Release
   extra_compiler_flags: -ggdb3 -O2 (@= asan @)
+  ndebug: true
 #@ end
 
 #@ def typical_cmake_flavors(use_asan=False):
@@ -57,10 +63,13 @@ release:
 #@ def _qt_optimization_flavors():
 debug:
   extra_qmake_options: -debug QMAKE_CXXFLAGS+="-fno-omit-frame-pointer"
+  ndebug: false
 optimized:
   extra_qmake_options: -debug QMAKE_CXXFLAGS+="-O2 -fno-omit-frame-pointer"
+  ndebug: false
 release:
   extra_qmake_options: -release
+  ndebug: true
 #@ end
 
 #@ qt_optimization_flavors = dict(_qt_optimization_flavors())
@@ -75,17 +84,20 @@ debug:
     - CONFIG-=release
     - QMAKE_CXXFLAGS_DEBUG+="(@= options["use_old_glibc_cflags"] @) -ggdb3 -O0 -fno-omit-frame-pointer (@= options["regular_cxx_flags"] @)"
     - QMAKE_LFLAGS+="(@= options["use_old_glibc_lflags"] @) -ggdb3 -O0 (@= options["regular_linker_flags"] @) -Wl,-rpath=(@= options["rpath_placeholder"] @)/lib"
+  ndebug: false
 optimized:
   extra_qmake_args:
     - CONFIG+=debug
     - CONFIG-=release
     - QMAKE_CXXFLAGS_DEBUG+="(@= options["use_old_glibc_cflags"] @) -ggdb3 -O2 -fno-omit-frame-pointer (@= options["regular_cxx_flags"] @)"
     - QMAKE_LFLAGS+="(@= options["use_old_glibc_lflags"] @) -ggdb3 (@= options["regular_linker_flags"] @) -Wl,-rpath=(@= options["rpath_placeholder"] @)/lib"
+  ndebug: false
 release:
   extra_qmake_args:
     - CONFIG+=release
     - QMAKE_CXXFLAGS_RELEASE+="(@= options["use_old_glibc_cflags"] @) -ggdb3 -O2 (@= options["regular_cxx_flags"] @)"
     - QMAKE_LFLAGS+="(@= options["use_old_glibc_lflags"] @) -ggdb3 (@= options["regular_linker_flags"] @) -Wl,-rpath=(@= options["rpath_placeholder"] @)/lib"
+  ndebug: true
 #@ end
 
 #@ qmake_optimization_flavors = dict(_qmake_optimization_flavors())

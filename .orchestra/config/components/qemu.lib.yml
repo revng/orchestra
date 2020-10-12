@@ -11,6 +11,7 @@ builds:
   #@ for flavor, f_options in typical_project_flavors(use_asan=use_asan).items():
     #@ build_type = f_options["cmake_build_type"]
     #@ cflags = f_options["extra_compiler_flags"]
+    #@ ndebug = f_options["ndebug"]
     (@= flavor @):
       configure: |
         mkdir -p "$BUILD_DIR"
@@ -43,6 +44,8 @@ builds:
         - clang-release
         - zlib
         - glib
+      #@ if/end ndebug == False:
+      ndebug: false
   #@ end
 #@ end
 
