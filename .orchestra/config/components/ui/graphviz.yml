@@ -80,4 +80,4 @@ dependencies:
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  ui/graphviz: #@ single_build_component(**_libunwind_args())
+  ui/graphviz: #@ single_build_component(**_graphviz_args())
