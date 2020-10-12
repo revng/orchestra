@@ -1,3 +1,4 @@
+#@ load("@ytt:overlay", "overlay")
 #@ load("/components/toolchain/lib/toolchain.lib.yml", "create_toolchain_components")
 #@ load("/components/toolchain/lib/common.lib.yml", "linker_flags")
 
@@ -44,6 +45,7 @@ extra_binutils_configure_options:
 extra_gcc_make_variables: LIBRARY_PATH=/usr/lib/x86_64-linux-gnu
 #@ end
 
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
 ---
-
-#@ host_toolchain_components = create_toolchain_components(**_params())
+components: #@ create_toolchain_components(**_params())
