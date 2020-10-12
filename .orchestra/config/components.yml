@@ -1,12 +1,9 @@
 #@ load("@ytt:template", "template")
 #@ load("@ytt:data", "data")
 
-#@ load("/components/macos/macos.lib.yml", "macos_toolchain_components")
-
 #@ load("/global_options.lib.yml", "options")
-components:
-  _: #@ template.replace(macos_toolchain_components)
 
+components: {}
 add_to_path:
   - $ORCHESTRA_ROOT/bin
   - $ORCHESTRA_DOTDIR/support

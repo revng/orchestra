@@ -1,3 +1,4 @@
+#@ load("@ytt:overlay", "overlay")
 #@ load("@ytt:template", "template")
 
 #@ load("/components/macos/libtapi.lib.yml", "libtapi_component")
@@ -5,12 +6,11 @@
 #@ load("/components/macos/ld64.lib.yml", "ld64_components")
 #@ load("/components/macos/clang.lib.yml", "macosx_clang_components")
 
-#@ def _macos_toolchain_components():
-macos/libtapi: #@ libtapi_component
-macos/sdk: #@ macosx_sdk_component
-_ : #@ template.replace(ld64_components)
-_ : #@ template.replace(macosx_clang_components)
-#@ end
-
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
 ---
-#@ macos_toolchain_components = _macos_toolchain_components()
+components:
+  macos/libtapi: #@ libtapi_component
+  macos/sdk: #@ macosx_sdk_component
+  _: #@ template.replace(ld64_components)
+  _: #@ template.replace(macosx_clang_components)
