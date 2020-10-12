@@ -1,3 +1,4 @@
+#@ load("@ytt:overlay", "overlay")
 #@ load("/lib/make.lib.yml", "make")
 
 #@yaml/text-templated-strings
@@ -69,6 +70,8 @@ builds:
       EOF
 #@ end
 
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
 ---
-#@ llvm_documentation_component = _llvm_documentation_component()
-
+components:
+  llvm-documentation: #@ _llvm_documentation_component()

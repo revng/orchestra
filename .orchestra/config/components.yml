@@ -1,7 +1,6 @@
 #@ load("@ytt:template", "template")
 #@ load("@ytt:data", "data")
 
-#@ load("/components/llvm_documentation.lib.yml", "llvm_documentation_component")
 #@ load("/components/llvmcpy.lib.yml", "llvmcpy_component")
 #@ load("/components/clang_release.lib.yml", "clang_release_component")
 #@ load("/components/glib.lib.yml", "glib_component")
@@ -47,7 +46,6 @@
 
 #@ load("/global_options.lib.yml", "options")
 components:
-  llvm-documentation: #@ llvm_documentation_component
   llvmcpy: #@ llvmcpy_component
   clang-release: #@ clang_release_component
   glib: #@ glib_component
