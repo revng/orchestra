@@ -1,3 +1,4 @@
+#@ load("@ytt:overlay", "overlay")
 #@ load("/lib/make.lib.yml", "make")
 #@ load("/lib/optimization_flavors.lib.yml", "typical_project_flavors")
 
@@ -49,5 +50,8 @@ builds:
   #@ end
 #@ end
 
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
 ---
-#@ qemu_component = _qemu_component()
+components:
+  qemu: #@ _qemu_component()
