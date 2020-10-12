@@ -27,4 +27,4 @@ dependencies:
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  cmake: #@ single_build_component(**_zlib_args())
+  zlib: #@ single_build_component(**_zlib_args())
