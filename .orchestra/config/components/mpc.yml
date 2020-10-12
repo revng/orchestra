@@ -1,3 +1,4 @@
+#@ load("@ytt:overlay", "overlay")
 #@ load("/lib/create_component.lib.yml", "single_build_component")
 
 #@ source_url = "https://ftp.gnu.org/gnu/mpc//mpc-1.1.0.tar.gz"
@@ -19,6 +20,8 @@ dependencies:
   - mpfr
 #@ end
 
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
 ---
-
-#@ mpc_component = single_build_component(**_mpc_args())
+components:
+  mpc: #@ single_build_component(**_mpc_args())

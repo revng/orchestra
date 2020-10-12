@@ -1,7 +1,6 @@
 #@ load("@ytt:template", "template")
 #@ load("@ytt:data", "data")
 
-#@ load("/components/mpc.lib.yml", "mpc_component")
 #@ load("/components/mpfr.lib.yml", "mpfr_component")
 #@ load("/components/cmake.lib.yml", "cmake_component")
 #@ load("/components/zlib.lib.yml", "zlib_component")
@@ -53,7 +52,6 @@
 
 #@ load("/global_options.lib.yml", "options")
 components:
-  mpc: #@ mpc_component
   mpfr: #@ mpfr_component
   cmake: #@ cmake_component
   zlib: #@ zlib_component
