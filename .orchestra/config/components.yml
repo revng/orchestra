@@ -11,8 +11,8 @@ add_to_path:
   - $ORCHESTRA_DOTDIR/support
 environment:
   - JOBS: #@ str(data.values.parallelism)
-  #! TODO: maybe patching RPATH should not be a concern of Orchestra itself, but rather a post-install phase
-  #!       Otherwise, it should be Orchestra to provide an RPATH_PLACEHOLDER, not the other way around
+  #! TODO: maybe patching RPATH should not be a concern of orchestra itself, but rather a post-install phase
+  #!       Otherwise, it should be orchestra to provide an RPATH_PLACEHOLDER, not the other way around
   - RPATH_PLACEHOLDER: #@ options["rpath_placeholder"]
   - QML2_IMPORT_PATH: $ORCHESTRA_ROOT/qml
   - QT_PLUGIN_PATH: $ORCHESTRA_ROOT/plugins

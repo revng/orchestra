@@ -21,7 +21,7 @@
 #@yaml/text-templated-strings
 ---
 #@ def _configure_base(extra_qmake_args=[]):
-#! TODO: In legacy Orchestra QMAKE_RPATHDIR has +="" in debug and release but ="" in optimized. Is it intentional?
+#! TODO: In legacy orchestra QMAKE_RPATHDIR has +="" in debug and release but ="" in optimized. Is it intentional?
 - |
   mkdir -p "$BUILD_DIR"
   cd "$BUILD_DIR";

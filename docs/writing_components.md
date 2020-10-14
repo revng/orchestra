@@ -1,10 +1,10 @@
 # Writing a component
 
 This document explains the conventions used in this configuration.
-Before reading it you should read Orchestra documentation
-and understand the configuration format used by Orchestra.
+Before reading it you should read orchestra documentation
+and understand the configuration format used by orchestra.
 
-TL;DR: an Orchestra configuration is a collection of **components** and other options.
+TL;DR: an orchestra configuration is a collection of **components** and other options.
 Components consist mainly of a collection of builds.
 
 ```yaml

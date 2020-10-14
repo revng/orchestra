@@ -1,10 +1,10 @@
-# rev.ng Orchestra config
+# rev.ng orchestra config
 
-This repository contains the Orchestra configuration for rev.ng.
+This repository contains the orchestra configuration for rev.ng.
 
 To get started:
 
-* install Orchestra (follow the  instructions in its repo)
+* install orchestra (follow the  instructions in its repo)
 * run `orchestra components` to generate the default user configuration
 * edit `.orchestra/config/user_remotes.yml` to add your remotes, like so:
   ```
