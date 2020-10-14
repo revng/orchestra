@@ -10,7 +10,7 @@ configure: |
   mkdir -p "$BUILD_DIR"
 
   extract.sh --into "$BUILD_DIR" "https://dl.bintray.com/boostorg/release/1.71.0/source/boost_1_71_0.tar.bz2"
-  patch-if-exists "${PATCH_DIR}/boost-1.63.0-icl-disable-LessThanComparableConcept.patch" "$BUILD_DIR"
+  patch-if-exists "${ORCHESTRA_DOTDIR}/patches/boost-1.63.0-icl-disable-LessThanComparableConcept.patch" "$BUILD_DIR"
   cd "$BUILD_DIR" && ./bootstrap.sh --prefix="$ORCHESTRA_ROOT" --with-libraries=test
 install: |
   cd "$BUILD_DIR"

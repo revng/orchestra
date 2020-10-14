@@ -14,6 +14,7 @@ configure: |
 
   sed -i 's|test -n ".critic_missing"|false|g' "$BUILD_DIR/source/configure"
   sed -i 's|struct obstack ._obstack_compat|\0 = 0|g' "$BUILD_DIR/source/malloc/obstack.c"
+  patch-if-exists "${ORCHESTRA_DOTDIR}/patches/glibc-2.13-fix-isinf.patch" "$BUILD_DIR/source"
 
   cd $BUILD_DIR
   export CC="cc -no-pie -fuse-ld=bfd -Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath,$RPATH_PLACEHOLDER/link-only/lib"

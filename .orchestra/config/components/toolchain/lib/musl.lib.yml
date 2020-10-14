@@ -23,7 +23,7 @@ configure: |
   mkdir -p "$BUILD_DIR"
 
   extract.sh --into "$BUILD_DIR" "(@= source_url @)"
-  patch-if-exists "${PATCH_DIR}/musl-(@= musl_version @)-printf-floating-point-rounding.patch" "$BUILD_DIR"
+  patch-if-exists "${ORCHESTRA_DOTDIR}/patches/musl-(@= musl_version @)-printf-floating-point-rounding.patch" "$BUILD_DIR"
 
   cd "$BUILD_DIR" && CC="(@= new_gcc(triple=triple, gcc_version=gcc_version) @)" CFLAGS=" (@= additional_cflags @)" "$BUILD_DIR/configure" \
     --target=(@= triple @) \
@@ -56,7 +56,7 @@ configure: |
   mkdir -p "$BUILD_DIR"
 
   extract.sh --into "$BUILD_DIR" "(@= source_url @)"
-  patch-if-exists "${PATCH_DIR}/musl-(@= musl_version @)-printf-floating-point-rounding.patch" "$BUILD_DIR"
+  patch-if-exists "${ORCHESTRA_DOTDIR}/patches/musl-(@= musl_version @)-printf-floating-point-rounding.patch" "$BUILD_DIR"
 
   cd "$BUILD_DIR" && CC="true" "$BUILD_DIR/configure" \
     --target=(@= triple @) \

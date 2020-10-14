@@ -108,7 +108,7 @@ builds:
   (@= flavor @):
     configure: |
       extract.sh --into "$SOURCE_DIR" https://download.qt.io/official_releases/qt/5.14/5.14.1/single/qt-everywhere-src-5.14.1.tar.xz
-      patch-if-exists "${PATCH_DIR}/qt-5.13.1-libcxx-include-array-linuxdmabuf.patch" "$SOURCE_DIR"
+      patch-if-exists "${ORCHESTRA_DOTDIR}/patches/qt-5.13.1-libcxx-include-array-linuxdmabuf.patch" "$SOURCE_DIR"
 
       cat >> "$SOURCE_DIR/qtbase/mkspecs/linux-clang/qmake.conf" <<eof
       QMAKE_CXXFLAGS += (@= options["use_old_glibc_cflags"] @) -ggdb3 (@= options["regular_cxx_flags"] @) -w
