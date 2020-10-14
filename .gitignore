@@ -2,10 +2,10 @@ root
 build
 sources
 .orchestra/tmproot
-.orchestra/binary_archives/*
+.orchestra/binary-archives/*
 .orchestra/source_archives
 .orchestra/installed_components
-.orchestra/config_cache
+.orchestra/config_cache.yml
 .orchestra/remote_refs_cache.json
 .orchestra/config/user_*.yml
 .idea
