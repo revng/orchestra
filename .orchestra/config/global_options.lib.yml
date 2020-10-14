@@ -7,7 +7,6 @@
 ---
 #@ def _options():
 parallelism: #@ str(data.values.parallelism)
-python2: /usr/bin/python2
 clang_release_version: #@ clang_release_version
 
 rpath_placeholder: ////////////////////////////////////////////////$ORCHESTRA_ROOT
