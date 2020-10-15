@@ -40,10 +40,14 @@ if [ -z "${ARCHIVE_FILENAME}" ]; then
   ARCHIVE_FILENAME="$(basename "$URL")"
 fi
 
+TMP_ARCHIVE_FILENAME="${ARCHIVE_FILENAME}.tmp"
+trap 'rm ${SRC_ARCHIVE_DIR}/${TMP_ARCHIVE_FILENAME} || true' INT QUIT TERM EXIT
+
 if [ ! -e "${SRC_ARCHIVE_DIR}/${ARCHIVE_FILENAME}" ]; then
     echo "Downloading source archive to ${SRC_ARCHIVE_DIR}/${ARCHIVE_FILENAME}"
     mkdir -p "$SRC_ARCHIVE_DIR"
-    wget -O "${SRC_ARCHIVE_DIR}/${ARCHIVE_FILENAME}" "$URL"
+    wget -O "${SRC_ARCHIVE_DIR}/${TMP_ARCHIVE_FILENAME}" "$URL"
+    mv "${SRC_ARCHIVE_DIR}/${TMP_ARCHIVE_FILENAME}" "${SRC_ARCHIVE_DIR}/${ARCHIVE_FILENAME}"
 else
     echo "$URL already downloaded in ${SRC_ARCHIVE_DIR}/${ARCHIVE_FILENAME}"
 fi
