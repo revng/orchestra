@@ -1,7 +1,4 @@
-#@ load("@ytt:template", "template")
-#@ load("@ytt:data", "data")
-
-#@ load("/global_options.lib.yml", "options")
+#@ load("/lib/util.lib.yml", "datavalue")
 
 #! Do not push upstream components defined here.
 #! You should define them in a separate file and use overlay annotations.
@@ -10,10 +7,7 @@ add_to_path:
   - $ORCHESTRA_ROOT/bin
   - $ORCHESTRA_DOTDIR/support
 environment:
-  - JOBS: #@ str(data.values.parallelism)
-  #! TODO: maybe patching RPATH should not be a concern of orchestra itself, but rather a post-install phase
-  #!       Otherwise, it should be orchestra to provide an RPATH_PLACEHOLDER, not the other way around
-  - RPATH_PLACEHOLDER: #@ options["rpath_placeholder"]
+  - JOBS: #@ str(datavalue("parallelism"))
   - QML2_IMPORT_PATH: $ORCHESTRA_ROOT/qml
   - QT_PLUGIN_PATH: $ORCHESTRA_ROOT/plugins
   - PKG_CONFIG_PATH: $ORCHESTRA_ROOT/lib/pkgconfig:$ORCHESTRA_ROOT/share/pkgconfig${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
@@ -21,6 +15,6 @@ environment:
   - LIBGL_DRIVERS_PATH: $ORCHESTRA_ROOT/lib/dri${LIBGL_DRIVERS_PATH:+:${LIBGL_DRIVERS_PATH}}
   - PYTHONPATH: $ORCHESTRA_ROOT/lib/python${PYTHONPATH:+:${PYTHONPATH}}
 
-paths: #@ data.values.paths or {}
-remote_base_urls: #@ data.values.remote_base_urls or []
-binary_archives: #@ data.values.binary_archives or []
+paths: #@ datavalue("paths", default={})
+remote_base_urls: #@ datavalue("remote_base_urls")
+binary_archives: #@ datavalue("binary_archives")

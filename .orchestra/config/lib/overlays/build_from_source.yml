@@ -5,7 +5,7 @@
 #@overlay/match by=overlay.all, expects=1
 ---
 components:
-  #@ for component in data.values.build_from_source:
+  #@ for component in data.values.build_from_source or []:
   (@= component @):
     #@overlay/match missing_ok=True
     build_from_source: true

@@ -1,8 +1,7 @@
+#@ load("@ytt:data", "data")
 #@ load("/lib/fn_args.lib.yml", "mandatory")
 
-#@ load("/global_options.lib.yml", "options")
-
-#@ linker_flags = "-Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath," + options["rpath_placeholder"] + "/lib"
+#@ linker_flags = "-Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath,$RPATH_PLACEHOLDER/lib"
 
 #@ def new_gcc_path(triple=mandatory, gcc_version=mandatory):
 #@    return "$ORCHESTRA_ROOT/x86_64-pc-linux-gnu/" + triple + "/gcc-bin/" + gcc_version + "/"

@@ -3,8 +3,6 @@
 #@ load("/lib/shell.lib.yml", "expand_args")
 #@ load("/lib/optimization_flavors.lib.yml", "qmake_optimization_flavors")
 
-#@ load("/global_options.lib.yml", "options")
-
 ---
 #@ def qt_creator_plugins():
 - coreplugin

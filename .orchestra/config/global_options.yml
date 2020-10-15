@@ -1,15 +1,11 @@
-#@ load("@ytt:data", "data")
-
 #@ modern_linker_flags = "-fuse-ld=gold -Wl,--gdb-index -Wl,-z,origin -Wl,--enable-new-dtags"
 #@ clang_release_version = "10.0.0"
 
+#@data/values
 #@yaml/text-templated-strings
 ---
-#@ def _options():
-parallelism: #@ str(data.values.parallelism)
 clang_release_version: #@ clang_release_version
 
-rpath_placeholder: ////////////////////////////////////////////////$ORCHESTRA_ROOT
 regular_c_compiler: clang
 regular_cxx_compiler: clang++
 regular_c_flags: ""
@@ -19,6 +15,8 @@ regular_linker_flags: -stdlib=libc++ (@= modern_linker_flags @)
 sanitizers_libs_path: lib64/clang/(@= clang_release_version @)/lib/linux
 use_old_glibc_cflags: --sysroot $INSTALL_LINK_ONLY_PATH -idirafter /usr/local/include -idirafter /usr/include/x86_64-linux-gnu -idirafter /usr/include
 use_old_glibc_lflags: -L$INSTALL_LINK_ONLY_PATH/lib -lrt --sysroot=/
-#@ end
 
-#@ options = _options()
+parallelism: $(nproc)
+build_from_source:
+  #! - component-name
+nonredistributable_base_url: "https://dummydomain.com/nonredistributable/"

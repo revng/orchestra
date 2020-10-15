@@ -3,8 +3,6 @@
 #@ load("/lib/optimization_flavors.lib.yml", "libc_optimization_flavors")
 #@ load("/lib/fn_args.lib.yml", "mandatory")
 
-#@ load("/global_options.lib.yml", "options")
-
 #@ spec_archive_name = "spec2006_int_fp.tar.gz"
 #@ spec_archive_url = data.values.nonredistributable_base_url + spec_archive_name
 #! Flags for runspec

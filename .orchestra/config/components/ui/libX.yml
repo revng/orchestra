@@ -1,10 +1,9 @@
+#@ load("@ytt:data", "data")
 #@ load("@ytt:overlay", "overlay")
 #@ load("@ytt:template", "template")
 
 #@ load("/lib/create_component.lib.yml", "single_build_component")
 #@ load("/lib/make.lib.yml", "make")
-
-#@ load("/global_options.lib.yml", "options")
 
 #@ xcb_proto_source_url = "https://xorg.freedesktop.org/archive/individual/proto/xcb-proto-1.14.tar.gz"
 #@ libxcb_source_url = "https://xorg.freedesktop.org/archive/individual/lib/libxcb-1.14.tar.gz"
@@ -27,8 +26,8 @@ configure: |
   cd "$BUILD_DIR"
   ./configure \
     --prefix="$ORCHESTRA_ROOT" \
-    LDFLAGS="(@= options["use_old_glibc_lflags"] @) (@= options["modern_linker_flags"] @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
-    CFLAGS="(@= options["use_old_glibc_cflags"] @)"
+    LDFLAGS="(@= data.values.use_old_glibc_lflags @) (@= data.values.modern_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
+    CFLAGS="(@= data.values.use_old_glibc_cflags @)"
 build_system: make
 dependencies:
   - clang-release
@@ -49,8 +48,8 @@ configure: |
     --enable-shared \
     --disable-static \
     --prefix="$ORCHESTRA_ROOT" \
-    LDFLAGS="(@= options["use_old_glibc_lflags"] @) (@= options["modern_linker_flags"] @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
-    CFLAGS="(@= options["use_old_glibc_cflags"] @)"
+    LDFLAGS="(@= data.values.use_old_glibc_lflags @) (@= data.values.modern_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
+    CFLAGS="(@= data.values.use_old_glibc_cflags @)"
 build_system: make
 dependencies:
   - clang-release
@@ -75,8 +74,8 @@ configure: |
     --disable-static \
     --prefix="$ORCHESTRA_ROOT" \
     CC="cc -fuse-ld=gold" \
-    LDFLAGS="(@= options["use_old_glibc_lflags"] @) (@= options["modern_linker_flags"] @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
-    CFLAGS="(@= options["use_old_glibc_cflags"] @)"
+    LDFLAGS="(@= data.values.use_old_glibc_lflags @) (@= data.values.modern_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
+    CFLAGS="(@= data.values.use_old_glibc_cflags @)"
 build_system: make
 dependencies:
   - clang-release
@@ -97,8 +96,8 @@ configure: |
     --disable-static \
     --prefix="$ORCHESTRA_ROOT" \
     CC="cc -fuse-ld=gold" \
-    LDFLAGS="(@= options["use_old_glibc_lflags"] @) (@= options["modern_linker_flags"] @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
-    CFLAGS="(@= options["use_old_glibc_cflags"] @)"
+    LDFLAGS="(@= data.values.use_old_glibc_lflags @) (@= data.values.modern_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
+    CFLAGS="(@= data.values.use_old_glibc_cflags @)"
 build_system: make
 dependencies:
   - clang-release
@@ -125,7 +124,7 @@ builds:
         --disable-selective-werror \
         --prefix="$ORCHESTRA_ROOT" \
         CC="cc -fuse-ld=gold" \
-        LDFLAGS="(@= options["modern_linker_flags"] @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib"
+        LDFLAGS="(@= data.values.modern_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib"
     install: |
       cd "$BUILD_DIR"
       (@= make @) install

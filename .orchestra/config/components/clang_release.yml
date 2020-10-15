@@ -1,8 +1,7 @@
+#@ load("@ytt:data", "data")
 #@ load("@ytt:overlay", "overlay")
 #@ load("/components/llvm_common.lib.yml", "configure_llvm")
 #@ load("/lib/create_component.lib.yml", "single_build_component")
-
-#@ load("/global_options.lib.yml", "options")
 
 ---
 #@ def cmake_opts():
@@ -13,7 +12,7 @@
 #@yaml/text-templated-strings
 ---
 #@ def _clang_release_args():
-#@    source_url = "https://github.com/llvm/llvm-project/archive/llvmorg-" + options["clang_release_version"] + ".tar.gz"
+#@    source_url = "https://github.com/llvm/llvm-project/archive/llvmorg-" + data.values.clang_release_version + ".tar.gz"
 configure: |
   extract.sh --into "$BUILD_DIR/source" "(@= source_url @)"
   sed -i 's|GIT_FOUND|FALSE|g' "$BUILD_DIR/source/llvm/cmake/modules/VersionFromVCS.cmake"

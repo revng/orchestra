@@ -6,8 +6,6 @@
 #@ load("/lib/optimization_flavors.lib.yml", "libc_optimization_flavors")
 #@ load("/components/toolchain/lib/common.lib.yml", "new_gcc_path", "binutils_path")
 
-#@ load("/global_options.lib.yml", "options")
-
 #@yaml/text-templated-strings
 ---
 #@ def uclibc_build(

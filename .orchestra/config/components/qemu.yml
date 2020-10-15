@@ -1,8 +1,7 @@
+#@ load("@ytt:data", "data")
 #@ load("@ytt:overlay", "overlay")
 #@ load("/lib/make.lib.yml", "make")
 #@ load("/lib/optimization_flavors.lib.yml", "typical_project_flavors")
-
-#@ load("/global_options.lib.yml", "options")
 
 #@yaml/text-templated-strings
 ---
@@ -19,7 +18,7 @@ builds:
         cd "$BUILD_DIR";
         export LLVM_CONFIG="$ORCHESTRA_ROOT/bin/llvm-config";
         "$SOURCE_DIR/configure" \
-          --cc="(@= options["regular_c_compiler"] @)" \
+          --cc="(@= data.values.regular_c_compiler @)" \
           --prefix="$ORCHESTRA_ROOT" \
           --target-list=" arm-libtinycode arm-linux-user aarch64-libtinycode aarch64-linux-user i386-libtinycode i386-linux-user mips-libtinycode mips-linux-user mipsel-libtinycode mipsel-linux-user s390x-libtinycode s390x-linux-user x86_64-libtinycode x86_64-linux-user " \
           --disable-werror \
@@ -35,8 +34,8 @@ builds:
           --disable-uuid \
           --python="$(which python2)" \
           (@ if build_type == "Debug": @)--enable-debug (@ end @)\
-          --extra-cflags="(@= cflags @) (@= options["use_old_glibc_cflags"] @)" \
-          --extra-ldflags="(@= options["modern_linker_flags"] @) -L$ORCHESTRA_ROOT/lib --sysroot / (@= options["use_old_glibc_lflags"] @) -Wl,-rpath,\\\$\$ORIGIN/../lib"
+          --extra-cflags="(@= cflags @) (@= data.values.use_old_glibc_cflags @)" \
+          --extra-ldflags="(@= data.values.modern_linker_flags @) -L$ORCHESTRA_ROOT/lib --sysroot / (@= data.values.use_old_glibc_lflags @) -Wl,-rpath,\\\$\$ORIGIN/../lib"
       install: |
         cd "$BUILD_DIR"
         (@= make @) install

@@ -1,8 +1,7 @@
+#@ load("@ytt:data", "data")
 #@ load("@ytt:overlay", "overlay")
 #@ load("/lib/create_component.lib.yml", "single_build_component")
 #@ load("/lib/ninja.lib.yml", "ninja")
-
-#@ load("/global_options.lib.yml", "options")
 
 #@ source_url = "https://download.gnome.org/sources/glib/2.64/glib-2.64.5.tar.xz"
 
@@ -35,8 +34,8 @@ configure: |
     -Dfam=false \
     -Dinstalled_tests=false \
     -Dnls=disabled \
-    -Dc_args="(@= options["use_old_glibc_cflags"] @) -w" \
-    -Dc_link_args="(@= options["use_old_glibc_lflags"] @) -L$ORCHESTRA_ROOT/lib -fuse-ld=gold -Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
+    -Dc_args="(@= data.values.use_old_glibc_cflags @) -w" \
+    -Dc_link_args="(@= data.values.use_old_glibc_lflags @) -L$ORCHESTRA_ROOT/lib -fuse-ld=gold -Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
     "$BUILD_DIR" \
     "$BUILD_DIR/source"
 install: |

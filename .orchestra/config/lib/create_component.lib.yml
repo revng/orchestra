@@ -4,8 +4,6 @@
 #@ load("/lib/assert.lib.yml", "fail")
 #@ load("/lib/make.lib.yml", "make")
 
-#@ load("/global_options.lib.yml", "options")
-
 #@yaml/text-templated-strings
 ---
 #@ def single_build_component(

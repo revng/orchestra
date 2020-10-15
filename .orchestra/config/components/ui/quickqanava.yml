@@ -1,8 +1,6 @@
 #@ load("@ytt:overlay", "overlay")
 #@ load("/lib/cmake.lib.yml", "cmake_boost_configuration", "typical_cmake_builds")
 
-#@ load("/global_options.lib.yml", "options")
-
 ---
 #@ def build_args():
 extra_cmake_args:

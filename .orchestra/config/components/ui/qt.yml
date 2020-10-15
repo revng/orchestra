@@ -1,9 +1,8 @@
+#@ load("@ytt:data", "data")
 #@ load("@ytt:overlay", "overlay")
 #@ load("/lib/make.lib.yml", "make")
 #@ load("/lib/shell.lib.yml", "expand_args")
 #@ load("/lib/optimization_flavors.lib.yml", "qt_optimization_flavors")
-
-#@ load("/global_options.lib.yml", "options")
 
 #@yaml/text-templated-strings
 ---
@@ -88,8 +87,8 @@
     -c++std c++14 \
     -platform linux-clang \
     (@= extra_qmake_options @) \
-    QMAKE_CXXFLAGS+="(@= options["use_old_glibc_cflags"] @) -ggdb3 (@= options["regular_cxx_flags"] @)" \
-    QMAKE_LFLAGS+="(@= options["use_old_glibc_lflags"] @) -ggdb3 (@= options["regular_linker_flags"] @) -Wl,-rpath,(@= options["rpath_placeholder"] @)/lib"
+    QMAKE_CXXFLAGS+="(@= data.values.use_old_glibc_cflags @) -ggdb3 (@= data.values.regular_cxx_flags @)" \
+    QMAKE_LFLAGS+="(@= data.values.use_old_glibc_lflags @) -ggdb3 (@= data.values.regular_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib"
 #@ end
 
 #@ def configure_base(**kwargs):
@@ -111,8 +110,8 @@ builds:
       patch-if-exists "${ORCHESTRA_DOTDIR}/patches/qt-5.13.1-libcxx-include-array-linuxdmabuf.patch" "$SOURCE_DIR"
 
       cat >> "$SOURCE_DIR/qtbase/mkspecs/linux-clang/qmake.conf" <<eof
-      QMAKE_CXXFLAGS += (@= options["use_old_glibc_cflags"] @) -ggdb3 (@= options["regular_cxx_flags"] @) -w
-      QMAKE_LFLAGS += (@= options["use_old_glibc_lflags"] @) -ggdb3 (@= options["regular_linker_flags"] @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib
+      QMAKE_CXXFLAGS += (@= data.values.use_old_glibc_cflags @) -ggdb3 (@= data.values.regular_cxx_flags @) -w
+      QMAKE_LFLAGS += (@= data.values.use_old_glibc_lflags @) -ggdb3 (@= data.values.regular_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib
       eof
       sed -i 's|QT_CONFIG(getauxval)|0|' "$SOURCE_DIR/qtbase/src/corelib/global/qrandom.cpp"
 

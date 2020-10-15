@@ -1,6 +1,6 @@
+#@ load("@ytt:data", "data")
 #@ load("@ytt:overlay", "overlay")
 #@ load("/lib/create_component.lib.yml", "single_build_component")
-#@ load("/global_options.lib.yml", "options")
 
 #@ source_url = "https://github.com/libffi/libffi/releases/download/v3.3/libffi-3.3.tar.gz"
 
@@ -18,8 +18,8 @@ configure: |
     --disable-pax_emutramp \
     --disable-debug \
     --prefix="$ORCHESTRA_ROOT" \
-    CFLAGS="(@= options["use_old_glibc_cflags"] @)" \
-    LDFLAGS="(@= options["use_old_glibc_lflags"] @) (@= options["modern_linker_flags"] @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib"
+    CFLAGS="(@= data.values.use_old_glibc_cflags @)" \
+    LDFLAGS="(@= data.values.use_old_glibc_lflags @) (@= data.values.modern_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib"
 build_system: make
 dependencies:
   - toolchain/host/gcc

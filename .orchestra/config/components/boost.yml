@@ -1,10 +1,10 @@
-#@ load("@ytt:template", "template")
 #@ load("@ytt:overlay", "overlay")
+#@ load("@ytt:data", "data")
 
 #@ load("/lib/create_component.lib.yml", "single_build_component")
 
-#@ load("/global_options.lib.yml", "options")
-
+#@yaml/text-templated-strings
+---
 #@ def _boost():
 configure: |
   mkdir -p "$BUILD_DIR"
@@ -18,13 +18,13 @@ install: |
   ./b2 \
     --prefix="${DESTDIR}${ORCHESTRA_ROOT}" \
     --ignore-site-config toolset='clang' \
-    cxxflags='(@= options["use_old_glibc_cflags"] @) (@= options["regular_cxx_flags"] @)' \
-    linkflags='(@= options["use_old_glibc_lflags"] @) (@= options["regular_linker_flags"] @) -Wl,-rpath=$ORIGIN/../lib'
+    cxxflags='(@= data.values.use_old_glibc_cflags @) (@= data.values.regular_cxx_flags @)' \
+    linkflags='(@= data.values.use_old_glibc_lflags @) (@= data.values.regular_linker_flags @) -Wl,-rpath=$ORIGIN/../lib'
   ./b2 \
     --prefix="${DESTDIR}${ORCHESTRA_ROOT}" \
     --ignore-site-config toolset='clang' \
-    cxxflags='(@= options["regular_cxx_flags"] @)' \
-    linkflags='(@= options["regular_linker_flags"] @) -Wl,-rpath=$ORIGIN/../lib' \
+    cxxflags='(@= data.values.regular_cxx_flags @)' \
+    linkflags='(@= data.values.regular_linker_flags @) -Wl,-rpath=$ORIGIN/../lib' \
     install
 dependencies:
   - clang-release
@@ -34,7 +34,6 @@ dependencies:
 
 #@overlay/match by=overlay.all, expects=1
 #@overlay/match-child-defaults missing_ok=True
-#@yaml/text-templated-strings
 ---
 components:
   boost: #@ single_build_component(**_boost())

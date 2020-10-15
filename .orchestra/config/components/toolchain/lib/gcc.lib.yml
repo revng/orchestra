@@ -1,3 +1,4 @@
+#@ load("@ytt:data", "data")
 #@ load("@ytt:template", "template")
 
 #@ load("/lib/make.lib.yml", "make", "serial_make")
@@ -5,8 +6,6 @@
 #@ load("/lib/shell.lib.yml", "expand_args")
 
 #@ load("/components/toolchain/lib/common.lib.yml", "linker_flags", "new_gcc_path")
-
-#@ load("/global_options.lib.yml", "options")
 
 #@yaml/text-templated-strings
 ---
@@ -74,8 +73,8 @@
 #@ else:
 #@   fail("GCC stage must be 1 or 2")
 #@ end
-#@ dependencies = gcc_dependencies(stage, toolchain_name, musl_version, uclibc_version, linux_version, mingw64_version)
-#@ build_dependencies = gcc_build_dependencies(stage, toolchain_name)
+#@ dependencies = gcc_dependencies(stage, toolchain_name, musl_version, uclibc_version, linux_version, mingw64_version) or []
+#@ build_dependencies = gcc_build_dependencies(stage, toolchain_name) or []
 
 #! The sed is required to make `--sysroot=/` work with `--with-gxx-include-dir`
 #! properly.

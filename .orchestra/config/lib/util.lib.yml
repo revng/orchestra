@@ -1,0 +1,16 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:assert", "assert")
+
+#@ fail = "dummy-string-because-starlark-does-not-have-is-operator"
+
+#@ def datavalue(attrname, default=fail):
+#@   if not hasattr(data.values, attrname):
+#@     if default == fail:
+#@       assert.fail("You must provide a data value for " + attrname)
+#@     else:
+#@       return default
+#@     end
+#@   else:
+#@     return getattr(data.values, attrname)
+#@   end
+#@ end

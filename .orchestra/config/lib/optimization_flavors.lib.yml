@@ -1,4 +1,4 @@
-#@ load("/global_options.lib.yml", "options")
+#@ load("@ytt:data", "data")
 
 #! returned values are wrapped with dict() so we can call items() on them
 
@@ -30,11 +30,10 @@ release:
   ndebug: true
 #@ end
 
+---
 #@ def typical_project_flavors(use_asan=False):
 #@    return dict(_typical_project_flavors(use_asan=use_asan))
 #@ end
-
----
 
 #@yaml/text-templated-strings
 ---
@@ -54,12 +53,12 @@ release:
   ndebug: true
 #@ end
 
+---
 #@ def typical_cmake_flavors(use_asan=False):
 #@    return dict(_typical_cmake_flavors(use_asan=use_asan))
 #@ end
 
 ---
-
 #@ def _qt_optimization_flavors():
 debug:
   extra_qmake_options: -debug QMAKE_CXXFLAGS+="-fno-omit-frame-pointer"
@@ -74,7 +73,6 @@ release:
 
 #@ qt_optimization_flavors = dict(_qt_optimization_flavors())
 
-
 #@yaml/text-templated-strings
 ---
 #@ def _qmake_optimization_flavors():
@@ -82,21 +80,21 @@ debug:
   extra_qmake_args:
     - CONFIG+=debug
     - CONFIG-=release
-    - QMAKE_CXXFLAGS_DEBUG+="(@= options["use_old_glibc_cflags"] @) -ggdb3 -O0 -fno-omit-frame-pointer (@= options["regular_cxx_flags"] @)"
-    - QMAKE_LFLAGS+="(@= options["use_old_glibc_lflags"] @) -ggdb3 -O0 (@= options["regular_linker_flags"] @) -Wl,-rpath=(@= options["rpath_placeholder"] @)/lib"
+    - QMAKE_CXXFLAGS_DEBUG+="(@= data.values.use_old_glibc_cflags @) -ggdb3 -O0 -fno-omit-frame-pointer (@= data.values.regular_cxx_flags @)"
+    - QMAKE_LFLAGS+="(@= data.values.use_old_glibc_lflags @) -ggdb3 -O0 (@= data.values.regular_linker_flags @) -Wl,-rpath=$RPATH_PLACEHOLDER/lib"
   ndebug: false
 optimized:
   extra_qmake_args:
     - CONFIG+=debug
     - CONFIG-=release
-    - QMAKE_CXXFLAGS_DEBUG+="(@= options["use_old_glibc_cflags"] @) -ggdb3 -O2 -fno-omit-frame-pointer (@= options["regular_cxx_flags"] @)"
-    - QMAKE_LFLAGS+="(@= options["use_old_glibc_lflags"] @) -ggdb3 (@= options["regular_linker_flags"] @) -Wl,-rpath=(@= options["rpath_placeholder"] @)/lib"
+    - QMAKE_CXXFLAGS_DEBUG+="(@= data.values.use_old_glibc_cflags @) -ggdb3 -O2 -fno-omit-frame-pointer (@= data.values.regular_cxx_flags @)"
+    - QMAKE_LFLAGS+="(@= data.values.use_old_glibc_lflags @) -ggdb3 (@= data.values.regular_linker_flags @) -Wl,-rpath=$RPATH_PLACEHOLDER/lib"
   ndebug: false
 release:
   extra_qmake_args:
     - CONFIG+=release
-    - QMAKE_CXXFLAGS_RELEASE+="(@= options["use_old_glibc_cflags"] @) -ggdb3 -O2 (@= options["regular_cxx_flags"] @)"
-    - QMAKE_LFLAGS+="(@= options["use_old_glibc_lflags"] @) -ggdb3 (@= options["regular_linker_flags"] @) -Wl,-rpath=(@= options["rpath_placeholder"] @)/lib"
+    - QMAKE_CXXFLAGS_RELEASE+="(@= data.values.use_old_glibc_cflags @) -ggdb3 -O2 (@= data.values.regular_cxx_flags @)"
+    - QMAKE_LFLAGS+="(@= data.values.use_old_glibc_lflags @) -ggdb3 (@= data.values.regular_linker_flags @) -Wl,-rpath=$RPATH_PLACEHOLDER/lib"
   ndebug: true
 #@ end
 
