@@ -1,3 +1,4 @@
+#@ load("@ytt:data", "data")
 #@ load("/lib/fn_args.lib.yml", "mandatory")
 #@ load("/lib/create_component.lib.yml", "single_build_component")
 #@ load("/lib/shell.lib.yml", "expand_args")
@@ -39,13 +40,17 @@ configure: |
     --disable-libdecnumber \
     --disable-readline \
     --disable-sim \
-    --without-stage1-ldflags \
+    --with-stage1-ldflags="(@= linker_flags @)" \
+    --with-boot-ldflags="(@= linker_flags @)" \
     (@= expand_args(extra_binutils_configure_options) @) \
-    CFLAGS="-w -ggdb3 -O3" \
-    CXXFLAGS="-w -ggdb3 -O3" \
-    LDFLAGS="(@= linker_flags @)"
+    CFLAGS="-w -ggdb3 -O3 (@= data.values.use_old_glibc_cflags @)" \
+    CXXFLAGS="-w -ggdb3 -O3 (@= data.values.use_old_glibc_cflags @)" \
+    LDFLAGS="(@= linker_flags @) (@= data.values.use_old_glibc_lflags @)"
 build_system: make
 add_to_path: ${ORCHESTRA_ROOT}/x86_64-pc-linux-gnu/(@= triple @)/binutils-bin/(@= binutils_version @)
+build_dependencies:
+  - glibc
+  - toolchain/host/gcc
 #@ end
 
 ---

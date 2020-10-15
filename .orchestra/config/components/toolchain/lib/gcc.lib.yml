@@ -18,6 +18,7 @@
 #@   fail("GCC stage must be 1 or 2")
 #@ end
 
+#@ if/end "host" not in toolchain_name:
 - toolchain/(@= toolchain_name @)/binutils
 
 #@ if/end musl_version:
@@ -101,7 +102,6 @@ configure: |
     --enable-obsolete \
     --enable-secureplt \
     --disable-werror \
-    --with-system-zlib \
     --enable-nls \
     --without-included-gettext \
     --enable-checking=release \
@@ -129,6 +129,7 @@ configure: |
     --with-gmp="$ORCHESTRA_ROOT" \
     --with-mpfr="$ORCHESTRA_ROOT" \
     --with-mpc="$ORCHESTRA_ROOT" \
+    --without-zstd \
     (@= expand_args(extra_gcc_configure_options) @) \
     (@= expand_args(build_specific_configure_options) @) \
     CFLAGS="-w -ggdb3 -O3" \
