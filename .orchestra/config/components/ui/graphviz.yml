@@ -73,6 +73,7 @@ build_system: make
 dependencies:
   - clang-release
   - libltdl
+  - zlib
 #@ end
 
 #@overlay/match by=overlay.all, expects=1
