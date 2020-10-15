@@ -53,6 +53,6 @@ else
 fi
 
 mkdir -p "$INTO"
-pushd "$INTO"
+pushd "$INTO" > /dev/null
 tar --extract --file "${SRC_ARCHIVE_DIR}/${ARCHIVE_FILENAME}" --strip-components=1
-popd
+popd > /dev/null
