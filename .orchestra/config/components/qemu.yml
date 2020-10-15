@@ -7,6 +7,7 @@
 ---
 #@ def qemu_component(use_asan=False):
 repository: qemu
+default_build: optimized
 builds:
   #@ for flavor, f_options in typical_project_flavors(use_asan=use_asan).items():
     #@ build_type = f_options["cmake_build_type"]

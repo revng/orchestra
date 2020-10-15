@@ -20,4 +20,5 @@ use_asan: false
 components:
   ui/quickqanava:
     repository: ui/quickqanava
+    default_build: optimized
     builds: #@ typical_cmake_builds(**build_args())

@@ -21,4 +21,5 @@ use_asan: false
 components:
   revng-c:
     repository: revng-c
+    default_build: optimized
     builds: #@ typical_cmake_builds(**build_args())
