@@ -1,3 +1,4 @@
+#@ load("@ytt:data", "data")
 #@ load("/lib/create_component.lib.yml", "single_build_component")
 #@ load("/components/toolchain/lib/common.lib.yml", "linker_flags")
 
@@ -47,20 +48,20 @@ configure: |
     --disable-install-libiberty \
     --without-guile \
     --with-system-readline \
-    --with-system-zlib \
-    --with-expat \
-    --with-lzma \
     --enable-nls \
-    --enable-tui=yes \
+    --enable-tui=no \
     --with-mpfr="$ORCHESTRA_ROOT" \
     --without-included-gettext \
     --disable-shared \
     --enable-obsolete \
     --without-stage1-ldflags \
-    CFLAGS="-w -ggdb3 -O3" \
-    CXXFLAGS="-w -ggdb3 -O3" \
-    LDFLAGS="(@= linker_flags @)"
+    CFLAGS="-w -ggdb3 -O3 (@= data.values.use_old_glibc_cflags @)" \
+    CXXFLAGS="-w -ggdb3 -O3 (@= data.values.use_old_glibc_cflags @)" \
+    LDFLAGS="(@= linker_flags @) (@= data.values.use_old_glibc_lflags @)"
 build_system: make
+build_dependencies:
+  - glibc
+  - zlib
 #@ end
 
 ---
