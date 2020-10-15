@@ -18,7 +18,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def _xcb_proto_args():
+#@ def xcb_proto_args():
 configure: |
   mkdir -p "$BUILD_DIR"
   extract.sh --into "$BUILD_DIR" "(@= xcb_proto_source_url @)"
@@ -35,7 +35,7 @@ dependencies:
 
 #@yaml/text-templated-strings
 ---
-#@ def _libxcb_args():
+#@ def libxcb_args():
 configure: |
   mkdir -p "$BUILD_DIR"
   extract.sh --into "$BUILD_DIR" "(@= libxcb_source_url @)"
@@ -58,7 +58,7 @@ dependencies:
 
 #@yaml/text-templated-strings
 ---
-#@ def _libx11_args():
+#@ def libx11_args():
 configure: |
   mkdir -p "$BUILD_DIR"
   extract.sh --into "$BUILD_DIR" "(@= libx11_source_url @)"
@@ -84,7 +84,7 @@ dependencies:
 
 #@yaml/text-templated-strings
 ---
-#@ def _xcbutil_args(source_url, additional_dependencies=[]):
+#@ def xcbutil_args(source_url, additional_dependencies=[]):
 configure: |
   mkdir -p "$BUILD_DIR"
   extract.sh --into "$BUILD_DIR/source" "(@= source_url @)"
@@ -106,13 +106,13 @@ dependencies:
 #@ end
 
 ---
-#@ def _xcbutil_sublibrary_args(source_url):
-#@ return _xcbutil_args(source_url, additional_dependencies=["ui/xcbutil"])
+#@ def xcbutil_sublibrary_args(source_url):
+#@ return xcbutil_args(source_url, additional_dependencies=["ui/xcbutil"])
 #@ end
 
 #@yaml/text-templated-strings
 ---
-#@ def _xtrans_component():
+#@ def xtrans_component():
 builds:
   default:
     configure: |
@@ -134,13 +134,13 @@ builds:
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  ui/xcb-proto: #@ single_build_component(**_xcb_proto_args())
-  ui/libxcb: #@ single_build_component(**_libxcb_args())
-  ui/libx11: #@ single_build_component(**_libx11_args())
-  ui/xtrans: #@ _xtrans_component()
-  ui/xcbutil: #@ single_build_component(**_xcbutil_args(xcbutil_source_url))
-  ui/xcbutil-image: #@ single_build_component(**_xcbutil_sublibrary_args(xcbutil_image_source_url))
-  ui/xcbutil-renderutil: #@ single_build_component(**_xcbutil_sublibrary_args(xcbutil_renderutil_source_url))
-  ui/xcbutil-wm: #@ single_build_component(**_xcbutil_sublibrary_args(xcbutil_wm_source_url))
-  ui/xcbutil-keysyms: #@ single_build_component(**_xcbutil_sublibrary_args(xcbutil_keysyms_source_url))
-  ui/libxshmfence: #@ single_build_component(**_xcbutil_sublibrary_args(libxshmfence_source_url))
+  ui/xcb-proto: #@ single_build_component(**xcb_proto_args())
+  ui/libxcb: #@ single_build_component(**libxcb_args())
+  ui/libx11: #@ single_build_component(**libx11_args())
+  ui/xtrans: #@ xtrans_component()
+  ui/xcbutil: #@ single_build_component(**xcbutil_args(xcbutil_source_url))
+  ui/xcbutil-image: #@ single_build_component(**xcbutil_sublibrary_args(xcbutil_image_source_url))
+  ui/xcbutil-renderutil: #@ single_build_component(**xcbutil_sublibrary_args(xcbutil_renderutil_source_url))
+  ui/xcbutil-wm: #@ single_build_component(**xcbutil_sublibrary_args(xcbutil_wm_source_url))
+  ui/xcbutil-keysyms: #@ single_build_component(**xcbutil_sublibrary_args(xcbutil_keysyms_source_url))
+  ui/libxshmfence: #@ single_build_component(**xcbutil_sublibrary_args(libxshmfence_source_url))

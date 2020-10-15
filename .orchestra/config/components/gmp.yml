@@ -5,7 +5,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def _gmp_args():
+#@ def gmp_args():
 configure: |
   mkdir -p "$BUILD_DIR"
   extract.sh --into "$BUILD_DIR" "(@= source_url @)"
@@ -22,4 +22,4 @@ build_system: make
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  gmp: #@ single_build_component(**_gmp_args())
+  gmp: #@ single_build_component(**gmp_args())

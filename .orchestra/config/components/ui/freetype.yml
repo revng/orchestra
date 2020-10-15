@@ -6,7 +6,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def _freetype_args():
+#@ def freetype_args():
 configure: |
   mkdir -p "$BUILD_DIR"
   extract.sh --into "$BUILD_DIR" "(@= source_url @)"
@@ -34,4 +34,4 @@ dependencies:
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  ui/freetype: #@ single_build_component(**_freetype_args())
+  ui/freetype: #@ single_build_component(**freetype_args())

@@ -7,7 +7,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def _glib_args():
+#@ def glib_args():
 configure: |
   mkdir -p "$BUILD_DIR/source"
   extract.sh --into "$BUILD_DIR/source" (@= source_url @)
@@ -53,4 +53,4 @@ dependencies:
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  glib: #@ single_build_component(**_glib_args())
+  glib: #@ single_build_component(**glib_args())

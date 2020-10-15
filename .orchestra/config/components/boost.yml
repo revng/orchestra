@@ -5,7 +5,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def _boost():
+#@ def boost():
 configure: |
   mkdir -p "$BUILD_DIR"
 
@@ -36,4 +36,4 @@ dependencies:
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  boost: #@ single_build_component(**_boost())
+  boost: #@ single_build_component(**boost())

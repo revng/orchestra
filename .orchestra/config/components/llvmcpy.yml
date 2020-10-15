@@ -1,6 +1,6 @@
 #@ load("@ytt:overlay", "overlay")
 
-#@ def _llvmcpy_component():
+#@ def llvmcpy_component():
 repository: llvmcpy
 builds:
   default:
@@ -20,4 +20,4 @@ builds:
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  llvmcpy: #@ _llvmcpy_component()
+  llvmcpy: #@ llvmcpy_component()

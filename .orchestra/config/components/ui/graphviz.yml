@@ -6,7 +6,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def _graphviz_args():
+#@ def graphviz_args():
 configure: |
   mkdir -p "$BUILD_DIR"
   extract.sh --into "$BUILD_DIR" "(@= source_url @)"
@@ -79,4 +79,4 @@ dependencies:
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  ui/graphviz: #@ single_build_component(**_graphviz_args())
+  ui/graphviz: #@ single_build_component(**graphviz_args())

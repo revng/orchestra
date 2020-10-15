@@ -5,7 +5,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def _mpc_args():
+#@ def mpc_args():
 configure: |
   mkdir -p "$BUILD_DIR"
   extract.sh --into "$BUILD_DIR" (@= source_url @)
@@ -24,4 +24,4 @@ dependencies:
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  mpc: #@ single_build_component(**_mpc_args())
+  mpc: #@ single_build_component(**mpc_args())

@@ -7,7 +7,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def _libtapi_component():
+#@ def libtapi_component():
 builds:
   default:
     configure: |
@@ -37,6 +37,3 @@ builds:
       - clang-release
       - toolchain/host/gcc
 #@ end
-
----
-#@ libtapi_component = _libtapi_component()

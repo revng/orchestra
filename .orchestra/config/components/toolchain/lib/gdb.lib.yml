@@ -12,7 +12,7 @@
 #@ end
 
 ---
-#@ def _gdb_build(**kwargs):
+#@ def gdb_build(**kwargs):
 #@   triple = kwargs["triple"]
 #@   version = kwargs["gdb_version"]
 
@@ -65,5 +65,5 @@ build_system: make
 
 ---
 #@ def create_gdb_component(**kwargs):
-#@    return single_build_component(**_gdb_build(**kwargs))
+#@    return single_build_component(**gdb_build(**kwargs))
 #@ end

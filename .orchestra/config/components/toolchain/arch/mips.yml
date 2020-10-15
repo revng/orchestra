@@ -1,7 +1,7 @@
 #@ load("@ytt:overlay", "overlay")
 #@ load("/components/toolchain/lib/toolchain.lib.yml", "create_toolchain_components")
 
-#@ def _params():
+#@ def params():
 toolchain_name: mips
 triple: mips-unknown-linux-musl
 linux_version: "4.5.2"
@@ -25,4 +25,4 @@ spec: true
 #@overlay/match by=overlay.all, expects=1
 #@overlay/match-child-defaults missing_ok=True
 ---
-components: #@ create_toolchain_components(**_params())
+components: #@ create_toolchain_components(**params())

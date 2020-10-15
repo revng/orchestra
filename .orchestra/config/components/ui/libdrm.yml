@@ -7,7 +7,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def _libpciaccess_args():
+#@ def libpciaccess_args():
 configure: |
   mkdir -p "$BUILD_DIR"
   extract.sh --into "$BUILD_DIR/source" "(@= libpciaccess_source_url @)"
@@ -27,7 +27,7 @@ dependencies:
 
 #@yaml/text-templated-strings
 ---
-#@ def _libdrm_args():
+#@ def libdrm_args():
 configure: |
   mkdir -p "$BUILD_DIR"
   extract.sh --into "$BUILD_DIR/source" "(@= libdrm_source_url @)"
@@ -70,5 +70,5 @@ dependencies:
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  ui/libpciaccess: #@ single_build_component(**_libpciaccess_args())
-  ui/libdrm: #@ single_build_component(**_libdrm_args())
+  ui/libpciaccess: #@ single_build_component(**libpciaccess_args())
+  ui/libdrm: #@ single_build_component(**libdrm_args())

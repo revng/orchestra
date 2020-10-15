@@ -14,7 +14,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def _ld64_components():
+#@ def ld64_components():
 #@ for prefix in prefixes():
 macos/(@= prefix @)-ld64:
   builds:
@@ -50,6 +50,3 @@ macos/(@= prefix @)-ld64:
         - toolchain/host/gcc
 #@ end
 #@ end
-
----
-#@ ld64_components = _ld64_components()

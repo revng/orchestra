@@ -6,7 +6,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def _zlib_args():
+#@ def zlib_args():
 configure: |
   mkdir -p "$BUILD_DIR"
   extract.sh --into "$BUILD_DIR" (@= source_url @)
@@ -26,4 +26,4 @@ dependencies:
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  zlib: #@ single_build_component(**_zlib_args())
+  zlib: #@ single_build_component(**zlib_args())

@@ -6,7 +6,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def _libltdl_args():
+#@ def libltdl_args():
 configure: |
   mkdir -p "$BUILD_DIR"
   extract.sh --into "$BUILD_DIR" "(@= source_url @)"
@@ -26,4 +26,4 @@ dependencies:
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  libltdl: #@ single_build_component(**_libltdl_args())
+  libltdl: #@ single_build_component(**libltdl_args())

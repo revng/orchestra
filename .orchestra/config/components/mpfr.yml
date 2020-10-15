@@ -6,7 +6,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def _mpfr_args():
+#@ def mpfr_args():
 configure: |
   mkdir -p "$BUILD_DIR"
   extract.sh --into "$BUILD_DIR" (@= source_url @)
@@ -23,4 +23,4 @@ dependencies:
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  mpfr: #@ single_build_component(**_mpfr_args())
+  mpfr: #@ single_build_component(**mpfr_args())

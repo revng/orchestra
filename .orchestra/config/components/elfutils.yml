@@ -6,7 +6,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def _elfutils_args():
+#@ def elfutils_args():
 configure: |
   mkdir -p "$BUILD_DIR"
   extract.sh --into "$BUILD_DIR" "(@= source_url @)"
@@ -31,4 +31,4 @@ dependencies:
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  elfutils: #@ single_build_component(**_elfutils_args())
+  elfutils: #@ single_build_component(**elfutils_args())

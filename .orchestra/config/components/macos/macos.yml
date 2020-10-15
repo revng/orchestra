@@ -10,7 +10,7 @@
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  macos/libtapi: #@ libtapi_component
-  macos/sdk: #@ macosx_sdk_component
-  _: #@ template.replace(ld64_components)
-  _: #@ template.replace(macosx_clang_components)
+  macos/libtapi: #@ libtapi_component()
+  macos/sdk: #@ macosx_sdk_component()
+  _: #@ template.replace(ld64_components())
+  _: #@ template.replace(macosx_clang_components())

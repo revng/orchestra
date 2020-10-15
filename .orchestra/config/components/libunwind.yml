@@ -6,7 +6,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def _libunwind_args():
+#@ def libunwind_args():
 configure: |
   mkdir -p "$BUILD_DIR"
   extract.sh --into "$BUILD_DIR" (@= source_url @)
@@ -35,4 +35,4 @@ dependencies:
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  libunwind: #@ single_build_component(**_libunwind_args())
+  libunwind: #@ single_build_component(**libunwind_args())

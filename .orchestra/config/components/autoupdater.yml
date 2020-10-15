@@ -2,7 +2,7 @@
 #@ load("/lib/create_component.lib.yml", "single_build_component")
 
 ---
-#@ def _autoupdater():
+#@ def autoupdater():
 repository: revng-updater
 configure: |
   mkdir -p "$BUILD_DIR" && cd "$BUILD_DIR"
@@ -17,4 +17,4 @@ skip_post_install: true
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  autoupdater: #@ single_build_component(**_autoupdater())
+  autoupdater: #@ single_build_component(**autoupdater())

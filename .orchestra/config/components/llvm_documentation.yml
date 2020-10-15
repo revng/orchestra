@@ -3,7 +3,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def _llvm_documentation_component():
+#@ def llvm_documentation_component():
 repository: llvm-project
 builds:
   default:
@@ -74,4 +74,4 @@ builds:
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  llvm-documentation: #@ _llvm_documentation_component()
+  llvm-documentation: #@ llvm_documentation_component()

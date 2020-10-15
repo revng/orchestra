@@ -4,7 +4,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def _params():
+#@ def params():
 toolchain_name: host
 triple: x86_64-pc-linux-gnu
 binutils_version: "2.35"
@@ -46,4 +46,4 @@ extra_gcc_make_variables: LIBRARY_PATH=/usr/lib/x86_64-linux-gnu
 #@overlay/match by=overlay.all, expects=1
 #@overlay/match-child-defaults missing_ok=True
 ---
-components: #@ create_toolchain_components(**_params())
+components: #@ create_toolchain_components(**params())

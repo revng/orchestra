@@ -3,7 +3,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def _revng_qa_args():
+#@ def revng_qa_args():
 repository: revng-qa
 configure: |
   mkdir -p "$BUILD_DIR"
@@ -36,4 +36,4 @@ dependencies:
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  revng-qa: #@ single_build_component(**_revng_qa_args())
+  revng-qa: #@ single_build_component(**revng_qa_args())

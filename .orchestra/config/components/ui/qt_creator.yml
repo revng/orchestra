@@ -37,7 +37,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def _qt_creator_component():
+#@ def qt_creator_component():
 repository: ui/qt-creator
 default_build: optimized
 builds:
@@ -65,4 +65,4 @@ builds:
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  ui/qt-creator: #@ _qt_creator_component()
+  ui/qt-creator: #@ qt_creator_component()

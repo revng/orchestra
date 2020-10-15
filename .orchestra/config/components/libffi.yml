@@ -6,7 +6,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def _libffi_args():
+#@ def libffi_args():
 configure: |
   mkdir -p "$BUILD_DIR"
   extract.sh --into "$BUILD_DIR" (@= source_url @)
@@ -29,4 +29,4 @@ dependencies:
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  libffi: #@ single_build_component(**_libffi_args())
+  libffi: #@ single_build_component(**libffi_args())

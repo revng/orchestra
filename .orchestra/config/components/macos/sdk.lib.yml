@@ -2,7 +2,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def _macosx_sdk_component():
+#@ def macosx_sdk_component():
 builds:
   default:
     configure: |
@@ -18,6 +18,3 @@ builds:
       - toolchain/host/gcc
 add_to_path: "$ORCHESTRA_DOTDIR/support/repackage-apple-sdk"
 #@ end
-
----
-#@ macosx_sdk_component = _macosx_sdk_component()

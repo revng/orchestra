@@ -1,7 +1,7 @@
 #@ load("@ytt:overlay", "overlay")
 #@ load("/components/toolchain/lib/toolchain.lib.yml", "create_toolchain_components")
 
-#@ def _params():
+#@ def params():
 toolchain_name: s390x
 triple: s390x-ibm-linux-musl
 linux_version: "4.14.18"
@@ -24,4 +24,4 @@ dynamic: "0"
 #@overlay/match by=overlay.all, expects=1
 #@overlay/match-child-defaults missing_ok=True
 ---
-components: #@ create_toolchain_components(**_params())
+components: #@ create_toolchain_components(**params())

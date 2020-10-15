@@ -6,7 +6,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def _libglvnd_args():
+#@ def libglvnd_args():
 configure: |
   mkdir -p "$BUILD_DIR" "$BUILD_DIR/source"
   extract.sh --into "$BUILD_DIR/source" "(@= source_url @)"
@@ -35,4 +35,4 @@ dependencies:
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  ui/libglvnd: #@ single_build_component(**_libglvnd_args())
+  ui/libglvnd: #@ single_build_component(**libglvnd_args())

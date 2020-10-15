@@ -6,7 +6,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def _mesa_args():
+#@ def mesa_args():
 configure: |
   mkdir -p "$BUILD_DIR" "$BUILD_DIR/source"
   extract.sh --into "$BUILD_DIR/source" "(@= source_url @)"
@@ -71,4 +71,4 @@ dependencies:
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  ui/mesa: #@ single_build_component(**_mesa_args())
+  ui/mesa: #@ single_build_component(**mesa_args())

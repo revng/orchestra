@@ -15,7 +15,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def _llvm_component(use_asan=False):
+#@ def llvm_component(use_asan=False):
 repository: llvm-project
 builds:
   #@ for flavor, f_options in typical_project_flavors(use_asan=use_asan).items():
@@ -49,4 +49,4 @@ builds:
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  llvm: #@ _llvm_component()
+  llvm: #@ llvm_component()

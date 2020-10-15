@@ -11,7 +11,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def _macosx_clang_components():
+#@ def macosx_clang_components():
 #@ for prefix in prefixes():
 macos/(@= prefix @)-clang:
   builds:
@@ -29,6 +29,3 @@ macos/(@= prefix @)-clang:
         - macos/(@= prefix @)-ld64
 #@ end
 #@ end
-
----
-#@ macosx_clang_components = _macosx_clang_components()

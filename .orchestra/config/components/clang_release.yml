@@ -11,7 +11,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def _clang_release_args():
+#@ def clang_release_args():
 #@    source_url = "https://github.com/llvm/llvm-project/archive/llvmorg-" + data.values.clang_release_version + ".tar.gz"
 configure: |
   extract.sh --into "$BUILD_DIR/source" "(@= source_url @)"
@@ -49,4 +49,4 @@ dependencies:
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  clang-release: #@ single_build_component(**_clang_release_args())
+  clang-release: #@ single_build_component(**clang_release_args())

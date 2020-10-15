@@ -6,7 +6,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def _glibc_args():
+#@ def glibc_args():
 configure: |
   mkdir -p "$BUILD_DIR/source"
   extract.sh --into "$BUILD_DIR/source" (@= source_url @)
@@ -51,4 +51,4 @@ install: |
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  glibc: #@ single_build_component(**_glibc_args())
+  glibc: #@ single_build_component(**glibc_args())

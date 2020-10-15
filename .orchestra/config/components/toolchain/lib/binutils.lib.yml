@@ -5,7 +5,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def _binutils_args(triple=mandatory, binutils_version=mandatory, extra_binutils_configure_options=""):
+#@ def binutils_args(triple=mandatory, binutils_version=mandatory, extra_binutils_configure_options=""):
 
 #@   source_url = "https://ftp.gnu.org/gnu/binutils/binutils-" + binutils_version + ".tar.bz2"
 configure: |
@@ -50,5 +50,5 @@ add_to_path: ${ORCHESTRA_ROOT}/x86_64-pc-linux-gnu/(@= triple @)/binutils-bin/(@
 
 ---
 #@ def create_binutils_component(**kwargs):
-#@    return single_build_component(**_binutils_args(**kwargs))
+#@    return single_build_component(**binutils_args(**kwargs))
 #@ end

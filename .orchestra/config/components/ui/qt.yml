@@ -98,7 +98,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def _qt_component():
+#@ def qt_component():
 default_build: optimized
 builds:
   #@ for flavor, opts in qt_optimization_flavors.items():
@@ -156,4 +156,4 @@ builds:
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  ui/qt: #@ _qt_component()
+  ui/qt: #@ qt_component()

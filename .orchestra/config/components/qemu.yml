@@ -5,7 +5,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def _qemu_component(use_asan=False):
+#@ def qemu_component(use_asan=False):
 repository: qemu
 builds:
   #@ for flavor, f_options in typical_project_flavors(use_asan=use_asan).items():
@@ -53,4 +53,4 @@ builds:
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  qemu: #@ _qemu_component()
+  qemu: #@ qemu_component()
