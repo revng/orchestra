@@ -1,3 +1,4 @@
+#@ load("@ytt:data", "data")
 #@ load("@ytt:overlay", "overlay")
 #@ load("/lib/create_component.lib.yml", "single_build_component")
 
@@ -13,9 +14,12 @@ configure: |
     --prefix="$ORCHESTRA_ROOT" \
     --enable-shared=no \
     --enable-fat \
-    CFLAGS="-fPIC" \
-    CXXFLAGS="-fPIC"
+    CFLAGS="-fPIC (@= data.values.use_old_glibc_cflags @)" \
+    CXXFLAGS="-fPIC (@= data.values.use_old_glibc_cflags @)" \
+    LDFLAGS="(@= data.values.use_old_glibc_lflags @)"
 build_system: make
+build_dependencies:
+  - glibc
 #@ end
 
 #@overlay/match by=overlay.all, expects=1
