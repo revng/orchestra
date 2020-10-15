@@ -1,0 +1,24 @@
+https://sourceware.org/git/gitweb.cgi?p=glibc.git;h=d9b965fa56350d6eea9f7f438a0714c7ffbb183f
+
+--- a/math/bits/mathcalls.h
++++ b/math/bits/mathcalls.h
+@@ -199,7 +199,9 @@
+ #ifdef __USE_MISC
+ /* Return 0 if VALUE is finite or NaN, +1 if it
+    is +Infinity, -1 if it is -Infinity.  */
++#if !defined __cplusplus || __cplusplus < 201103L /* Conflicts with C++11.  */
+ __MATHDECL_1 (int,isinf,, (_Mdouble_ __value)) __attribute__ ((__const__));
++#endif
+
+ /* Return nonzero if VALUE is finite and not NaN.  */
+ __MATHDECL_1 (int,finite,, (_Mdouble_ __value)) __attribute__ ((__const__));
+@@ -232,7 +234,9 @@
+
+ #if defined __USE_MISC || defined __USE_XOPEN
+ /* Return nonzero if VALUE is not a number.  */
++#if !defined __cplusplus || __cplusplus < 201103L /* Conflicts with C++11.  */
+ __MATHDECL_1 (int,isnan,, (_Mdouble_ __value)) __attribute__ ((__const__));
++#endif
+
+ /* Bessel functions.  */
+ __MATHCALL (j0,, (_Mdouble_));
