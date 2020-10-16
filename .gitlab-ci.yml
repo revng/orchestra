@@ -40,7 +40,9 @@ create-binaries:
 
       EOF
     - orchestra update --no-config
+    # Print graph and component list to aid debugging
     - orchestra -b graph revng-distributable
+    - orchestra -b components --hashes --deps
     - orchestra -b install --create-binary-archives revng-distributable
     - cd .orchestra/binary-archives/personal
     - git config user.email "gitlabci@rev.ng"

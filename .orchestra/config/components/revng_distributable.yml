@@ -30,11 +30,22 @@ install: |
   cd root
 
   echo "Removing build-only components"
-  cat "share/orchestra/glibc.idx" | xargs -n1000 rm -f
-  cat "share/orchestra/boost.idx" | xargs -n1000 rm -f
-  cat "share/orchestra/toolchain_host_binutils.idx" | xargs -n1000 rm -f
-  cat "share/orchestra/toolchain_host_gcc.idx" | grep -v libgcc_s.so | xargs -n1000 rm -f
-  cat "share/orchestra/clang-release.idx" | grep -v 'libc++.so' | grep -v 'libc++abi.so' | xargs -n1000 rm -f
+  index_files=(
+    "share/orchestra/glibc.idx"
+    "share/orchestra/boost.idx"
+    "share/orchestra/toolchain_host_binutils.idx"
+    "share/orchestra/toolchain_host_gcc.idx"
+    "share/orchestra/clang-release.idx"
+  )
+  for index_file in $index_files; do
+    if [ -e "$index_file" ]; then
+      cat "$index_file" | \
+        grep -v libgcc_s.so | \
+        grep -v 'libc++.so' | \
+        grep -v 'libc++abi.so' | \
+        xargs -n1000 rm -f
+    fi
+  done
 
   echo "Stripping components"
   find "share/orchestra" -name "*.idx" -type f | grep -vE 'revng|caliban'| xargs cat | while read EXECUTABLE; do
