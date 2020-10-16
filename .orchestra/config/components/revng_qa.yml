@@ -17,7 +17,9 @@ configure: |
     -DTRIPLE_arm="armv7a-hardfloat-linux-uclibceabi" \
     -DTRIPLE_aarch64="aarch64-unknown-linux-musl" \
     -DTRIPLE_s390x="s390x-ibm-linux-musl"
-build_system: make
+install: |
+  make -j1
+  make install
 build_dependencies:
   - cmake
   - glibc
