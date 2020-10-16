@@ -35,10 +35,12 @@ create-binaries:
         - revng-c
         - caliban
         - ui/cold-revng
+        - environment
         - revng-distributable
 
       EOF
     - orchestra update --no-config
+    - orchestra -b graph revng-distributable
     - orchestra -b install --create-binary-archives revng-distributable
     - cd .orchestra/binary-archives/personal
     - git config user.email "gitlabci@rev.ng"
