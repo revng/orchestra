@@ -13,21 +13,37 @@ create-binaries:
     - python3 setup.py bdist_wheel
     - pip3 install dist/orchestra*.whl
     - cd "$CI_PROJECT_DIR"
-    - git checkout -B "$CI_COMMIT_REF_NAME" "$CI_COMMIT_SHA"
     - |
-      git remote add internal https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/revng-internal/revng-orchestra.git || \
-        git remote set-url internal https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/revng-internal/revng-orchestra.git || \
-        true
-    - |
-      git remote add private https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/revng-private/orchestra-v3.git || \
-        git remote set-url private https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/revng-private/orchestra-v3.git || \
-        true
-    - orchestra update
-    - orchestra -b install --create-binary-archives ui/cold-revng
-    # - cd .orchestra/binary_archives
-    # - git config user.email "gitlabci@rev.ng"
-    # - git config user.name "rev.ng Gitlab CI"
-    # - git add .
-    # - git commit -m "Binary archives built on $(date)"
-    # - git push
-    # - git-lfs push
+      cat - > .orchestra/config/user_options.yml <<EOF
+      #@data/values
+      ---
+      #@overlay/match missing_ok=True
+      remote_base_urls:
+        - personal: "https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/${CI_PROJECT_NAMESPACE}"
+        - internal: "https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/revng-internal"
+        - private: "https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/revng-private"
+
+      #@overlay/match missing_ok=True
+      binary_archives:
+        - personal: "https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/${CI_PROJECT_NAMESPACE}/binary-archives"
+
+      #@overlay/replace
+      build_from_source:
+        - llvmcpy
+        - revng-qa
+        - revng
+        - revng-c
+        - caliban
+        - ui/cold-revng
+        - revng-distributable
+
+      EOF
+    - orchestra update --no-config
+    - orchestra -b install --create-binary-archives ui/revng-distributable
+    - cd .orchestra/binary_archives
+    - git config user.email "gitlabci@rev.ng"
+    - git config user.name "rev.ng Gitlab CI"
+    - git add .
+    - git commit -m "Binary archives built on $(date) for commit ${CI_COMMIT_SHA}"
+    - git push
+    - git-lfs push
