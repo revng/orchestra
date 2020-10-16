@@ -40,6 +40,7 @@ configure: |
     --disable-libdecnumber \
     --disable-readline \
     --disable-sim \
+    --without-debuginfod \
     --with-stage1-ldflags="(@= linker_flags @)" \
     --with-boot-ldflags="(@= linker_flags @)" \
     (@= expand_args(extra_binutils_configure_options) @) \
