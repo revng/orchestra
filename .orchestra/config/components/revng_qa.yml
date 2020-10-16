@@ -18,6 +18,7 @@ configure: |
     -DTRIPLE_aarch64="aarch64-unknown-linux-musl" \
     -DTRIPLE_s390x="s390x-ibm-linux-musl"
 install: |
+  cd "$BUILD_DIR"
   make -j1
   make install
 build_dependencies:
