@@ -40,7 +40,7 @@ create-binaries:
       EOF
     - orchestra update --no-config
     - orchestra -b install --create-binary-archives revng-distributable
-    - cd .orchestra/binary_archives
+    - cd .orchestra/binary-archives/personal
     - git config user.email "gitlabci@rev.ng"
     - git config user.name "rev.ng Gitlab CI"
     - git add .
