@@ -28,6 +28,7 @@ apt-get install --no-install-recommends --yes \
   libreadline-dev \
   libtool \
   m4 \
+  meson \
   ninja-build \
   pkg-config \
   python \
