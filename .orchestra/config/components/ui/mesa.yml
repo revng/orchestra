@@ -57,6 +57,7 @@ configure: |
 build_system: ninja
 build_dependencies:
   - clang-release
+  - glibc
 dependencies:
   - elfutils
   - llvm

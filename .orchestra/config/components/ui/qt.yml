@@ -146,6 +146,8 @@ builds:
       - ui/libx11
       - ui/xkbcommon
       - zlib
+    build_dependencies:
+      - glibc
     #@ if/end ndebug == False:
     ndebug: false
   #@ end

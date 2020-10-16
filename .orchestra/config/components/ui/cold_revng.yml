@@ -12,6 +12,7 @@ extra_cmake_args:
   - -DQTC_BUILD="$ORCHESTRA_ROOT"
 build_dependencies:
   - cmake
+  - glibc
 dependencies:
   - toolchain/host/gcc
   - clang-release

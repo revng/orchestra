@@ -20,6 +20,7 @@ configure: |
 build_system: make
 build_dependencies:
   - cmake
+  - glibc
 dependencies:
   - clang-release
   - qemu

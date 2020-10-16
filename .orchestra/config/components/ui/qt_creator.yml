@@ -56,6 +56,8 @@ builds:
       - toolchain/host/gcc
       - llvm
       - ui/qt
+    build_dependencies:
+      - glibc
     #@ if/end opts["ndebug"] == False:
     ndebug: false
   #@ end

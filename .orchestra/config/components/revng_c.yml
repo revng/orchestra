@@ -6,6 +6,7 @@
 extra_cmake_args: #@ cmake_boost_configuration
 build_dependencies:
   - cmake
+  - glibc
 dependencies:
   - toolchain/host/gcc
   - clang-release
