@@ -41,6 +41,7 @@ apt-get install --no-install-recommends --yes \
   python3-pygraphviz \
   python3-setuptools \
   sed \
+  ssh \
   texinfo \
   valgrind \
   wget \
