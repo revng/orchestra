@@ -46,8 +46,7 @@ configure: |
     --disable-readline \
     --disable-sim \
     --without-debuginfod \
-    --with-stage1-ldflags="(@= linker_flags @)" \
-    --with-boot-ldflags="(@= linker_flags @)" \
+    --without-stage1-ldflags \
     (@= expand_args(extra_binutils_configure_options) @) \
     CFLAGS="-w -ggdb3 -O3 (@= data.values.use_old_glibc_cflags @)" \
     CXXFLAGS="-w -ggdb3 -O3 (@= data.values.use_old_glibc_cflags @)" \
