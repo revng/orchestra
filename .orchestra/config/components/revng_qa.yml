@@ -17,13 +17,9 @@ configure: |
     -DTRIPLE_arm="armv7a-hardfloat-linux-uclibceabi" \
     -DTRIPLE_aarch64="aarch64-unknown-linux-musl" \
     -DTRIPLE_s390x="s390x-ibm-linux-musl"
-install: |
-  cd "$BUILD_DIR"
-  make -j1
-  make install
+build_system: make
 build_dependencies:
   - cmake
-  - glibc
 dependencies:
   - clang-release
   - qemu
