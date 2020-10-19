@@ -6,9 +6,14 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def binutils_args(triple=mandatory, binutils_version=mandatory, extra_binutils_configure_options=""):
-
+#@ def binutils_args(
+#@   triple=mandatory,
+#@   binutils_version=mandatory,
+#@   extra_binutils_configure_options="",
+#@   binutils_sysroot=None,
+#@   ):
 #@   source_url = "https://ftp.gnu.org/gnu/binutils/binutils-" + binutils_version + ".tar.bz2"
+#@   binutils_sysroot = binutils_sysroot or "$ORCHESTRA_ROOT/" + triple
 configure: |
   extract.sh --into "$SOURCE_DIR" (@= source_url @)
   mkdir -p "$BUILD_DIR"
@@ -16,7 +21,7 @@ configure: |
     --build=x86_64-pc-linux-gnu \
     --host=x86_64-pc-linux-gnu \
     --target=(@= triple @) \
-    --with-sysroot=$ORCHESTRA_ROOT/(@= triple @) \
+    --with-sysroot="(@= binutils_sysroot @)" \
     --prefix=$ORCHESTRA_ROOT \
     --datadir=$ORCHESTRA_ROOT/share/binutils-data/(@= triple @)/(@= binutils_version @) \
     --infodir=$ORCHESTRA_ROOT/share/binutils-data/(@= triple @)/(@= binutils_version @)/info \
