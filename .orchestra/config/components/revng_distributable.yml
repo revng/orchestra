@@ -97,7 +97,8 @@ install: |
   '
 
   cat >> environment <<EOF
-  $(orchestra environment | grep -E "^export (PATH|LIBGL_DRIVERS_PATH|PKG_CONFIG_PATH|QML2_IMPORT_PATH|QT_PLUGIN_PATH|PYTHONPATH)")
+  $(orchestra environment |
+    grep -E "^export (PATH|LIBGL_DRIVERS_PATH|PKG_CONFIG_PATH|QML2_IMPORT_PATH|QT_PLUGIN_PATH|PYTHONPATH|LIBRARY_PATH)")
   unset ORCHESTRA_DOTDIR
   unset ORCHESTRA_ROOT
   EOF
