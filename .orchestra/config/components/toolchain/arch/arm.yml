@@ -10,7 +10,7 @@ uclibc_arch_name: arm
 uclibc_version: "0.9.33.2"
 binutils_version: "2.35"
 gdb_version: "8.2.1"
-gcc_version: "4.9.3"
+gcc_version: "9.2.0"
 coreutils_version: "8.29"
 extra_gcc_configure_options:
   - --enable-__cxa_atexit
