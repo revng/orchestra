@@ -18,8 +18,10 @@
 #@   fail("GCC stage must be 1 or 2")
 #@ end
 
-#@ if/end "host" not in toolchain_name:
+#@ if "host" not in toolchain_name:
 - toolchain/(@= toolchain_name @)/binutils
+- toolchain/host/binutils
+#@ end
 
 #@ if/end musl_version:
 - toolchain/(@= toolchain_name @)/musl(@= build @)

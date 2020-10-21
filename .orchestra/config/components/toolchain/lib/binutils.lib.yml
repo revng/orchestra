@@ -7,6 +7,7 @@
 #@yaml/text-templated-strings
 ---
 #@ def binutils_args(
+#@   toolchain_name=mandatory,
 #@   triple=mandatory,
 #@   binutils_version=mandatory,
 #@   extra_binutils_configure_options="",
@@ -56,6 +57,10 @@ add_to_path: ${ORCHESTRA_ROOT}/x86_64-pc-linux-gnu/(@= triple @)/binutils-bin/(@
 build_dependencies:
   - glibc
   - toolchain/host/gcc
+#@ if "host" not in toolchain_name:
+  - toolchain/host/binutils
+#@ end
+
 #@ end
 
 ---
