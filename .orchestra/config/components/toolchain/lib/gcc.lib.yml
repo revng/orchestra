@@ -38,7 +38,7 @@
 ---
 #@ def gcc_build_dependencies(stage, toolchain_name):
 
-#@ if/end stage == 2:
+#@ if/end stage == 2 and "host" not in toolchain_name:
 - toolchain/(@= toolchain_name @)/gcc~stage1
 
 - glibc
