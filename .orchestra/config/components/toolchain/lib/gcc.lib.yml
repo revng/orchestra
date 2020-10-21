@@ -132,9 +132,9 @@ configure: |
     --without-zstd \
     (@= expand_args(extra_gcc_configure_options) @) \
     (@= expand_args(build_specific_configure_options) @) \
-    CFLAGS="-w -ggdb3 -O3" \
-    CXXFLAGS="-w -ggdb3 -O3" \
-    LDFLAGS="(@= linker_flags @)"
+    CFLAGS="-w -ggdb3 -O3 (@= data.values.use_old_glibc_cflags @)" \
+    CXXFLAGS="-w -ggdb3 -O3 (@= data.values.use_old_glibc_cflags @)" \
+    LDFLAGS="(@= linker_flags @) (@= data.values.use_old_glibc_lflags @)"
 install: |
   cd "$BUILD_DIR"
   (@= make @) (@= extra_gcc_make_variables @)
