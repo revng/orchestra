@@ -18,8 +18,10 @@
 #@   fail("GCC stage must be 1 or 2")
 #@ end
 
-#@ if/end "host" not in toolchain_name:
+#@ if "host" not in toolchain_name:
 - toolchain/(@= toolchain_name @)/binutils
+- toolchain/host/binutils
+#@ end
 
 #@ if/end musl_version:
 - toolchain/(@= toolchain_name @)/musl(@= build @)
@@ -36,7 +38,7 @@
 ---
 #@ def gcc_build_dependencies(stage, toolchain_name):
 
-#@ if/end stage == 2:
+#@ if/end stage == 2 and "host" not in toolchain_name:
 - toolchain/(@= toolchain_name @)/gcc~stage1
 
 - glibc
@@ -84,8 +86,10 @@ configure: |
   patch-if-exists "${ORCHESTRA_DOTDIR}/patches/gcc-(@= gcc_version @)-cfns-fix-mismatch-in-gnu_inline-attributes.patch" "$SOURCE_DIR"
   patch-if-exists "${ORCHESTRA_DOTDIR}/patches/gcc-(@= gcc_version @)-cpp-musl-support.patch" "$SOURCE_DIR"
   sed -i 's|gcc_gxx_include_dir="${gcc_gxx_without_sysroot}"|gcc_gxx_include_dir="/${gcc_gxx_without_sysroot#/}"|' "$SOURCE_DIR/gcc/configure"
+  (@ if "host" in toolchain_name: @)
   sed -i "s|SHLIB_LINK = .(CC)|\0 -L$ORCHESTRA_ROOT/link-only/lib|" "$SOURCE_DIR/libgcc/config/t-slibgcc"
   sed -i 's|@multilib_flags@||' "$SOURCE_DIR/libgcc/config/t-slibgcc"
+  (@ end @)
 
   mkdir -p "$BUILD_DIR"
   cd "$BUILD_DIR" && "$SOURCE_DIR/configure" \
@@ -132,9 +136,9 @@ configure: |
     --without-zstd \
     (@= expand_args(extra_gcc_configure_options) @) \
     (@= expand_args(build_specific_configure_options) @) \
-    CFLAGS="-w -ggdb3 -O3" \
-    CXXFLAGS="-w -ggdb3 -O3" \
-    LDFLAGS="(@= linker_flags @)"
+    CFLAGS="-w -ggdb3 -O3 (@= data.values.use_old_glibc_cflags @)" \
+    CXXFLAGS="-w -ggdb3 -O3 (@= data.values.use_old_glibc_cflags @)" \
+    LDFLAGS="(@= linker_flags @) (@= data.values.use_old_glibc_lflags @) -static-libgcc"
 install: |
   cd "$BUILD_DIR"
   (@= make @) (@= extra_gcc_make_variables @)

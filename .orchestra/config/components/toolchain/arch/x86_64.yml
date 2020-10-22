@@ -9,7 +9,7 @@ linux_arch_name: x86_64
 binutils_version: "2.35"
 gdb_version: "8.2.1"
 musl_version: "1.1.12"
-gcc_version: "4.9.3"
+gcc_version: "9.2.0"
 coreutils_version: "8.29"
 extra_gcc_configure_options:
   - --without-cloog
