@@ -43,8 +43,10 @@ install: |
   export LANG=
   (@= ninja @)
   (@= ninja @) install
+build_dependencies:
+  - host-c-toolchain
+  - glibc
 dependencies:
-  - clang-release
   - libffi
   - zlib
 #@ end

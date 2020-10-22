@@ -32,8 +32,10 @@ configure: |
     "$BUILD_DIR/source"
 
 build_system: ninja
+build_dependencies:
+  - host-c-toolchain
+  - glibc
 dependencies:
-  - clang-release
   - ui/libbsd
   - ui/libxcb
 #@ end

@@ -5,9 +5,9 @@
 #@ def build_args():
 build_dependencies:
   - cmake
+  - host-cxx-toolchain
 dependencies:
-  - toolchain/host/gcc
-  - clang-release
+  - host-libcxx
 use_asan: false
 #@ end
 

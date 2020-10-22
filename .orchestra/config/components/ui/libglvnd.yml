@@ -26,9 +26,8 @@ configure: |
     "$BUILD_DIR/source"
 build_system: ninja
 build_dependencies:
-  - clang-release
-dependencies:
-  - toolchain/host/gcc
+  - host-c-toolchain
+  - glibc
 #@ end
 
 #@overlay/match by=overlay.all, expects=1

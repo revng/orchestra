@@ -26,8 +26,9 @@ configure: |
     LDFLAGS="(@= data.values.use_old_glibc_lflags @) (@= data.values.modern_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
     CFLAGS="(@= data.values.use_old_glibc_cflags @)"
 build_system: make
-dependencies:
-  - clang-release
+build_dependencies:
+  - host-c-toolchain
+  - glibc
 #@ end
 
 #@overlay/match by=overlay.all, expects=1

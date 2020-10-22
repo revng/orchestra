@@ -18,8 +18,9 @@ configure: |
     --uname=linux \
     --prefix="$ORCHESTRA_ROOT"
 build_system: make
-dependencies:
-  - toolchain/host/gcc
+build_dependencies:
+  - host-c-toolchain
+  - glibc
 #@ end
 
 #@overlay/match by=overlay.all, expects=1

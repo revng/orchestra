@@ -7,9 +7,9 @@ extra_cmake_args:
   - -DQML_PLUGIN_INSTALL_DIRECTORY="$ORCHESTRA_ROOT/qml"
 build_dependencies:
   - cmake
+  - host-cxx-toolchain
 dependencies:
-  - toolchain/host/gcc
-  - clang-release
+  - host-libcxx
   - ui/qt
 use_asan: false
 #@ end

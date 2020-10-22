@@ -52,11 +52,11 @@ builds:
       # TODO: debug why qtcreator looks for platform plugins in bin when the root is moved
       # ln -s ../plugins/platforms "$DESTDIR$ORCHESTRA_ROOT/bin/platforms"
     dependencies:
-      - clang-release
-      - toolchain/host/gcc
+      - host-libcxx
       - llvm
       - ui/qt
     build_dependencies:
+      - host-c-toolchain
       - glibc
     #@ if/end opts["ndebug"] == False:
     ndebug: false

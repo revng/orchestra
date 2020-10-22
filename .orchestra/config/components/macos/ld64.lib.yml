@@ -44,9 +44,10 @@ macos/(@= prefix @)-ld64:
         cd "$BUILD_DIR/cctools"
         (@= make @)
         (@= make @) install
+      build_dependencies:
+        - host-cxx-toolchain
       dependencies:
+        - host-libcxx
         - macos/libtapi
-        - clang-release
-        - toolchain/host/gcc
 #@ end
 #@ end

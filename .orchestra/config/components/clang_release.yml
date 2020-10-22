@@ -41,8 +41,7 @@ install: |
 build_dependencies:
   - cmake
 dependencies:
-  - toolchain/host/gcc
-  - toolchain/host/binutils
+  - gcc-host-toolchain
   - libunwind
 #@ end
 

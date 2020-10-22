@@ -1,5 +1,6 @@
 #@ load("@ytt:data", "data")
 #@ load("@ytt:overlay", "overlay")
+#@ load("@ytt:template", "template")
 #@ load("/components/toolchain/lib/toolchain.lib.yml", "create_toolchain_components")
 
 #@yaml/text-templated-strings
@@ -47,4 +48,14 @@ extra_gcc_make_variables: LIBRARY_PATH=/usr/lib/x86_64-linux-gnu
 #@overlay/match by=overlay.all, expects=1
 #@overlay/match-child-defaults missing_ok=True
 ---
-components: #@ create_toolchain_components(**params())
+components:
+  _: #@ template.replace(create_toolchain_components(**params()))
+
+  gcc-host-toolchain:
+    builds:
+      default:
+        dependencies:
+          - toolchain/host/gcc
+          - toolchain/host/binutils
+        install: exit 0
+        configure: mkdir -p "$BUILD_DIR"

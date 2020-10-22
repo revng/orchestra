@@ -132,8 +132,7 @@ builds:
       Prefix = $ORCHESTRA_ROOT
       EOF
     dependencies:
-      - clang-release
-      - toolchain/host/gcc
+      - host-libcxx
       - ui/freetype
       - ui/libdrm
       - ui/mesa
@@ -147,6 +146,7 @@ builds:
       - ui/xkbcommon
       - zlib
     build_dependencies:
+      - host-cxx-toolchain
       - glibc
     #@ if/end ndebug == False:
     ndebug: false

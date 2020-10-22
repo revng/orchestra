@@ -54,12 +54,18 @@ components:
           echo "Install script"
 ```
 
-## Convenience functions
+## Convenience functions and definitions
 
 Many components have repetitive patterns,
 so they are defined using some functions to factor common parts.
 
 All functions must be explicitly imported using a `load` statement.
+
+Commonly required dependencies:
+
+- `host-c-toolchain` and `host-cxx-toolchain` will ensure a modern C/C++ compiler is available
+- `glibc` will ensure a legacy glibc is available in `$ORCHESTRA_ROOT/link-only`
+- `host-libcxx` will ensure a modern C++ stdlib is installed
 
 ### Components with a single build
 
@@ -78,7 +84,7 @@ configure: |
   echo "Rest of the configure script omitted..."
 build_system: make
 dependencies:
-  - toolchain/host/gcc
+  - host-toolchain
   - zlib
 #@ end
 

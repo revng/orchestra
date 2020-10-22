@@ -13,9 +13,9 @@ extra_cmake_args:
 build_dependencies:
   - cmake
   - glibc
+  - host-cxx-toolchain
 dependencies:
-  - toolchain/host/gcc
-  - clang-release
+  - host-libcxx
   - caliban
   - ui/graphviz
   - ui/adaptagrams

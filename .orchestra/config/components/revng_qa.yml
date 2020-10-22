@@ -20,9 +20,10 @@ configure: |
 build_system: make
 build_dependencies:
   - cmake
-dependencies:
-  - clang-release
+  - host-cxx-toolchain
+  - glibc
   - qemu
+dependencies:
   - toolchain/x86-64/gcc
   - toolchain/i386/gcc
   - toolchain/arm/gcc

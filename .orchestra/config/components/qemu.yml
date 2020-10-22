@@ -40,9 +40,12 @@ builds:
       install: |
         cd "$BUILD_DIR"
         (@= make @) install
-      dependencies:
-        - llvm
+      build_dependencies:
+        - host-c-toolchain
         - clang-release
+        - glibc
+        - llvm
+      dependencies:
         - zlib
         - glib
       #@ if/end ndebug == False:

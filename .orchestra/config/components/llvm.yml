@@ -38,9 +38,9 @@ builds:
         fi
       build_dependencies:
         - cmake
+        - host-cxx-toolchain
       dependencies:
-        - toolchain/host/gcc
-        - clang-release
+        - host-libcxx
         - libunwind
       #@ if/end ndebug == False:
       ndebug: false

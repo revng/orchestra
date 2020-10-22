@@ -70,8 +70,10 @@ post_install: |
     mv "$GVBINDIR/config6a" "$GVBINDIR/config6"
   fi
 build_system: make
+build_dependencies:
+  - glibc
+  - host-c-toolchain
 dependencies:
-  - clang-release
   - libltdl
   - zlib
 #@ end

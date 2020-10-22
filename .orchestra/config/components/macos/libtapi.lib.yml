@@ -33,7 +33,7 @@ builds:
       cp -a projects/libtapi/include/tapi/Version.inc "${TMP_ROOT}${ORCHESTRA_ROOT}/include/tapi/"
     build_dependencies:
       - cmake
+      - host-cxx-toolchain
     dependencies:
-      - clang-release
-      - toolchain/host/gcc
+      - host-libcxx
 #@ end
