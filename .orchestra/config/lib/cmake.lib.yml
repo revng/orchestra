@@ -100,7 +100,7 @@
 
     cd "$BUILD_DIR";
     cmake "$SOURCE_DIR" \
-      (@ if build_system != "Ninja": @)-G(@= build_system @)(@ end @) \
+      -G"(@= build_system @)" \
       -DCMAKE_TOOLCHAIN_FILE="$BUILD_DIR/toolchain.cmake" \
       -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT" \
       (@= expand_args(extra_cmake_args) @)

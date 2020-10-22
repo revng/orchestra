@@ -2,6 +2,7 @@
 #@ load("@ytt:overlay", "overlay")
 #@ load("/components/llvm_common.lib.yml", "configure_llvm")
 #@ load("/lib/create_component.lib.yml", "single_build_component")
+#@ load("/lib/ninja.lib.yml", "ninja")
 
 ---
 #@ def cmake_opts():
@@ -20,7 +21,7 @@ configure: |
 install: |
   cd "$BUILD_DIR"
 
-  ninja install
+  (@= ninja @) install
 
   rm "${DESTDIR}${ORCHESTRA_ROOT}/lib64/libc++.so" || true
   echo 'INPUT(libc++.so.1 -lc++abi -lpthread)' > "${DESTDIR}${ORCHESTRA_ROOT}/lib64/libc++.so"

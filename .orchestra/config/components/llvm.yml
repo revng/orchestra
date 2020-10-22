@@ -1,8 +1,9 @@
 #@ load("@ytt:data", "data")
 #@ load("@ytt:overlay", "overlay")
-#@ load("/lib/optimization_flavors.lib.yml", "typical_project_flavors")
 #@ load("/components/llvm_common.lib.yml", "configure_llvm")
+#@ load("/lib/optimization_flavors.lib.yml", "typical_project_flavors")
 #@ load("/lib/fn_args.lib.yml", "mandatory")
+#@ load("/lib/ninja.lib.yml", "ninja")
 
 #@yaml/text-templated-strings
 ---
@@ -27,7 +28,7 @@ builds:
       configure: #@ configure_llvm(cmake_build_type=build_type, cflags=cflags, additional_cmake_options=cmake_opts(), source_dir="$SOURCE_DIR")
       install: |
         cd "$BUILD_DIR"
-        ninja ${JOBS:+-j$JOBS} install
+        (@= ninja @) install
 
         CLANG_RELEASE_IDX="$ORCHESTRA_ROOT/share/orchestra/clang-release.idx"
         if [ -e "$CLANG_RELEASE_IDX" ]; then
