@@ -5,6 +5,7 @@
 #@ def build_args():
 extra_cmake_args: #@ cmake_boost_configuration
 build_dependencies:
+  - cmake
   - revng-qa
   - glibc
   - host-cxx-toolchain
