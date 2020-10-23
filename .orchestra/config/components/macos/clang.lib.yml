@@ -1,13 +1,7 @@
-#@ load("/lib/make.lib.yml", "make")
-
-#@ source_url = "https://codeload.github.com/tpoechtrager/cctools-port/tar.gz/1e3f614aff4eaae01b6cc4d29c3237c93f3322f8"
-
----
 #@ def prefixes():
 - x86-64
 - i686
 #@ end
-
 
 #@yaml/text-templated-strings
 ---
