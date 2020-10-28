@@ -5,6 +5,8 @@
 
 ---
 #@ def build_args():
+pre_configure_script: |
+  orc clone --no-force ui/qt-creator
 extra_cmake_args:
   - #@ template.replace(cmake_boost_configuration)
   #! TODO: this is really ugly hack to get the same value of QTC_SOURCE as legacy orchestra
