@@ -19,6 +19,8 @@ configure: |
     --without-bzlib \
     --without-lzma \
     --prefix="$ORCHESTRA_ROOT" \
+    --disable-debuginfod \
+    --disable-libdebuginfod \
     CFLAGS="(@= data.values.use_old_glibc_cflags @) -Wno-error" \
     LDFLAGS="(@= data.values.use_old_glibc_lflags @) (@= data.values.modern_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib"
 build_system: make
