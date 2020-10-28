@@ -1,0 +1,21 @@
+#!/bin/bash
+
+REMOTES_COUNT=$(git remote | wc -l)
+if [ $REMOTES_COUNT -eq 0 ]; then
+  echo "No remotes" > /dev/stderr
+  exit 1
+elif [ $REMOTES_COUNT -eq 1 ]; then
+  exec git remote
+else
+  CURRENT_REMOTE=$(git config branch.$(git name-rev --name-only HEAD).remote)
+  if [ ! -z "$CURRENT_REMOTE" ]; then
+    echo $CURRENT_REMOTE
+  else
+    if git remote | grep -E '^origin$'; then
+      exit 0
+    else
+      echo "Can't pick a remote" > /dev/stderr
+      exit 1
+    fi
+  fi
+fi

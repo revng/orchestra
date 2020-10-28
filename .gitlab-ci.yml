@@ -1,4 +1,4 @@
-image: registry.rev.ng:443/fcremo/revng-orchestra:latest
+image: revng/revng-build-dependencies:latest
 
 stages:
   - build
@@ -6,48 +6,6 @@ stages:
 create-binaries:
   stage: build
   script:
-    - echo -e "machine rev.ng\nlogin gitlab-ci-token\npassword ${CI_JOB_TOKEN}" > ~/.netrc
+    - git checkout -B "$CI_COMMIT_REF_NAME" "$CI_COMMIT_SHA"
     - .orchestra/ci/install-dependencies.sh
-    - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/${CI_PROJECT_NAMESPACE}/orchestra-v3.git /orchestra
-    - cd /orchestra
-    - python3 setup.py bdist_wheel
-    - pip3 install dist/orchestra*.whl
-    - cd "$CI_PROJECT_DIR"
-    - |
-      cat - > .orchestra/config/user_options.yml <<EOF
-      #@data/values
-      ---
-      #@overlay/match missing_ok=True
-      remote_base_urls:
-        - personal: "https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/${CI_PROJECT_NAMESPACE}"
-        - internal: "https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/revng-internal"
-        - private: "https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/revng-private"
-
-      #@overlay/match missing_ok=True
-      binary_archives:
-        - personal: "https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/${CI_PROJECT_NAMESPACE}/binary-archives"
-
-      #@overlay/replace
-      build_from_source:
-        - llvmcpy
-        - revng-qa
-        - revng
-        - revng-c
-        - caliban
-        - ui/cold-revng
-        - environment
-        - revng-distributable
-
-      EOF
-    - orchestra update --no-config
-    # Print graph and component list to aid debugging
-    - orchestra -b graph revng-distributable
-    - orchestra -b components --hashes --deps
-    - orchestra -b install --create-binary-archives revng-distributable
-    - cd .orchestra/binary-archives/personal
-    - git config user.email "gitlabci@rev.ng"
-    - git config user.name "rev.ng Gitlab CI"
-    - git add .
-    - git commit -m "Binary archives built on $(date) for commit ${CI_COMMIT_SHA}"
-    - git push
-    - git-lfs push
+    - .orchestra/ci/ci.sh
