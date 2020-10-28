@@ -25,6 +25,7 @@
   cd "$BUILD_DIR";
   qmake -r "$SOURCE_DIR" \
     -spec linux-clang \
+    DEFINES+="COLD_REVNG" \
     (@= expand_args(extra_qmake_args) @) \
     QMAKE_LFLAGS_RPATH= \
     QMAKE_RPATHDIR+="" \
