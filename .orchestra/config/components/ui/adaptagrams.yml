@@ -5,6 +5,7 @@
 #@ def build_args():
 build_dependencies:
   - cmake
+  - glibc
   - host-cxx-toolchain
 dependencies:
   - host-libcxx
