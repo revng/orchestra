@@ -39,6 +39,7 @@ apt-get install --no-install-recommends --yes \
   python3-pyelftools \
   python3-pygraphviz \
   python3-setuptools \
+  rsync \
   sed \
   ssh \
   texinfo \

@@ -1,0 +1,192 @@
+#!/usr/bin/env python3
+
+import json
+import os.path
+import shutil
+import subprocess
+import sys
+import tempfile
+
+from argparse import ArgumentParser
+
+if sys.version_info[0] < 3:
+    from urllib2 import HTTPErrorProcessor, HTTPCookieProcessor, build_opener, HTTPPasswordMgrWithDefaultRealm, HTTPBasicAuthHandler
+    from urllib import urlretrieve
+    from urlparse import urlparse
+else:
+    from urllib.request import HTTPErrorProcessor, HTTPCookieProcessor, build_opener, urlretrieve, HTTPPasswordMgrWithDefaultRealm, HTTPBasicAuthHandler
+    from urllib.parse import urlparse
+
+latest_progress = 0
+
+def log(message):
+    sys.stderr.write(message + "\n")
+
+class IgnoreRedirectsErrorProcessor(HTTPErrorProcessor):
+    def http_response(self, req, res):
+        return res
+
+    https_response = http_response
+
+def print_progress(completed_chunks, max_chunksize, total_size):
+    global latest_progress
+    n_chunks = int(total_size / max_chunksize)
+    current_progress = int(completed_chunks * 100 / n_chunks)
+    if current_progress > latest_progress and current_progress % 5 == 0:
+        latest_progress = current_progress
+        log("Progress: {}%".format(latest_progress))
+
+class RevertableMoves:
+    def __enter__(self):
+        self.undo_actions = []
+        return self
+
+    def move(self, source, destination):
+        shutil.move(source, destination)
+        self.undo_actions.append((destination, source))
+
+    def __exit__(self, type, value, traceback):
+        if value is not None:
+            log("Restoring all the original files due to an error")
+            for source, destination in reversed(self.undo_actions):
+                shutil.move(source, destination)
+        return False
+
+def main():
+    updater_dir = os.path.dirname(__file__)
+    revng_dir = os.path.join(updater_dir, "..", "..")
+    revng_dir = os.path.realpath(revng_dir)
+    config_path = os.path.join(revng_dir, "config.json")
+
+    with open(config_path, "r") as config_json:
+        configuration = json.load(config_json)
+
+    argparser = ArgumentParser()
+    argparser.add_argument("--check",
+                           action="store_true",
+                           help="Download and install updates if available")
+    argparser.add_argument("--force",
+                           action="store_true",
+                           help="Force update even if no new versions are available")
+    argparser.add_argument("--switch-to",
+                           help="Change branch")
+    argparser.add_argument("--update-url",
+                           help="Manually specify the update URL")
+
+    args = argparser.parse_args()
+
+    if args.switch_to and args.update_url:
+        log("Cannot specify both --switch-to and --update-url")
+        return 1
+
+    branch = args.switch_to if args.switch_to else configuration["branch"]
+
+    if args.update_url:
+        update_url = args.update_url
+    else:
+        update_url = "https://rev.ng/downloads/revng-distributable/none_{}.tar.gz"
+        update_url = update_url.format(branch)
+
+    password_manager = HTTPPasswordMgrWithDefaultRealm()
+    password_manager.add_password(None, "https://rev.ng/", configuration["user"], configuration["pass"])
+    auth_handler = HTTPBasicAuthHandler(password_manager)
+
+    opener = build_opener(HTTPCookieProcessor(),
+                          IgnoreRedirectsErrorProcessor(),
+                          auth_handler)
+    r = opener.open(update_url)
+    latest_url = r.headers.get("Location")
+    if not latest_url:
+        log("Could not fetch update info")
+        return 2
+
+    latest_version_tar_name = urlparse(latest_url).path.rpartition("/")[2]
+
+    if latest_version_tar_name == configuration["last-archive"]:
+        if args.force:
+            log("No new version available for branch {}, reinstalling anyway.".format(branch))
+        else:
+            log("You are using the latest version of branch {}".format(branch))
+            return 0
+    else:
+        log("Update available for branch {} ({})".format(branch,
+                                                         latest_version_tar_name))
+
+    if args.check:
+        return 1
+
+    with tempfile.TemporaryDirectory(dir=revng_dir) as tmp_dir_path:
+        log("Using temporary directory {}".format(tmp_dir_path))
+
+        opener = build_opener(auth_handler)
+        r = opener.open(update_url)
+        size = int(r.headers.get("Content-Length"))
+        log("Downloading update ({} MB)...".format(int(size / (1024 ** 2))))
+
+        save_to = os.path.join(tmp_dir_path, latest_version_tar_name)
+        with open(save_to, "wb") as local_file:
+            written = 0
+            chunk_size = 1024 ** 2
+            data = r.read(chunk_size)
+            next_percentage = 10
+            while data:
+                written += len(data)
+                if int(100 * written / size) >= next_percentage:
+                    log("{}%".format(next_percentage))
+                    next_percentage += 10
+                local_file.write(data)
+                data = r.read(chunk_size)
+
+        log("Extracting update...")
+        subprocess.check_call(["tar", "--extract", "--file", save_to],
+                              cwd=tmp_dir_path)
+
+        # We should have a `revng` subdirectory
+        new_revng_install = os.path.join(tmp_dir_path, "revng")
+        assert os.path.isdir(new_revng_install)
+
+        # We're going to move files around, if anything goes wrong, revert all
+        # the moves
+        with RevertableMoves() as mover:
+            log("Moving old files into temporary directory...")
+            backup_path = os.path.join(tmp_dir_path, "backup")
+            os.mkdir(backup_path)
+            for top_level_file in configuration["top-level-files"]:
+                source = os.path.join(revng_dir, top_level_file)
+                if os.path.exists(source):
+                    destination = os.path.join(backup_path, top_level_file)
+                    mover.move(source, destination)
+                else:
+                    log("Warning: \"{}\" has been deleted".format(top_level_file))
+
+            log("Applying update...")
+            new_top_level_files = os.listdir(new_revng_install)
+            for new_top_level_file in new_top_level_files:
+                source = os.path.join(new_revng_install, new_top_level_file)
+                destination = os.path.join(revng_dir, new_top_level_file)
+                if os.path.exists(destination):
+                    raise Exception("Error: \"{}\" already exists. Remove it and relaunch the update".format(new_top_level_file))
+                mover.move(source, destination)
+
+            log("Running post-update script...")
+            subprocess.check_call([os.path.join(revng_dir,
+                                                "root",
+                                                "share",
+                                                "revng-distributable",
+                                                "post-update"),
+                                   tmp_dir_path])
+
+            # Update and save the configuration
+            log("Committing new config.json...")
+            configuration["top-level-files"] = new_top_level_files
+            configuration["last-archive"] = latest_version_tar_name
+            with open(config_path, "w") as config_json:
+                json.dump(configuration, config_json, indent=4)
+                config_json.write("\n")
+
+        log("Done!")
+
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main())

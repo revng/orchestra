@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -x
+set -e
+
+FILES=$(find -name "*.docker")
+
+for FILE in $FILES; do
+    ./build $(basename "${FILE%.*}")
+done

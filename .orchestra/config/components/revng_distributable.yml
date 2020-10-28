@@ -10,80 +10,41 @@ configure: |
   touch empty_directory_ignore_it
 install: |
   echo "Copying root"
-  mkdir -p "${TMP_ROOT}${ORCHESTRA_ROOT}/revng"
-  cp -avr --reflink=auto "$ORCHESTRA_ROOT" "${TMP_ROOT}${ORCHESTRA_ROOT}/revng/root"
-
-  cd "$TMP_ROOT/$ORCHESTRA_ROOT/revng"
-
-  echo "Copying environment"
-  cp "$ORCHESTRA_ROOT/environment" .
-
-  echo "Preparing scripts"
-  cat > revng <<EOF
-  #!/bin/bash
-  DIR="\$( cd "\$( dirname "\${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-  source "\$DIR/environment"
-  export REAL_ARGV0="\$0"
-  exec "\$DIR/root/bin/revng" "\$@"
-  EOF
-  chmod +x revng
-
-  cd root
-
-  echo "Removing build-only components"
-  index_files=(
-    "share/orchestra/glibc.idx"
-    "share/orchestra/boost.idx"
-    "share/orchestra/toolchain_host_binutils.idx"
-    "share/orchestra/toolchain_host_gcc.idx"
-    "share/orchestra/clang-release.idx"
-  )
-  for index_file in $index_files; do
+  rm -rf "${TMP_ROOT}${ORCHESTRA_ROOT}/revng/root"
+  mkdir -p "${TMP_ROOT}${ORCHESTRA_ROOT}/revng/root"
+  cd "$ORCHESTRA_ROOT"
+  index_files=""
+  echo share/orchestra/glibc.idx share/orchestra/cmake.idx share/orchestra/boost.idx share/orchestra/clang-release.idx share/orchestra/toolchain_*.idx | sed 's/ /\n/g' | grep -v host | while read index_file; do
     if [ -e "$index_file" ]; then
       cat "$index_file" | \
         grep -v libgcc_s.so | \
         grep -v 'libc++.so' | \
         grep -v 'libc++abi.so' | \
-        xargs -n1000 rm -f
+        grep -v 'llvm-link' | \
+        grep -v 'llc'
     fi
-  done
+  done | sed 's!^!/!' | rsync \
+    --archive \
+    --verbose \
+    --progress \
+    --exclude "/revng/" \
+    --exclude "/include/" \
+    --exclude "/share/man/" \
+    --exclude "/share/qemu/" \
+    --exclude "/share/graphviz/" \
+    --exclude "/share/gcc-data/" \
+    --exclude "/share/binutils-data/" \
+    --exclude "/share/revng/qa/tests/analysis/" \
+    --exclude "/share/revng/qa/tests/runtime/**.ll" \
+    --exclude "/lib64/libclang-cpp.so*" \
+    --exclude "libQt*.a" \
+    --exclude-from=- \
+    "$ORCHESTRA_ROOT/." \
+    "${TMP_ROOT}${ORCHESTRA_ROOT}/revng/root/."
 
-  echo "Stripping components"
-  find "share/orchestra" -name "*.idx" -type f | grep -vE 'revng|caliban'| xargs cat | while read EXECUTABLE; do
-    if head -c 4 "$EXECUTABLE" | grep '^.ELF' > /dev/null && file "$EXECUTABLE" | grep x86-64 | grep -E '(shared|dynamic)' > /dev/null; then
-      echo strip "$EXECUTABLE"
-      strip "$EXECUTABLE"
-    fi
-  done
+  cd "$TMP_ROOT/$ORCHESTRA_ROOT/revng"
 
-  echo "Remove superflous directories"
-  rm -rf "share/revng/qa"
-  rm -rf "include"
-  rm -rf "share/man"
-  rm -rf "share/qemu"
-  rm -rf "share/graphviz"
-
-  echo "Remove superflous libraries"
-  rm -f lib64/libclang-cpp.so*
-  find . -type f -name "libQt*.a" -delete
-
-  echo "Final cleanups"
-  find . -type d -empty -delete
-build_dependencies:
-  - ui/cold-revng
-  - environment
-skip_post_install: true
-#@ end
-
----
-#@ def environment():
-configure: |
-  mkdir -p "$BUILD_DIR" && cd "$BUILD_DIR"
-  touch empty_directory_ignore_it
-install: |
-  mkdir -p "${TMP_ROOT}${ORCHESTRA_ROOT}"
-  cd "${TMP_ROOT}${ORCHESTRA_ROOT}"
-
+  echo "Creating environment"
   cat > environment <<<'
   if test -n "$BASH" ; then SCRIPT=$BASH_SOURCE
   elif test -n "$TMOUT"; then SCRIPT=${.sh.file}
@@ -104,6 +65,57 @@ install: |
   unset ORCHESTRA_ROOT
   EOF
 
+  echo "Copying revng-distributable scripts"
+  cp -a \
+    "$ORCHESTRA_DOTDIR/support/revng-distributable/revng-update" \
+    "$ORCHESTRA_DOTDIR/support/revng-distributable/revng-system-info" \
+    "root/bin/"
+
+  echo "Copying README.md"
+  cp "$ORCHESTRA_DOTDIR/support/revng-distributable/README.md" .
+
+  echo "Copying install-revng-dependencies"
+  cp "$ORCHESTRA_DOTDIR/support/revng-distributable/dockers/install-revng-dependencies" root/bin/
+
+  echo "Preparing scripts"
+  cat > revng <<EOF
+  #!/bin/bash
+  DIR="\$( cd "\$( dirname "\${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+  source "\$DIR/environment"
+  export REAL_ARGV0="\$0"
+  exec "\$DIR/root/bin/revng" "\$@"
+  EOF
+  chmod +x revng
+
+  cd root
+
+  echo "Stripping components"
+  find "share/orchestra" -name "*.idx" -type f | grep -vE 'revng|caliban'| xargs cat | while read EXECUTABLE; do
+    if test -e "$EXECUTABLE" && head -c 4 "$EXECUTABLE" | grep '^.ELF' > /dev/null && file "$EXECUTABLE" | grep x86-64 | grep -E '(shared|dynamic)' > /dev/null; then
+      echo strip "$EXECUTABLE"
+      strip "$EXECUTABLE"
+    fi
+  done
+
+  echo "revng-distributable updater info"
+  mkdir -p share/revng-distributable
+  cd share/revng-distributable
+  echo 1 > version
+  cat > post-update <<eof
+  #!/bin/bash
+  set -e
+  ./revng --help >& /dev/null
+  ./revng lift --help >& /dev/null
+  echo "Update successful!"
+  eof
+  chmod +x post-update
+
+  echo "Final cleanup"
+  cd "${TMP_ROOT}${ORCHESTRA_ROOT}"
+  find . -not -type d -not -path './revng/*' -delete
+  find . -type d -empty -delete
+build_dependencies:
+  - ui/cold-revng
 skip_post_install: true
 #@ end
 
@@ -111,5 +123,4 @@ skip_post_install: true
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  environment: #@ single_build_component(**environment())
   revng-distributable: #@ single_build_component(**revng_distributable())

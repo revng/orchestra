@@ -1,0 +1,8 @@
+FROM ubuntu:20.04
+
+COPY install-revng-dependencies /
+RUN /install-revng-dependencies
+
+ENV DISPLAY=:0
+ENV QT_DEBUG_PLUGINS=1
+

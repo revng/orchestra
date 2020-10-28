@@ -1,0 +1,16 @@
+#!/bin/bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+IMAGE="$1"
+shift
+
+podman \
+    run \
+    --security-opt=seccomp=unconfined \
+    -ti \
+    --rm \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
+    -v $(readlink -f $PWD/../../../..):/orchestra \
+    revng-user:"$IMAGE" \
+    bash -c "cd /orchestra; source root/revng/environment; $*"

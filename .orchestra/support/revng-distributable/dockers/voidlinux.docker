@@ -1,0 +1,8 @@
+FROM voidlinux/voidlinux
+
+COPY install-revng-dependencies /
+RUN xbps-install -Suy bash && \
+    /install-revng-dependencies
+
+ENV DISPLAY=:0
+ENV QT_DEBUG_PLUGINS=1

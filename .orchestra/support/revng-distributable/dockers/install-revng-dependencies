@@ -1,0 +1,267 @@
+#!/bin/bash
+
+set -e
+
+RELEASE_INFO="/etc/os-release"
+
+function log() {
+    echo "$1" > /dev/stderr
+}
+
+function fail() {
+    log "$1"
+    exit 1
+}
+
+if test "$1" == "--pretend"; then
+    shift
+    PRETEND=1
+else
+    PRETEND=0
+fi
+
+if test "$EUID" -ne 0; then
+    if which sudo >& /dev/null; then
+        ASROOT_PREFIX="sudo"
+    elif test "$PRETEND" -eq 0; then
+        fail "Not running as root and no sudo available"
+    fi
+fi
+
+function run() {
+    echo "$@"
+    if test "$PRETEND" -eq 0; then
+        "$@"
+    fi
+}
+
+function asroot() {
+    run $ASROOT_PREFIX "$@"
+}
+
+function asuser() {
+    run "$@"
+}
+
+if test "$#" -eq 0; then
+    # Detect distro automatically
+    if ! test -e "$RELEASE_INFO"; then
+        fail "$RELEASE_INFO does not exists, your distribution is not supported."
+    fi
+
+    source /etc/os-release
+
+elif test "$#" -eq 1 || test "$#" -eq 2; then
+
+    # Manually specified distro
+    ID="$1"
+    VERSION_ID="$2"
+
+else
+    fail "Usage: $0 [--pretend] [ID VERSION_ID]"
+fi
+
+PIP_PACKAGES="backports.shutil_which pyelftools"
+
+if test "$ID" == "arch"; then
+    # Handle Arch Linux
+    asroot pacman \
+        -Syu \
+        --noconfirm \
+        core/expat \
+        core/krb5 \
+        core/xz \
+        extra/fontconfig \
+        extra/ttf-dejavu \
+        extra/libsm \
+        extra/libxdamage \
+        extra/libxfixes \
+        extra/libxxf86vm \
+        python-pip \
+        xdotool
+    asuser pip3 install --user $PIP_PACKAGES
+elif test "$ID" == "centos"; then
+    # Handle CentOS
+    function common() {
+        asroot yum check-update || true
+        asroot yum install -y epel-release
+        asroot yum update -y
+        asroot yum install -y \
+            libSM \
+            fontconfig \
+            libXext \
+            libXfixes \
+            libXdamage \
+            libXxf86vm \
+            dbus-libs \
+            libXdmcp \
+            xdotool \
+            python3-pip \
+            glibc-devel
+        asuser pip3 install --user $PIP_PACKAGES
+    }
+    if test "$VERSION_ID" == "7"; then
+        common
+    elif test "$VERSION_ID" == "8"; then
+        common
+    else
+        fail "Your CentOS version is not supported"
+    fi
+elif test "$ID" == "debian"; then
+    # Handle Debian
+    function common() {
+        asroot apt-get update
+        asroot env DEBIAN_FRONTEND=noninteractive apt-get install \
+                libgssapi-krb5-2 \
+                libdbus-1-3 \
+                libsm6 \
+                libfontconfig1 \
+                libxext6 \
+                libxfixes3 \
+                libxdamage1 \
+                libxxf86vm1 \
+                python3-pip \
+                xdotool \
+                "$@"
+    }
+    if test "$VERSION_ID" == "7"; then
+        common -y realpath wget
+        asroot wget 'http://archive.debian.org/debian/pool/main/e/eglibc/libc6-dev_2.13-38+deb7u10_amd64.deb'
+        asroot dpkg -i --force-all libc6-dev_2.13-38+deb7u10_amd64.deb
+        asroot rm libc6-dev_2.13-38+deb7u10_amd64.deb
+        asuser pip-3.2 install --user --index-url=https://pypi.python.org/simple/ $PIP_PACKAGES
+    elif test "$VERSION_ID" == "8"; then
+        common -y --force-yes realpath
+        asuser pip3 install --user $PIP_PACKAGES
+    elif test "$VERSION_ID" == "9"; then
+        common -y --force-yes realpath
+        asuser pip3 install --user $PIP_PACKAGES
+    elif test "$VERSION_ID" == "10"; then
+        common -y
+        asuser pip3 install --user $PIP_PACKAGES
+    else
+        fail "Your debian version is not supported"
+    fi
+elif test "$ID" == "fedora"; then
+    # Handle Fedora
+    function common() {
+        asroot yum check-update || true
+        asroot yum install -y libSM \
+            fontconfig \
+            libXext \
+            libXfixes \
+            libXdamage \
+            libXxf86vm \
+            dbus-libs \
+            libXdmcp \
+            xdotool \
+            python3-pip \
+            glibc-devel
+        asuser pip3 install --user $PIP_PACKAGES
+    }
+    if test "$VERSION_ID" == "29"; then
+        common
+    elif test "$VERSION_ID" == "30"; then
+        common
+    elif test "$VERSION_ID" == "31"; then
+        common
+    elif test "$VERSION_ID" == "32"; then
+        common
+    else
+        fail "Your fedora version is not supported"
+    fi
+elif test "$ID" == "gentoo"; then
+    # Handle Gentoo
+    asroot emerge --sync
+    asroot emerge -v \
+           --update \
+           --deep \
+           --exclude sandbox \
+           x11-libs/libSM \
+           media-libs/fontconfig \
+           app-crypt/mit-krb5 \
+           x11-libs/libXfixes \
+           x11-libs/libXdamage \
+           x11-libs/libXxf86vm \
+           sys-apps/dbus \
+           dev-python/pip \
+           dev-lang/python:3.8 \
+           xdotool
+    asuser pip3 install --user $PIP_PACKAGES
+elif test "$ID" == "opensuse-leap"; then
+    # Handle openSUSE
+    function common() {
+        asroot zypper -n refresh
+        asroot zypper -n install \
+               libSM6 \
+               fontconfig \
+               libXext6 \
+               libXfixes3 \
+               libXdamage1 \
+               libXxf86vm1 \
+               libdbus-1-3 \
+               dejavu-fonts \
+               libXdmcp6 \
+               xdotool \
+               python3-pip \
+               glibc-devel
+        asuser pip3 install --user $PIP_PACKAGES
+    }
+    if test "$VERSION_ID" == "15.0"; then
+        common
+    elif test "$VERSION_ID" == "15.1"; then
+        common
+    elif test "$VERSION_ID" == "15.2"; then
+        common
+    else
+        fail "Your opensuse version is not supported"
+    fi
+elif test "$ID" == "ubuntu"; then
+    # Handle Ubuntu
+    function common() {
+        asroot apt-get update
+        asroot env DEBIAN_FRONTEND=noninteractive apt-get install -y \
+                libgssapi-krb5-2 \
+                libdbus-1-3 \
+                libsm6 \
+                libfontconfig1 \
+                libxext6 \
+                libxfixes3 \
+                libxdamage1 \
+                libxxf86vm1 \
+                python3-pip \
+                xdotool \
+                "$@"
+        asuser pip3 install --user $PIP_PACKAGES
+    }
+    if test "$VERSION_ID" == "16.04"; then
+        common realpath
+    elif test "$VERSION_ID" == "18.04"; then
+        common
+    elif test "$VERSION_ID" == "20.04"; then
+        common
+    else
+        fail "Your ubuntu version is not supported"
+    fi
+elif test "$ID" == "void"; then
+    # Handle Void Linux
+    asroot xbps-install -Suy \
+                 bash \
+                 expat \
+                 mit-krb5 \
+                 xz \
+                 fontconfig \
+                 libSM \
+                 libXdamage \
+                 libXfixes \
+                 libXxf86vm \
+                 dbus \
+                 dejavu-fonts-ttf \
+                 xdotool \
+                 python3-pip \
+                 glibc-devel \
+                 libstdc++
+    asuser pip3 install --user $PIP_PACKAGES
+else
+    fail "Your distribution is not supported"
+fi
