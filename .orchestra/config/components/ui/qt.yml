@@ -129,7 +129,7 @@ builds:
 
       cat > "${TMP_ROOT}${ORCHESTRA_ROOT}/bin/qt.conf" <<EOF
       [Paths]
-      Prefix = $ORCHESTRA_ROOT
+      Prefix = ..
       EOF
 
       cd "${TMP_ROOT}${ORCHESTRA_ROOT}/mkspecs/linux-clang/"

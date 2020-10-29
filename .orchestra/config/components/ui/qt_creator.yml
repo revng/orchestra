@@ -50,8 +50,6 @@ builds:
       cd "$BUILD_DIR"
       (@= make @)
       (@= make @) install INSTALL_ROOT="$DESTDIR$ORCHESTRA_ROOT"
-      # TODO: debug why qtcreator looks for platform plugins in bin when the root is moved
-      # ln -s ../plugins/platforms "$DESTDIR$ORCHESTRA_ROOT/bin/platforms"
     dependencies:
       - host-libcxx
       - llvm
