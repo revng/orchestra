@@ -8,6 +8,7 @@
 #@yaml/text-templated-strings
 ---
 #@ def glib_args():
+license: source/COPYING
 configure: |
   mkdir -p "$BUILD_DIR/source"
   extract.sh --into "$BUILD_DIR/source" (@= source_url @)

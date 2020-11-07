@@ -8,6 +8,7 @@
 #@yaml/text-templated-strings
 ---
 #@ def libpciaccess_args():
+license: source/COPYING
 configure: |
   mkdir -p "$BUILD_DIR"
   extract.sh --into "$BUILD_DIR/source" "(@= libpciaccess_source_url @)"
@@ -29,6 +30,7 @@ build_dependencies:
 #@yaml/text-templated-strings
 ---
 #@ def libdrm_args():
+license: source/RELEASING
 configure: |
   mkdir -p "$BUILD_DIR"
   extract.sh --into "$BUILD_DIR/source" "(@= libdrm_source_url @)"

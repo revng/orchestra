@@ -7,6 +7,7 @@
 #@yaml/text-templated-strings
 ---
 #@ def libbsd_args():
+license: COPYING
 configure: |
   extract.sh --into "$BUILD_DIR" "(@= source_url @)"
   mkdir -p "$BUILD_DIR"

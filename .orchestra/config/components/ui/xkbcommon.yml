@@ -7,6 +7,7 @@
 #@yaml/text-templated-strings
 ---
 #@ def xkbcommon_args():
+license: source/LICENSE
 configure: |
   mkdir -p "$BUILD_DIR/source"
   extract.sh --into "$BUILD_DIR/source" "(@= source_url @)"

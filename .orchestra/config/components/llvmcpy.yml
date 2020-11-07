@@ -2,6 +2,7 @@
 
 #@ def llvmcpy_component():
 repository: llvmcpy
+license: LICENSE.txt
 builds:
   default:
     depencencies:

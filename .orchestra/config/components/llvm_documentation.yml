@@ -5,6 +5,7 @@
 ---
 #@ def llvm_documentation_component():
 repository: llvm-project
+license: llvm/LICENSE.TXT
 builds:
   default:
     depencencies:

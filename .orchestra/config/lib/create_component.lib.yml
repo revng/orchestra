@@ -8,6 +8,7 @@
 #@yaml/text-templated-strings
 ---
 #@ def single_build_component(
+#@      license="",
 #@      configure=mandatory,
 #@      build_system=mandatory,
 #@      dependencies=[],
@@ -22,7 +23,7 @@
 
 #@ if/end repository:
 repository: #@ repository
-
+license: #@ license
 builds:
   default:
     #@ if/end dependencies:

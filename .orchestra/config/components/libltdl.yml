@@ -7,6 +7,7 @@
 #@yaml/text-templated-strings
 ---
 #@ def libltdl_args():
+license: COPYING
 configure: |
   mkdir -p "$BUILD_DIR"
   extract.sh --into "$BUILD_DIR" "(@= source_url @)"

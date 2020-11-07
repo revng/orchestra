@@ -6,6 +6,7 @@
 #@yaml/text-templated-strings
 ---
 #@ def boost():
+license: LICENSE_1_0.txt
 configure: |
   mkdir -p "$BUILD_DIR"
 

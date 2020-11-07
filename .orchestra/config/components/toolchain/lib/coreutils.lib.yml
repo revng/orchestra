@@ -38,6 +38,7 @@ install: |
 #@yaml/text-templated-strings
 ---
 #@ def create_coreutils_component(triple=mandatory, coreutils_version=mandatory):
+license: COPYING
 default_build: default_static
 builds:
   #@ for flavor, flags in libc_optimization_flavors.items():

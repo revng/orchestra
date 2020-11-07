@@ -7,6 +7,7 @@
 #@yaml/text-templated-strings
 ---
 #@ def libffi_args():
+license: LICENSE
 configure: |
   mkdir -p "$BUILD_DIR"
   extract.sh --into "$BUILD_DIR" (@= source_url @)

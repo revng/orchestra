@@ -24,5 +24,6 @@ use_asan: false
 components:
   revng:
     repository: revng
+    license: LICENSE.md
     default_build: optimized
     builds: #@ typical_cmake_builds(**build_args())

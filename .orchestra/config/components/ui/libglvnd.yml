@@ -7,6 +7,7 @@
 #@yaml/text-templated-strings
 ---
 #@ def libglvnd_args():
+license: source/README.md
 configure: |
   mkdir -p "$BUILD_DIR" "$BUILD_DIR/source"
   extract.sh --into "$BUILD_DIR/source" "(@= source_url @)"

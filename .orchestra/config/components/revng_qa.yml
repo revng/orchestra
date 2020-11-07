@@ -5,6 +5,7 @@
 ---
 #@ def revng_qa_args():
 repository: revng-qa
+license: LICENSE
 configure: |
   mkdir -p "$BUILD_DIR"
   cd "$BUILD_DIR"; \

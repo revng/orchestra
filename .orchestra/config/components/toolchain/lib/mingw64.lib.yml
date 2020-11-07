@@ -68,6 +68,7 @@ dependencies:
 #@yaml/text-templated-strings
 ---
 #@ def create_mingw64_component(toolchain_name=mandatory, **kwargs):
+license: COPYING
 default_build: default
 builds:
   headers: #@ mingw64_build(build_type="headers", **kwargs)

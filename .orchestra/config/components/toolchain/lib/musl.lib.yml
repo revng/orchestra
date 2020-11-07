@@ -71,6 +71,7 @@ configure: |
 #@      toolchain_name=mandatory,
 #@      gcc_version=mandatory
 #@ ):
+license: COPYRIGHT
 default_build: default
 builds:
   headers: #@ musl_headers(triple=triple, musl_version=musl_version, toolchain_name=toolchain_name)

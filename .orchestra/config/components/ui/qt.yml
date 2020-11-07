@@ -99,6 +99,7 @@
 #@yaml/text-templated-strings
 ---
 #@ def qt_component():
+license: LICENSE.GPLv3
 default_build: optimized
 builds:
   #@ for flavor, opts in qt_optimization_flavors.items():

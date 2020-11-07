@@ -40,6 +40,7 @@
 ---
 #@ def qt_creator_component():
 repository: ui/qt-creator
+license: LICENSE.GPL3-EXCEPT
 default_build: optimized
 builds:
   #@ for flavor, opts in qmake_optimization_flavors.items():

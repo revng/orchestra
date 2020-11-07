@@ -17,6 +17,7 @@
 #@ def ld64_components():
 #@ for prefix in prefixes():
 macos/(@= prefix @)-ld64:
+  license: cctools/APPLE_LICENSE
   builds:
     default:
       configure: |

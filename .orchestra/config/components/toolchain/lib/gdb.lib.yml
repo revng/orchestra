@@ -18,6 +18,7 @@
 #@   version = kwargs["gdb_version"]
 
 #@   source_url = gdb_source_url(version)
+license: COPYING
 configure: |
   extract.sh --into "$SOURCE_DIR" (@= source_url @)
   mkdir -p "$BUILD_DIR"
