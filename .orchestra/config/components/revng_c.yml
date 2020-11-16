@@ -25,4 +25,5 @@ components:
     repository: revng-c
     license: LICENSE.md
     default_build: optimized
+    binary_archives: private
     builds: #@ typical_cmake_builds(**build_args())

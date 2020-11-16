@@ -19,11 +19,16 @@
 #@      pre_install=None,
 #@      post_install=None,
 #@      skip_post_install=False,
+#@      binary_archives=None,
 #@  ):
 
 #@ if/end repository:
 repository: #@ repository
 license: #@ license
+
+#@ if/end binary_archives:
+binary_archives: #@ binary_archives
+
 builds:
   default:
     #@ if/end dependencies:

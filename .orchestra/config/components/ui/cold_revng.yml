@@ -37,5 +37,6 @@ components:
   ui/cold-revng:
     repository: ui/cold-revng
     license: LICENSE.md
+    binary_archives: private
     default_build: optimized
     builds: #@ typical_cmake_builds(**build_args())

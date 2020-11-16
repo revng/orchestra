@@ -4,6 +4,7 @@
 #@yaml/text-templated-strings
 ---
 #@ def revng_distributable():
+binary_archives: private
 configure: |
   mkdir -p "$BUILD_DIR" && cd "$BUILD_DIR"
   touch empty_directory_ignore_it
