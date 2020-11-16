@@ -3,6 +3,7 @@
 
 ---
 #@ def build_args():
+test: true
 extra_cmake_args: #@ cmake_boost_configuration
 build_dependencies:
   - cmake

@@ -79,6 +79,7 @@
 #@        post_configure_script="",
 #@        pre_install_script="",
 #@        post_install_script="",
+#@        test=False,
 #@ ):
 
 #@ for flavor, opts in typical_cmake_flavors(use_asan=use_asan).items():
@@ -117,6 +118,14 @@
     cmake --build "$BUILD_DIR" ${JOBS:+-j$JOBS}
     cmake --install "$BUILD_DIR"
 
+    (@- if test: @)
+    if test "$RUN_TESTS" -eq 1; then
+      cd "$BUILD_DIR"
+      ctest ${JOBS:+-j$JOBS}
+      cd -
+    fi
+    (@ end -@)
+
     (@- if post_install_script: @)
     (@= post_install_script @)
     (@ end -@)
@@ -129,6 +138,9 @@
 
   #@ if/end opts["ndebug"] == False:
   ndebug: false
+
+  #@ if/end test:
+  test: #@ test
 #@ end
 
 #@ end

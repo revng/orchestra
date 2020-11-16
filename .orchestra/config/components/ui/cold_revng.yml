@@ -5,6 +5,7 @@
 
 ---
 #@ def build_args():
+test: true
 pre_configure_script: |
   orc clone --no-force ui/qt-creator
 extra_cmake_args:
