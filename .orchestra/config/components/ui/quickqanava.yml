@@ -20,7 +20,7 @@ use_asan: false
 ---
 components:
   ui/quickqanava:
-    repository: ui/quickqanava
+    repository: ui-quickqanava
     license: licence.txt
     default_build: optimized
     builds: #@ typical_cmake_builds(**build_args())

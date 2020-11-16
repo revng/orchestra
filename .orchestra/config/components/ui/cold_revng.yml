@@ -35,7 +35,7 @@ use_asan: false
 ---
 components:
   ui/cold-revng:
-    repository: ui/cold-revng
+    repository: ui-cold-revng
     license: LICENSE.md
     binary_archives: private
     default_build: optimized

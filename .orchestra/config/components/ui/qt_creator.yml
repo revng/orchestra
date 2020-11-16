@@ -39,7 +39,7 @@
 #@yaml/text-templated-strings
 ---
 #@ def qt_creator_component():
-repository: ui/qt-creator
+repository: ui-qt-creator
 license: LICENSE.GPL3-EXCEPT
 default_build: optimized
 builds:
