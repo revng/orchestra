@@ -104,7 +104,7 @@ orc -b components --hashes --deps
 # Actually run the build
 #
 for TARGET_COMPONENT in $TARGET_COMPONENTS; do
-    orc -b install --create-binary-archives --test "$TARGET_COMPONENT"
+    orc -b install --create-binary-archives "$TARGET_COMPONENT"
 done
 
 #
