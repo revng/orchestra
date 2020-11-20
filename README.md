@@ -1,38 +1,105 @@
-# rev.ng orchestra config
+# rev.ng orchestra configuration
 
 This repository contains the orchestra configuration for rev.ng.
 
-To get started:
+## Bootstrap
 
-* install orchestra (follow the  instructions in its repo)
-* run `orchestra components` to generate the default user configuration
-* edit `.orchestra/config/user_remotes.yml` to add your remotes, like so:
+* Install orchestra script
+  ```sh
+  pip3 install --user git+https://github.com/revng/revng-orchestra.git
   ```
-  #@data/values
-  ---
-  #@overlay/match missing_ok=True
-  remote_base_urls:
-    - fcremo: "git@rev.ng:fcremo"
-    - internal: "git@rev.ng:revng-internal"
-    - private: "git@rev.ng:revng-private"
-  
-  #@overlay/match missing_ok=True
-  binary_archives:
-    - fcremo: "git@rev.ng:fcremo/binary-archives"
+* Make sure `orc` is in PATH
+  ```sh
+  export PATH="$HOME/.local/bin:$PATH"
   ```
-* run `orchestra update`
-* try `orchestra install revng` or `orchestra install ui/cold-revng`
+* Clone orchestra
+  ```sh
+  git clone https://github.com/revng/orchestra
+  cd orchestra
+  ```
+* Initialize default configuration (and list components)
+  ```sh
+  orc components
+  ```
 
-## User configuration
+## Configuration for the public
 
-The following options can be set in `.orchestra/config/user_options.yml`:
+The default configuration gives you read-only access to the rev.ng open source components.
 
-* `parallelism`: this value is passed as `-j` argument `make` and `ninja`
-* `build_from_source`: binary archives will not be used for components in this list
-* `nonredistributable_base_url`: used to fetch MacOS-related and spec archives
-* `paths`: can be used to override various locations (root, build dir, etc).
-  Must be absolute paths. Untested!
+If you have your own fork of certain components on GitHub, you need to customize `.orchestra/config/user_options.yml` as follows (note `$YOUR_GITHUB_USERNAME`):
+
+```yaml
+remote_base_urls:
+  - $YOUR_GITHUB_USERNAME: "git@github.com:$YOUR_GITHUB_USERNAME"
+  ...
+```
+
+## Configuration for rev.ng developers
+
+If you have access to rev.ng GitLab, in order to access private components, your configuration should be similar to the following:
+
+```yaml
+#@data/values
+---
+#@overlay/match missing_ok=True
+remote_base_urls:
+  - $YOUR_GITHUB_USERNAME: "git@github.com:$YOUR_GITHUB_USERNAME"
+  - $YOUR_GITLAB_USERNAME: "git@rev.ng:$YOUR_GITLAB_USERNAME"
+  - public: "git@github.com:revng"
+  - private: "git@rev.ng:revng-private"
+
+#@overlay/match missing_ok=True
+binary_archives:
+  - origin: "git@rev.ng:revng/binary-archives.git"
+  - private: "git@rev.ng:revng-private/binary-archives.git"
+```
+
+## Installing from binary-archives
+
+* Update `binary-archives` and information about remote repositories:
+  ```sh
+  orc update
+  ```
+* Install `revng`
+  ```sh
+  orc install revng
+  ```
+
+## Building from source
+
+In order to build from source certain components, as opposed to fetch them from binary-archives, you need to list them in `.orchestra/config/user_options.yml`:
+
+```yaml
+#@overlay/replace
+build_from_source:
+  - revng
+```
+
+* Install and test `revng`
+  ```sh
+  orc install --test revng
+  ```
+* Manually build:
+  ```sh
+  orc shell revng
+  ninja
+  ctest -j$(nproc)
+  ```
+## How do I...
+
+* **Q**: How do I set the number of parallel jobs for `make`/`ninja`?
+
+  **A**: In `.orchestra/config/user_options.yml`:
+  ```yaml
+  parallelism: 4
+  ```
+* **Q**: How do I print the dependency graph to build a component?
+
+  **A**: `orc graph $COMPONENT | xdot -`
+* **Q**: How do I uninstall a component?
+
+  **A**: `orc uninstall $COMPONENT`
 
 ## Writing components
 
-See `writing_components.md`.
+See `docs/writing_components.md`.
