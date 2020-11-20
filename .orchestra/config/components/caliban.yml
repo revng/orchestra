@@ -16,6 +16,7 @@ dependencies:
   - revng
   - revng-c
   - boost
+  - libedit
 use_asan: false
 #@ end
 
