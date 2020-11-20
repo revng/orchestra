@@ -1,0 +1,34 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+
+#@ source_url = "https://thrysoee.dk/editline/libedit-20191231-3.1.tar.gz"
+
+#@yaml/text-templated-strings
+---
+#@ def libedit_args():
+license: COPYING
+configure: |
+  mkdir -p "$BUILD_DIR"
+  extract.sh --into "$BUILD_DIR" (@= source_url @)
+  cd "$BUILD_DIR"
+  ./configure \
+    --disable-examples \
+    --disable-static \
+    --enable-shared \
+    --prefix="$ORCHESTRA_ROOT" \
+    CFLAGS="(@= data.values.use_old_glibc_cflags @)" \
+    LDFLAGS="(@= data.values.use_old_glibc_lflags @) (@= data.values.modern_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib"
+build_system: make
+build_dependencies:
+  - gcc-host-toolchain
+  - glibc
+dependencies:
+  - ncurses
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  libedit: #@ single_build_component(**libedit_args())

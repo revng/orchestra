@@ -1,0 +1,64 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+
+#@ source_url = "https://ftp.gnu.org/pub/gnu/ncurses/ncurses-6.2.tar.gz"
+
+#@yaml/text-templated-strings
+---
+#@ def ncurses_args():
+license: COPYING
+configure: |
+  mkdir -p "$BUILD_DIR"
+  extract.sh --into "$BUILD_DIR" (@= source_url @)
+  cd "$BUILD_DIR"
+  ./configure \
+    --disable-stripping \
+    --disable-term-driver \
+    --disable-termcap \
+    --disable-widec \
+    --enable-colorfgbg \
+    --enable-const \
+    --enable-echo \
+    --enable-hard-tabs \
+    --enable-leaks \
+    --enable-overwrite \
+    --enable-symlinks \
+    --enable-warnings \
+    --with-cxx \
+    --with-cxx-binding \
+    --with-cxx-shared \
+    --with-macros \
+    --with-manpage-format=normal \
+    --with-progs \
+    --with-rcs-ids \
+    --with-shared \
+    --with-termlib \
+    --without-ada \
+    --without-assertions \
+    --without-debug \
+    --without-dlsym \
+    --without-expanded \
+    --without-gpm \
+    --without-hashed-db \
+    --without-profile \
+    --without-progs \
+    --without-pthread \
+    --without-reentrant \
+    --without-tack \
+    --without-tests \
+    --without-trace \
+    --prefix="$ORCHESTRA_ROOT" \
+    CFLAGS="(@= data.values.use_old_glibc_cflags @)" \
+    LDFLAGS="(@= data.values.use_old_glibc_lflags @) (@= data.values.modern_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib"
+build_system: make
+build_dependencies:
+  - gcc-host-toolchain
+  - glibc
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  ncurses: #@ single_build_component(**ncurses_args())
