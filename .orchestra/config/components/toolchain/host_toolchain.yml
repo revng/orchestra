@@ -8,6 +8,8 @@ components:
     builds:
       default:
         dependencies:
+          - glibc
+          - toolchain/host/binutils
           - clang-release
         install: exit 0
         configure: mkdir -p "$BUILD_DIR"
@@ -16,6 +18,8 @@ components:
     builds:
       default:
         dependencies:
+          - glibc
+          - toolchain/host/binutils
           - clang-release
         install: exit 0
         configure: mkdir -p "$BUILD_DIR"
