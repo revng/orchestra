@@ -143,6 +143,7 @@ builds:
       - ui/libdrm
       - ui/mesa
       - ui/libxcb
+      - ui/libinput
       - ui/xcbutil-image
       - ui/xcbutil-renderutil
       - ui/xcbutil-wm
