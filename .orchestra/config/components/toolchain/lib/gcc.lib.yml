@@ -138,7 +138,7 @@ configure: |
     (@= expand_args(build_specific_configure_options) @) \
     CFLAGS="-w -ggdb3 -O3 (@= data.values.use_old_glibc_cflags @)" \
     CXXFLAGS="-w -ggdb3 -O3 (@= data.values.use_old_glibc_cflags @)" \
-    LDFLAGS="(@= linker_flags @) (@= data.values.use_old_glibc_lflags @) -static-libgcc"
+    LDFLAGS="(@= linker_flags @) (@= data.values.use_old_glibc_ldflags @) -static-libgcc"
 install: |
   cd "$BUILD_DIR"
   (@= make @) (@= extra_gcc_make_variables @)

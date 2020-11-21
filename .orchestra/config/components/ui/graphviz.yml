@@ -59,7 +59,7 @@ configure: |
     --without-included-ltdl \
     --disable-ltdl-install \
     --prefix="$ORCHESTRA_ROOT" \
-    LDFLAGS="(@= data.values.use_old_glibc_lflags @) (@= data.values.modern_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
+    LDFLAGS="(@= data.values.use_old_glibc_ldflags @) (@= data.values.modern_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
     CFLAGS="(@= data.values.use_old_glibc_cflags @)" \
     CC="clang -fuse-ld=gold" \
     PS2PDF=/bin/true \

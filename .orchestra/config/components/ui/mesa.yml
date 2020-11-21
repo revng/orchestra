@@ -51,8 +51,8 @@ configure: |
     -Dxlib-lease=false \
     -Dc_args="(@= data.values.use_old_glibc_cflags @) -w" \
     -Dcpp_args="(@= data.values.use_old_glibc_cflags @) -w -stdlib=libc++ -fno-rtti -fno-exceptions" \
-    -Dcpp_link_args="(@= data.values.use_old_glibc_lflags @) -fuse-ld=gold -stdlib=libc++ -fno-rtti -fno-exceptions -L$ORCHESTRA_ROOT/lib -Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
-    -Dc_link_args="(@= data.values.use_old_glibc_lflags @) -fuse-ld=gold -L$ORCHESTRA_ROOT/lib -Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
+    -Dcpp_link_args="(@= data.values.use_old_glibc_ldflags @) -fuse-ld=gold -stdlib=libc++ -fno-rtti -fno-exceptions -L$ORCHESTRA_ROOT/lib -Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
+    -Dc_link_args="(@= data.values.use_old_glibc_ldflags @) -fuse-ld=gold -L$ORCHESTRA_ROOT/lib -Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
     "$BUILD_DIR" \
     "$BUILD_DIR/source"
 build_system: ninja

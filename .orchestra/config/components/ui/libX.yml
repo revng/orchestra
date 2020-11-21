@@ -27,7 +27,7 @@ configure: |
   cd "$BUILD_DIR"
   ./configure \
     --prefix="$ORCHESTRA_ROOT" \
-    LDFLAGS="(@= data.values.use_old_glibc_lflags @) (@= data.values.modern_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
+    LDFLAGS="(@= data.values.use_old_glibc_ldflags @) (@= data.values.modern_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
     CFLAGS="(@= data.values.use_old_glibc_cflags @)"
 build_system: make
 build_dependencies:
@@ -51,7 +51,7 @@ configure: |
     --enable-shared \
     --disable-static \
     --prefix="$ORCHESTRA_ROOT" \
-    LDFLAGS="(@= data.values.use_old_glibc_lflags @) (@= data.values.modern_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
+    LDFLAGS="(@= data.values.use_old_glibc_ldflags @) (@= data.values.modern_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
     CFLAGS="(@= data.values.use_old_glibc_cflags @)"
 build_system: make
 build_dependencies:
@@ -80,7 +80,7 @@ configure: |
     --disable-static \
     --prefix="$ORCHESTRA_ROOT" \
     CC="cc -fuse-ld=gold" \
-    LDFLAGS="(@= data.values.use_old_glibc_lflags @) (@= data.values.modern_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
+    LDFLAGS="(@= data.values.use_old_glibc_ldflags @) (@= data.values.modern_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
     CFLAGS="(@= data.values.use_old_glibc_cflags @)"
 build_system: make
 build_dependencies:
@@ -105,7 +105,7 @@ configure: |
     --disable-static \
     --prefix="$ORCHESTRA_ROOT" \
     CC="cc -fuse-ld=gold" \
-    LDFLAGS="(@= data.values.use_old_glibc_lflags @) (@= data.values.modern_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
+    LDFLAGS="(@= data.values.use_old_glibc_ldflags @) (@= data.values.modern_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
     CFLAGS="(@= data.values.use_old_glibc_cflags @)"
 build_system: make
 build_dependencies:

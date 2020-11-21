@@ -81,20 +81,20 @@ debug:
     - CONFIG+=debug
     - CONFIG-=release
     - QMAKE_CXXFLAGS_DEBUG+="(@= data.values.use_old_glibc_cflags @) -ggdb3 -O0 -fno-omit-frame-pointer (@= data.values.regular_cxx_flags @)"
-    - QMAKE_LFLAGS+="(@= data.values.use_old_glibc_lflags @) -ggdb3 -O0 (@= data.values.regular_linker_flags @) -Wl,-rpath=$RPATH_PLACEHOLDER/lib"
+    - QMAKE_LFLAGS+="(@= data.values.use_old_glibc_ldflags @) -ggdb3 -O0 (@= data.values.regular_linker_flags @) -Wl,-rpath=$RPATH_PLACEHOLDER/lib"
   ndebug: false
 optimized:
   extra_qmake_args:
     - CONFIG+=debug
     - CONFIG-=release
     - QMAKE_CXXFLAGS_DEBUG+="(@= data.values.use_old_glibc_cflags @) -ggdb3 -O2 -fno-omit-frame-pointer (@= data.values.regular_cxx_flags @)"
-    - QMAKE_LFLAGS+="(@= data.values.use_old_glibc_lflags @) -ggdb3 (@= data.values.regular_linker_flags @) -Wl,-rpath=$RPATH_PLACEHOLDER/lib"
+    - QMAKE_LFLAGS+="(@= data.values.use_old_glibc_ldflags @) -ggdb3 (@= data.values.regular_linker_flags @) -Wl,-rpath=$RPATH_PLACEHOLDER/lib"
   ndebug: false
 release:
   extra_qmake_args:
     - CONFIG+=release
     - QMAKE_CXXFLAGS_RELEASE+="(@= data.values.use_old_glibc_cflags @) -ggdb3 -O2 (@= data.values.regular_cxx_flags @)"
-    - QMAKE_LFLAGS+="(@= data.values.use_old_glibc_lflags @) -ggdb3 (@= data.values.regular_linker_flags @) -Wl,-rpath=$RPATH_PLACEHOLDER/lib"
+    - QMAKE_LFLAGS+="(@= data.values.use_old_glibc_ldflags @) -ggdb3 (@= data.values.regular_linker_flags @) -Wl,-rpath=$RPATH_PLACEHOLDER/lib"
   ndebug: true
 #@ end
 

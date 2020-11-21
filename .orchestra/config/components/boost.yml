@@ -20,7 +20,7 @@ install: |
     --prefix="${DESTDIR}${ORCHESTRA_ROOT}" \
     --ignore-site-config toolset='clang' \
     cxxflags='(@= data.values.use_old_glibc_cflags @) (@= data.values.regular_cxx_flags @)' \
-    linkflags='(@= data.values.use_old_glibc_lflags @) (@= data.values.regular_linker_flags @) -Wl,-rpath=$ORIGIN/../lib'
+    linkflags='(@= data.values.use_old_glibc_ldflags @) (@= data.values.regular_linker_flags @) -Wl,-rpath=$ORIGIN/../lib'
   ./b2 \
     --prefix="${DESTDIR}${ORCHESTRA_ROOT}" \
     --ignore-site-config toolset='clang' \

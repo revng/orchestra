@@ -15,7 +15,7 @@ configure: |
   ./configure \
     --disable-static \
     --prefix="$ORCHESTRA_ROOT" \
-    LDFLAGS="(@= data.values.use_old_glibc_lflags @) (@= data.values.modern_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
+    LDFLAGS="(@= data.values.use_old_glibc_ldflags @) (@= data.values.modern_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
     CFLAGS="(@= data.values.use_old_glibc_cflags @)"
 build_system: make
 build_dependencies:
