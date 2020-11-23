@@ -144,6 +144,7 @@ builds:
       - ui/mesa
       - ui/libxcb
       - ui/libinput
+      - ui/libudev
       - ui/xcbutil-image
       - ui/xcbutil-renderutil
       - ui/xcbutil-wm

@@ -49,12 +49,15 @@ apt-get install --no-install-recommends --yes \
 
 # Dependencies for Qt
 apt install --no-install-recommends --yes \
+  gperf \
+  libcap-dev \
   libfontconfig1-dev \
   libfreetype6-dev \
   libgl-dev \
   libgl1-mesa-dev \
   libgles2-mesa-dev \
   libinput-dev \
+  libmount-dev \
   libssl-dev \
   libx11-dev \
   libx11-xcb-dev \
