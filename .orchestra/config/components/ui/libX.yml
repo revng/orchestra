@@ -15,6 +15,7 @@
 #@ xcbutil_wm_source_url = "https://xcb.freedesktop.org/dist/xcb-util-wm-0.4.1.tar.gz"
 #@ xcbutil_keysyms_source_url = "https://xcb.freedesktop.org/dist/xcb-util-keysyms-0.4.0.tar.gz"
 #@ libxshmfence_source_url = "https://www.x.org/releases/individual/lib/libxshmfence-1.3.tar.bz2"
+#@ libxext_source_url = "https://www.x.org/releases/individual/lib/libXext-1.3.4.tar.gz"
 
 #@yaml/text-templated-strings
 ---
@@ -92,6 +93,35 @@ dependencies:
 
 #@yaml/text-templated-strings
 ---
+#@ def libxext_args():
+license: COPYING
+configure: |
+  mkdir -p "$BUILD_DIR"
+  extract.sh --into "$BUILD_DIR" "(@= libxext_source_url @)"
+
+  cd "$BUILD_DIR"
+  ./configure \
+    --disable-selective-werror \
+    --without-xmlto \
+    --disable-specs \
+    --enable-ipv6 \
+    --without-fop \
+    --enable-shared \
+    --disable-static \
+    --prefix="$ORCHESTRA_ROOT" \
+    CC="cc -fuse-ld=gold" \
+    LDFLAGS="(@= data.values.use_old_glibc_ldflags @) (@= data.values.modern_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
+    CFLAGS="(@= data.values.use_old_glibc_cflags @)"
+build_system: make
+build_dependencies:
+  - host-c-toolchain
+  - glibc
+dependencies:
+  - ui/libx11
+#@ end
+
+#@yaml/text-templated-strings
+---
 #@ def xcbutil_args(source_url, license, additional_dependencies=[]):
 license: #@ license
 configure: |
@@ -149,6 +179,7 @@ components:
   ui/xcb-proto: #@ single_build_component(**xcb_proto_args())
   ui/libxcb: #@ single_build_component(**libxcb_args())
   ui/libx11: #@ single_build_component(**libx11_args())
+  ui/libxext: #@ single_build_component(**libxext_args())
   ui/xtrans: #@ xtrans_component()
   ui/xcbutil: #@ single_build_component(**xcbutil_args(xcbutil_source_url, "source/COPYING"))
   ui/xcbutil-image: #@ single_build_component(**xcbutil_sublibrary_args(xcbutil_image_source_url, "source/COPYING"))

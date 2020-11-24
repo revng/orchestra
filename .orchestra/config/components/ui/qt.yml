@@ -151,6 +151,7 @@ builds:
       - ui/xcbutil-keysyms
       - ui/libxshmfence
       - ui/libx11
+      - ui/libxext
       - ui/xkbcommon
       - zlib
     build_dependencies:
