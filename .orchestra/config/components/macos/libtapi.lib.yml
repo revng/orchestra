@@ -1,4 +1,5 @@
 #@ load("/lib/make.lib.yml", "make")
+#@ load("/lib/cmake.lib.yml", "cmake")
 #@ load("/lib/cmake.lib.yml", "cmdline_cmake_base_configuration")
 #@ load("/lib/shell.lib.yml", "expand_args")
 
@@ -20,7 +21,8 @@ builds:
 
       sed -i 's|NOT APPLE|FALSE|' src/projects/libtapi/CMakeLists.txt
       sed -i 's|^|#include <limits>\n|' src/projects/libtapi/include/tapi/Core/ArchitectureSupport.h
-      cmake src/ \
+      (@= cmake @) \
+        src/ \
         (@= expand_args(cmdline_cmake_base_configuration(cmake_build_type="Release")) @) \
         -DLLVM_INCLUDE_TESTS=OFF
     install: |

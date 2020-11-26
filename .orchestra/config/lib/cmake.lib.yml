@@ -6,6 +6,25 @@
 
 #@yaml/text-templated-strings
 ---
+#@ def cmake_default_cmdline_extra_flags(
+#@  ):
+- -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+- -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT"
+#@ end
+
+#@yaml/text-templated-strings
+---
+#@ def _cmake(
+#@  ):
+- |
+  cmake \
+    (@= expand_args(cmake_default_cmdline_extra_flags()) @)
+#@ end
+
+#@ cmake = _cmake()[0].rstrip()
+
+#@yaml/text-templated-strings
+---
 #@ def cmdline_cmake_base_configuration(
 #@        cmake_build_type=mandatory,
 #@        extra_compiler_flags="",
@@ -19,11 +38,9 @@
 - -DCMAKE_EXE_LINKER_FLAGS="(@= data.values.regular_linker_flags @)"
 - -DCMAKE_MODULE_LINKER_FLAGS="(@= data.values.regular_linker_flags @)"
 - -DCMAKE_SHARED_LINKER_FLAGS="(@= data.values.regular_linker_flags @)"
-- -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 - -DCMAKE_BUILD_RPATH="$RPATH_PLACEHOLDER/lib:$RPATH_PLACEHOLDER/(@= data.values.sanitizers_libs_path @):$RPATH_PLACEHOLDER/lib/revng/analyses"
 - -DCMAKE_INSTALL_RPATH="$RPATH_PLACEHOLDER/lib:$RPATH_PLACEHOLDER/(@= data.values.sanitizers_libs_path @):$RPATH_PLACEHOLDER/lib/revng/analyses"
 - -DCMAKE_BUILD_TYPE="(@= cmake_build_type @)"
-- -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT"
 #@ end
 
 #@yaml/text-templated-strings
@@ -43,7 +60,6 @@
   set(CMAKE_EXE_LINKER_FLAGS "(@= data.values.regular_linker_flags @) (@= data.values.use_old_glibc_ldflags @)")
   set(CMAKE_MODULE_LINKER_FLAGS "(@= data.values.regular_linker_flags @) (@= data.values.use_old_glibc_ldflags @)")
   set(CMAKE_SHARED_LINKER_FLAGS "(@= data.values.regular_linker_flags @) (@= data.values.use_old_glibc_ldflags @)")
-  set(CMAKE_EXPORT_COMPILE_COMMANDS=ON)
   set(CMAKE_BUILD_RPATH "$RPATH_PLACEHOLDER/lib:$RPATH_PLACEHOLDER/(@= data.values.sanitizers_libs_path @):$RPATH_PLACEHOLDER/lib/revng/analyses")
   set(CMAKE_INSTALL_RPATH "$RPATH_PLACEHOLDER/lib:$RPATH_PLACEHOLDER/(@= data.values.sanitizers_libs_path @):$RPATH_PLACEHOLDER/lib/revng/analyses")
   set(CMAKE_BUILD_TYPE "(@= cmake_build_type @)")
@@ -100,10 +116,10 @@
     eof
 
     cd "$BUILD_DIR";
-    cmake "$SOURCE_DIR" \
+    (@= cmake @) \
+      "$SOURCE_DIR" \
       -G"(@= build_system @)" \
       -DCMAKE_TOOLCHAIN_FILE="$BUILD_DIR/toolchain.cmake" \
-      -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT" \
       (@= expand_args(extra_cmake_args) @)
 
     (@- if post_configure_script: @)
