@@ -9,6 +9,11 @@ def log(message):
     sys.stderr.write(message + "\n")
 
 def main():
+    # Print Python version information
+    print("Python version:")
+    print("  " + sys.version.replace("\n", "\n  ").strip())
+    print()
+
     # Print Linux distro information
     if os.path.exists("/etc/os-release"):
         with open("/etc/os-release", "r") as os_release:
