@@ -88,7 +88,7 @@
     -platform linux-clang \
     (@= extra_qmake_options @) \
     QMAKE_CXXFLAGS+="(@= data.values.use_old_glibc_cflags @) -ggdb3 (@= data.values.regular_cxx_flags @)" \
-    QMAKE_LFLAGS+="(@= data.values.use_old_glibc_lflags @) -ggdb3 (@= data.values.regular_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib"
+    QMAKE_LFLAGS+="(@= data.values.use_old_glibc_ldflags @) -ggdb3 (@= data.values.regular_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib"
 #@ end
 
 #@ def configure_base(**kwargs):
@@ -112,7 +112,7 @@ builds:
 
       cat >> "$SOURCE_DIR/qtbase/mkspecs/linux-clang/qmake.conf" <<eof
       QMAKE_CXXFLAGS += (@= data.values.use_old_glibc_cflags @) -ggdb3 (@= data.values.regular_cxx_flags @) -w # ORCHESTRA_TMP
-      QMAKE_LFLAGS += (@= data.values.use_old_glibc_lflags @) -ggdb3 (@= data.values.regular_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib # ORCHESTRA_TMP
+      QMAKE_LFLAGS += (@= data.values.use_old_glibc_ldflags @) -ggdb3 (@= data.values.regular_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib # ORCHESTRA_TMP
       eof
       sed -i 's|QT_CONFIG(getauxval)|0|' "$SOURCE_DIR/qtbase/src/corelib/global/qrandom.cpp"
 
@@ -143,12 +143,15 @@ builds:
       - ui/libdrm
       - ui/mesa
       - ui/libxcb
+      - ui/libinput
+      - ui/libudev
       - ui/xcbutil-image
       - ui/xcbutil-renderutil
       - ui/xcbutil-wm
       - ui/xcbutil-keysyms
       - ui/libxshmfence
       - ui/libx11
+      - ui/libxext
       - ui/xkbcommon
       - zlib
     build_dependencies:

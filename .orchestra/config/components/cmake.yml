@@ -16,9 +16,9 @@ configure: |
     LDFLAGS="-static-libstdc++ -static-libgcc" \
     -- -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT" \
-    -DCMAKE_SHARED_LINKER_FLAGS="-static-libstdc++ -static-libgcc (@= data.values.use_old_glibc_lflags @)" \
-    -DCMAKE_MODULE_LINKER_FLAGS="-static-libstdc++ -static-libgcc (@= data.values.use_old_glibc_lflags @)" \
-    -DCMAKE_EXE_LINKER_FLAGS="-static-libstdc++ -static-libgcc (@= data.values.use_old_glibc_lflags @)" \
+    -DCMAKE_SHARED_LINKER_FLAGS="-static-libstdc++ -static-libgcc (@= data.values.use_old_glibc_ldflags @)" \
+    -DCMAKE_MODULE_LINKER_FLAGS="-static-libstdc++ -static-libgcc (@= data.values.use_old_glibc_ldflags @)" \
+    -DCMAKE_EXE_LINKER_FLAGS="-static-libstdc++ -static-libgcc (@= data.values.use_old_glibc_ldflags @)" \
     -DCMAKE_C_FLAGS="(@= data.values.use_old_glibc_cflags @)" \
     -DCMAKE_CXX_FLAGS="(@= data.values.use_old_glibc_cflags @)" \
     -DCMAKE_USE_OPENSSL=OFF

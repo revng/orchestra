@@ -2,37 +2,41 @@
 #@ load("@ytt:overlay", "overlay")
 #@ load("/lib/create_component.lib.yml", "single_build_component")
 
-#@ source_url = "https://gitlab.freedesktop.org/glvnd/libglvnd/-/archive/v1.3.2/libglvnd-v1.3.2.tar.gz"
+#@ source_url = "https://www.freedesktop.org/software/libinput/libinput-1.16.3.tar.xz"
 
 #@yaml/text-templated-strings
 ---
-#@ def libglvnd_args():
-license: source/README.md
+#@ def libinput_args():
+license: source/COPYING
 configure: |
   mkdir -p "$BUILD_DIR" "$BUILD_DIR/source"
   extract.sh --into "$BUILD_DIR/source" "(@= source_url @)"
   find "$BUILD_DIR/source/" -name meson.build -exec sed -i "s|install\s*:\s*|install_rpath : '$RPATH_PLACEHOLDER/lib', \0|" {} \;
 
   export CC=clang
+  export CXX=clang++
   meson setup \
     --buildtype plain \
     --libdir=lib \
     --prefix "$ORCHESTRA_ROOT" \
     --wrap-mode nodownload \
-    -Dx11=enabled \
-    -Dglx=enabled \
-    -Dc_args="(@= data.values.use_old_glibc_cflags @)" \
-    -Dc_link_args="(@= data.values.use_old_glibc_ldflags @) -w -fuse-ld=gold -Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
+    -Ddebug-gui=false \
+    -Ddocumentation=false \
+    -Dlibwacom=false \
+    -Dtests=false \
+    -Dudev-dir=/lib/udev \
+    -Db_ndebug=true \
+    -Dc_args="(@= data.values.use_old_glibc_cflags @) -w" \
+    -Dc_link_args="(@= data.values.use_old_glibc_ldflags @) -fuse-ld=gold -L$ORCHESTRA_ROOT/lib -Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
     "$BUILD_DIR" \
     "$BUILD_DIR/source"
 build_system: ninja
 build_dependencies:
   - host-c-toolchain
-  - glibc
 #@ end
 
 #@overlay/match by=overlay.all, expects=1
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  ui/libglvnd: #@ single_build_component(**libglvnd_args())
+  ui/libinput: #@ single_build_component(**libinput_args())

@@ -58,7 +58,7 @@ configure: |
     --without-stage1-ldflags \
     CFLAGS="-w -ggdb3 -O3 (@= data.values.use_old_glibc_cflags @)" \
     CXXFLAGS="-w -ggdb3 -O3 (@= data.values.use_old_glibc_cflags @)" \
-    LDFLAGS="(@= linker_flags @) (@= data.values.use_old_glibc_lflags @)"
+    LDFLAGS="(@= linker_flags @) (@= data.values.use_old_glibc_ldflags @)"
 build_system: make
 build_dependencies:
   - glibc

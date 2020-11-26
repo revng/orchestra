@@ -27,7 +27,7 @@ modern_linker_flags: (@= modern_linker_flags @)
 regular_linker_flags: -stdlib=libc++ (@= modern_linker_flags @)
 sanitizers_libs_path: lib64/clang/(@= clang_release_version @)/lib/linux
 use_old_glibc_cflags: --sysroot $INSTALL_LINK_ONLY_PATH -idirafter /usr/local/include -idirafter /usr/include/x86_64-linux-gnu -idirafter /usr/include
-use_old_glibc_lflags: -L$INSTALL_LINK_ONLY_PATH/lib -lrt --sysroot=/
+use_old_glibc_ldflags: -L$INSTALL_LINK_ONLY_PATH/lib -L$ORCHESTRA_ROOT/lib -lrt -Wl,--sysroot=/
 
 parallelism: $(nproc)
 build_from_source:

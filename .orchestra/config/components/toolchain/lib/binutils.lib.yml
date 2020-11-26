@@ -52,7 +52,7 @@ configure: |
     (@= expand_args(extra_binutils_configure_options) @) \
     CFLAGS="-w -ggdb3 -O3 (@= data.values.use_old_glibc_cflags @)" \
     CXXFLAGS="-w -ggdb3 -O3 (@= data.values.use_old_glibc_cflags @)" \
-    LDFLAGS="(@= linker_flags @) (@= data.values.use_old_glibc_lflags @)"
+    LDFLAGS="(@= linker_flags @) (@= data.values.use_old_glibc_ldflags @)"
 build_system: make
 add_to_path: ${ORCHESTRA_ROOT}/x86_64-pc-linux-gnu/(@= triple @)/binutils-bin/(@= binutils_version @)
 build_dependencies:
