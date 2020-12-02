@@ -65,9 +65,9 @@ echo "$BASE_USER_OPTIONS_YML" | sed "s|%GITLAB_ROOT%|$GITLAB_ROOT|g" > ../config
 if test -n "$TARGET_COMPONENTS_URL"; then
     # Add components by repository URL
     for TARGET_COMPONENT_URL in $TARGET_COMPONENTS_URL; do
-        NEW_COMPONENT+=" $(orc components --repository-url "$TARGET_COMPONENT_URL" \
-                           | grep '^Component' \
-                           | cut -d' ' -f2)"
+        NEW_COMPONENT="$(orc components --repository-url "$TARGET_COMPONENT_URL" \
+                         | grep '^Component' \
+                         | cut -d' ' -f2)"
         if test -z "$NEW_COMPONENT"; then
             log "Warning: ignoring URL $TARGET_COMPONENT_URL since it doesn't match any component"
         else
