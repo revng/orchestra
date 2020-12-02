@@ -103,24 +103,30 @@ orc -b components --hashes --deps
 #
 # Actually run the build
 #
+RESULT=0
 for TARGET_COMPONENT in $TARGET_COMPONENTS; do
-    orc -b install --test --create-binary-archives "$TARGET_COMPONENT"
+    if ! orc -b install --test --create-binary-archives "$TARGET_COMPONENT"; then
+        RESULT=1
+        break
+    fi
 done
 
 #
 # Promote `next-*` branches to `*`
 #
-for SOURCE_PATH in $(orc ls --git-sources); do
-    if test -e "$SOURCE_PATH/.git"; then
-        cd "$SOURCE_PATH"
-        BRANCH="$(git rev-parse --abbrev-ref HEAD)"
-        if test "${BRANCH:0:5}" == "next-"; then
-            PUSH_TO="${BRANCH:5}"
-            git push origin "$BRANCH:$PUSH_TO"
+if test "$RESULT" -eq 0; then
+    for SOURCE_PATH in $(orc ls --git-sources); do
+        if test -e "$SOURCE_PATH/.git"; then
+            cd "$SOURCE_PATH"
+            BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+            if test "${BRANCH:0:5}" == "next-"; then
+                PUSH_TO="${BRANCH:5}"
+                git push origin "$BRANCH:$PUSH_TO"
+            fi
+            cd -
         fi
-        cd -
-    fi
-done
+    done
+fi
 
 #
 # Push to binary archives
@@ -164,3 +170,5 @@ for BINARY_ARCHIVE_PATH in $(orc ls --binary-archives); do
     fi
 
 done
+
+exit "$RESULT"
