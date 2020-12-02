@@ -71,7 +71,7 @@ if test -n "$TARGET_COMPONENTS_URL"; then
         if test -z "$NEW_COMPONENT"; then
             log "Warning: ignoring URL $TARGET_COMPONENT_URL since it doesn't match any component"
         else
-            TARGET_COMPONENTS+=" $NEW_COMPONENT"
+            TARGET_COMPONENTS="$NEW_COMPONENT $TARGET_COMPONENTS"
         fi
     done
 fi
