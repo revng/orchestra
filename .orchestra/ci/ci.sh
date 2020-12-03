@@ -36,6 +36,16 @@ EOF
 fi
 set -x
 
+BRANCH=""
+if test -n "$PUSHED_REF"; then
+    if [[ "$PUSHED_REF" = refs/heads/* ]]; then
+        BRANCH="${PUSHED_REF#refs/heads/}"
+    else
+        log "PUSHED_REF ($PUSHED_REF) is not a branch, bailing out"
+        exit 0
+    fi
+fi
+
 #
 # Install orchestra
 #
@@ -90,6 +100,26 @@ for TARGET_COMPONENT in $TARGET_COMPONENTS; do
     echo "  - $TARGET_COMPONENT" >> ../config/user_options.yml
 done
 
+# Build branches list
+cat >> ../config/user_options.yml <<EOF
+#@overlay/replace
+branches:
+EOF
+
+if test -n "$BRANCH"; then
+    echo "  - $BRANCH" >> ../config/user_options.yml
+    if test "${BRANCH:0:5}" == "next-"; then
+        echo "  - ${BRANCH:5}" >> ../config/user_options.yml
+    fi
+fi
+
+cat >> ../config/user_options.yml <<EOF
+  - next-develop
+  - develop
+  - next-master
+  - master
+EOF
+
 # Print debug information
 cat ../config/user_options.yml
 find ..
@@ -121,11 +151,15 @@ if test "$RESULT" -eq 0; then
             BRANCH="$(git rev-parse --abbrev-ref HEAD)"
             if test "${BRANCH:0:5}" == "next-"; then
                 PUSH_TO="${BRANCH:5}"
-                git push origin "$BRANCH:$PUSH_TO"
+                git branch -d "$PUSH_TO" || true
+                git checkout -b "$PUSH_TO" "$BRANCH"
+                git push origin "$PUSH_TO"
             fi
             cd -
         fi
     done
+
+    orc fix-binary-archives-symlinks
 fi
 
 #

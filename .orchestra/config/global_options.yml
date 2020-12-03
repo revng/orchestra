@@ -30,6 +30,8 @@ use_old_glibc_cflags: --sysroot $INSTALL_LINK_ONLY_PATH -idirafter /usr/local/in
 use_old_glibc_ldflags: -L$INSTALL_LINK_ONLY_PATH/lib -L$ORCHESTRA_ROOT/lib -lrt -Wl,--sysroot=/
 
 parallelism: $(nproc)
-build_from_source:
-  #! - component-name
+build_from_source: []
+branches:
+  - develop
+  - master
 nonredistributable_base_url: "https://dummydomain.com/nonredistributable/"

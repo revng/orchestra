@@ -19,3 +19,4 @@ environment:
 paths: #@ datavalue("paths", default={})
 remote_base_urls: #@ datavalue("remote_base_urls")
 binary_archives: #@ datavalue("binary_archives")
+branches: #@ datavalue("branches")
