@@ -145,6 +145,15 @@ done
 # Promote `next-*` branches to `*`
 #
 if test "$RESULT" -eq 0; then
+
+    # Clone all the components having branch next-*
+    for COMPONENT in $(orc components --branch 'next-*' | grep '^Component' | awk '{ print $2 }'); do
+        if ! test -d "sources/$COMPONENT"; then
+           orc clone "$COMPONENT"
+        fi
+    done
+
+    # Promote next-* to *
     for SOURCE_PATH in $(orc ls --git-sources); do
         if test -e "$SOURCE_PATH/.git"; then
             cd "$SOURCE_PATH"
