@@ -85,6 +85,7 @@ build_from_source:
   ninja
   ctest -j$(nproc)
   ```
+
 ## How do I...
 
 * **Q**: How do I set the number of parallel jobs for `make`/`ninja`?
@@ -96,9 +97,14 @@ build_from_source:
 * **Q**: How do I print the dependency graph to build a component?
 
   **A**: `orc graph $COMPONENT | xdot -`
+
 * **Q**: How do I uninstall a component?
 
   **A**: `orc uninstall $COMPONENT`
+
+* **Q**: Does orchestra leave files around my `$HOME` or elsewhere?
+
+  **A**: No! By default orchestra places *everything* inside the folder containing the configuration
 
 ## Writing components
 
