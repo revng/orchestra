@@ -87,8 +87,7 @@ configure: |
     -Dtests=false \
     -Dudev-dir=/lib/udev \
     -Db_ndebug=true \
-    -Dc_args="(@= data.values.use_old_glibc_cflags @) -w -DO_PATH=010000000 -DAT_EMPTY_PATH=0x1000 -Dsecure_getenv=getenv -DCLOCK_BOOTTIME=7 -DCLOCK_REALTIME_ALARM=8 -DCLOCK_BOOTTIME_ALARM=9" \
-    -Dc_link_args="(@= data.values.use_old_glibc_ldflags @) -fuse-ld=gold -L$ORCHESTRA_ROOT/lib -Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
+    -Dc_args="-w -DO_PATH=010000000 -DAT_EMPTY_PATH=0x1000 -Dsecure_getenv=getenv -DCLOCK_BOOTTIME=7 -DCLOCK_REALTIME_ALARM=8 -DCLOCK_BOOTTIME_ALARM=9" \
     "$BUILD_DIR" \
     "$BUILD_DIR/source"
 install: |

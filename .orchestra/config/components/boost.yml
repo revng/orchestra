@@ -15,18 +15,16 @@ configure: |
   cd "$BUILD_DIR" && ./bootstrap.sh --prefix="$ORCHESTRA_ROOT" --with-libraries=test
 install: |
   cd "$BUILD_DIR"
-  export ORIGIN='$ORIGIN'
+
+  ./b2 \
+    --prefix="${DESTDIR}${ORCHESTRA_ROOT}" \
+    --ignore-site-config toolset='clang'
+
   ./b2 \
     --prefix="${DESTDIR}${ORCHESTRA_ROOT}" \
     --ignore-site-config toolset='clang' \
-    cxxflags='(@= data.values.use_old_glibc_cflags @) (@= data.values.regular_cxx_flags @)' \
-    linkflags='(@= data.values.use_old_glibc_ldflags @) (@= data.values.regular_linker_flags @) -Wl,-rpath=$ORIGIN/../lib'
-  ./b2 \
-    --prefix="${DESTDIR}${ORCHESTRA_ROOT}" \
-    --ignore-site-config toolset='clang' \
-    cxxflags='(@= data.values.regular_cxx_flags @)' \
-    linkflags='(@= data.values.regular_linker_flags @) -Wl,-rpath=$ORIGIN/../lib' \
     install
+
 build_dependencies:
   - host-cxx-toolchain
   - glibc

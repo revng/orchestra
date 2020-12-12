@@ -45,9 +45,7 @@ configure: |
     --without-tack \
     --without-tests \
     --without-trace \
-    --prefix="$ORCHESTRA_ROOT" \
-    CFLAGS="(@= data.values.use_old_glibc_cflags @)" \
-    LDFLAGS="(@= data.values.use_old_glibc_lflags @) (@= data.values.modern_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib"
+    --prefix="$ORCHESTRA_ROOT"
 build_system: make
 build_dependencies:
   - gcc-host-toolchain
