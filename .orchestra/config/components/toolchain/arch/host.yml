@@ -2,6 +2,7 @@
 #@ load("@ytt:overlay", "overlay")
 #@ load("@ytt:template", "template")
 #@ load("/components/toolchain/lib/toolchain.lib.yml", "create_toolchain_components")
+#@ load("/lib/util.lib.yml", "datavalue")
 
 #@yaml/text-templated-strings
 ---
@@ -10,7 +11,7 @@ toolchain_name: host
 triple: x86_64-pc-linux-gnu
 binutils_version: "2.35"
 gdb_version: "9.2"
-gcc_version: "10.1.0"
+gcc_version: #@ str(datavalue("gcc_host_version"))
 gcc_sysroot: /
 #! binutils_sysroot: /
 extra_gcc_configure_options:
@@ -37,9 +38,9 @@ extra_gcc_configure_options:
   - --enable-default-pie
   - --enable-default-ssp
   - --enable-libmpx
-  - CFLAGS_FOR_TARGET="-I/usr/include/tirpc (@= data.values.use_old_glibc_cflags @)"
-  - CXXFLAGS_FOR_TARGET="-I/usr/include/tirpc (@= data.values.use_old_glibc_cflags @)"
-  - LDFLAGS_FOR_TARGET="(@= data.values.use_old_glibc_ldflags @) -Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath,$RPATH_PLACEHOLDER/lib"
+  - CFLAGS_FOR_TARGET="-I/usr/include/tirpc (@= data.values.hard_flags_compile @)"
+  - CXXFLAGS_FOR_TARGET="-I/usr/include/tirpc (@= data.values.hard_flags_compile @)"
+  - LDFLAGS_FOR_TARGET="-L$INSTALL_LINK_ONLY_PATH/lib -L$ORCHESTRA_ROOT/lib -lrt --sysroot=/ -Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath,$RPATH_PLACEHOLDER/lib"
 extra_binutils_configure_options:
   - --enable-gold=default
 extra_gcc_make_variables: LIBRARY_PATH=/usr/lib/x86_64-linux-gnu

@@ -1,6 +1,5 @@
 #@ load("@ytt:data", "data")
 #@ load("/lib/create_component.lib.yml", "single_build_component")
-#@ load("/components/toolchain/lib/common.lib.yml", "linker_flags")
 
 #@yaml/text-templated-strings
 
@@ -56,9 +55,8 @@ configure: |
     --disable-shared \
     --enable-obsolete \
     --without-stage1-ldflags \
-    CFLAGS="-w -ggdb3 -O3 (@= data.values.use_old_glibc_cflags @)" \
-    CXXFLAGS="-w -ggdb3 -O3 (@= data.values.use_old_glibc_cflags @)" \
-    LDFLAGS="(@= linker_flags @) (@= data.values.use_old_glibc_ldflags @)"
+    CFLAGS="-w -ggdb3 -O3" \
+    CXXFLAGS="-w -ggdb3 -O3"
 build_system: make
 build_dependencies:
   - glibc

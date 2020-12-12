@@ -14,7 +14,7 @@ configure: |
   find "$BUILD_DIR/source/" -name meson.build -exec sed -i "s|install\s*:\s*|install_rpath : '$RPATH_PLACEHOLDER/lib', \0|" {} \;
 
   export CC=clang
-  export CXX=clang++
+  export CXX=/bin/false
   meson setup \
     --buildtype plain \
     --libdir=lib \
@@ -25,9 +25,7 @@ configure: |
     -Dlibwacom=false \
     -Dtests=false \
     -Dudev-dir=/lib/udev \
-    -Db_ndebug=true \
-    -Dc_args="(@= data.values.use_old_glibc_cflags @) -w" \
-    -Dc_link_args="(@= data.values.use_old_glibc_ldflags @) -fuse-ld=gold -L$ORCHESTRA_ROOT/lib -Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
+    -Dc_args="-w" \
     "$BUILD_DIR" \
     "$BUILD_DIR/source"
 build_system: ninja

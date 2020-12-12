@@ -4,6 +4,7 @@
 #! You should define them in a separate file and use overlay annotations.
 components: {}
 add_to_path:
+  - $ORCHESTRA_ROOT/link-only/bin
   - $ORCHESTRA_ROOT/bin
   - $ORCHESTRA_DOTDIR/support
 environment:
@@ -15,6 +16,11 @@ environment:
   - LIBGL_DRIVERS_PATH: $ORCHESTRA_ROOT/lib/dri${LIBGL_DRIVERS_PATH:+:${LIBGL_DRIVERS_PATH}}
   - PYTHONPATH: $ORCHESTRA_ROOT/lib/python${PYTHONPATH:+:${PYTHONPATH}}
   - LIBRARY_PATH: /usr/lib/x86_64-linux-gnu
+  - HARD_FLAGS_COMPILE: #@ str(datavalue("hard_flags_compile"))
+  - HARD_FLAGS_CXX_CLANG: #@ str(datavalue("hard_flags_cxx_clang"))
+  - HARD_FLAGS_CLANG: #@ str(datavalue("hard_flags_clang"))
+  - HARD_FLAGS_LINK: #@ str(datavalue("hard_flags_link"))
+  - HARD_FLAGS_LINK_GOLD: #@ str(datavalue("hard_flags_link_gold"))
 
 paths: #@ datavalue("paths", default={})
 remote_base_urls: #@ datavalue("remote_base_urls")
