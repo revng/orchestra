@@ -43,15 +43,15 @@ BRANCH=""
 if test -n "$PUSHED_REF"; then
     if [[ "$PUSHED_REF" = refs/heads/* ]]; then
         BRANCH="${PUSHED_REF#refs/heads/}"
+
+        # Switch orchestra to that branch too, if it exists
+        git fetch
+        git checkout "$BRANCH" || true
     else
         log "PUSHED_REF ($PUSHED_REF) is not a branch, bailing out"
         exit 0
     fi
 fi
-
-# Switch orchestra to that branch too, if it exists
-git fetch
-git checkout "$BRANCH" || true
 
 #
 # Install orchestra
