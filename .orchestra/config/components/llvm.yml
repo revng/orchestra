@@ -10,6 +10,7 @@
 #@ def cmake_opts():
 - -DBUILD_SHARED_LIBS=ON
 - -DLLVM_ENABLE_PROJECTS="clang"
+- -DLLVM_TARGETS_TO_BUILD="AArch64;AMDGPU;ARM;Mips;SystemZ;X86"
 - -DCMAKE_C_COMPILER="(@= data.values.regular_c_compiler @)"
 - -DCMAKE_CXX_COMPILER="(@= data.values.regular_cxx_compiler @)"
 #@ end
