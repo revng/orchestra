@@ -36,6 +36,9 @@ EOF
 fi
 set -x
 
+#
+# Detect target branch
+#
 BRANCH=""
 if test -n "$PUSHED_REF"; then
     if [[ "$PUSHED_REF" = refs/heads/* ]]; then
@@ -45,6 +48,10 @@ if test -n "$PUSHED_REF"; then
         exit 0
     fi
 fi
+
+# Switch orchestra to that branch too, if it exists
+git fetch
+git checkout "$BRANCH" || true
 
 #
 # Install orchestra
