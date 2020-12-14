@@ -25,7 +25,7 @@ configure: |
     -Dlibwacom=false \
     -Dtests=false \
     -Dudev-dir=/lib/udev \
-    -Dc_args="-w" \
+    -Dc_args="-Dstatic_assert=_Static_assert -w" \
     "$BUILD_DIR" \
     "$BUILD_DIR/source"
 build_system: ninja
