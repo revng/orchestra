@@ -158,6 +158,8 @@ install: |
     ln -s gcc "${DESTDIR}${ORCHESTRA_ROOT}/link-only/bin/x86_64-pc-linux-gnu-cc"
     ln -s gcc "${DESTDIR}${ORCHESTRA_ROOT}/link-only/bin/x86_64-pc-linux-gnu-gcc"
 
+    cp -a "${DESTDIR}${ORCHESTRA_ROOT}"/lib/gcc/x86_64-pc-linux-gnu/(@= gcc_version @)/*.{a,o} "${DESTDIR}${ORCHESTRA_ROOT}"/lib/
+
   fi
 
   if test -e "${DESTDIR}${NEW_GCC_PATH}/g++"; then
