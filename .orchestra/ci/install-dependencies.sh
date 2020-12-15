@@ -31,12 +31,10 @@ apt-get install --no-install-recommends --yes \
   ninja-build \
   pkg-config \
   python \
-  python-pyelftools \
   python3 \
   python3-pip \
   python3-dev \
   python3-cffi \
-  python3-pyelftools \
   python3-pygraphviz \
   python3-setuptools \
   rsync \
@@ -70,7 +68,7 @@ apt install --no-install-recommends --yes \
   libxkbcommon-x11-dev \
   libxrender-dev
 
-pip3 install setuptools wheel mako meson
+pip3 install --user --upgrade setuptools wheel mako meson pyelftools
 
 if ! which git-lfs >& /dev/null; then
   curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash
