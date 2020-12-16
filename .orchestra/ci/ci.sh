@@ -113,7 +113,7 @@ cat >> ../config/user_options.yml <<EOF
 branches:
 EOF
 
-if test -n "$BRANCH"; then
+if test -n "$BRANCH" && ! [[ "$BRANCH" =~ ^(next-develop|develop|next-master|master)$ ]]; then
     echo "  - $BRANCH" >> ../config/user_options.yml
     if test "${BRANCH:0:5}" == "next-"; then
         echo "  - ${BRANCH:5}" >> ../config/user_options.yml
