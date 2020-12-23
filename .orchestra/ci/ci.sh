@@ -134,15 +134,15 @@ find ..
 orc update --no-config
 
 # Print debugging information
-orc -b graph revng-distributable
-orc -b components --hashes --deps
+orc graph -b revng-distributable
+orc components --hashes --deps
 
 #
 # Actually run the build
 #
 RESULT=0
 for TARGET_COMPONENT in $TARGET_COMPONENTS; do
-    if ! orc -b install --test --create-binary-archives "$TARGET_COMPONENT"; then
+    if ! orc install -b --test --create-binary-archives "$TARGET_COMPONENT"; then
         RESULT=1
         break
     fi
