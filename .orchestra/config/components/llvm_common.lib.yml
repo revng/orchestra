@@ -1,6 +1,7 @@
 #@ load("@ytt:data", "data")
 #@ load("/lib/fn_args.lib.yml", "mandatory")
 #@ load("/lib/shell.lib.yml", "expand_args")
+#@ load("/lib/cmake.lib.yml", "cmake")
 
 #@yaml/text-templated-strings
 ---
@@ -8,16 +9,15 @@
 - |
   mkdir -p "$BUILD_DIR"
   cd "$BUILD_DIR";
-  cmake "(@= source_dir @)/llvm" \
+  (@= cmake @) \
+    "(@= source_dir @)/llvm" \
     -GNinja \
     -DCMAKE_BUILD_RPATH="\$ORIGIN/../lib:$ORCHESTRA_ROOT/lib" \
     -DCMAKE_INSTALL_RPATH="$RPATH_PLACEHOLDER/lib" \
     -DCMAKE_BUILD_TYPE="(@= cmake_build_type @)" \
-    -DCMAKE_INSTALL_SO_NO_EXE=0 \
     -DCMAKE_EXE_LINKER_FLAGS="(@= cflags @)" \
     -DCMAKE_SHARED_LINKER_FLAGS="(@= cflags @)" \
     -DCMAKE_MODULE_LINKER_FLAGS="(@= cflags @)" \
-    -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT" \
     -DCMAKE_CXX_FLAGS="(@= cflags @)" \
     -DLLVM_TARGETS_TO_BUILD="X86;AMDGPU" \
     -DLLVM_ENABLE_DUMP=ON \
