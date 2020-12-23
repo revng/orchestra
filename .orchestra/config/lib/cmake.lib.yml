@@ -6,6 +6,17 @@
 
 #@yaml/text-templated-strings
 ---
+#@ def _cmake():
+- |
+  cmake \
+    -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+    -DCMAKE_INSTALL_SO_NO_EXE=0 \
+    -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT"
+#@ end
+#@ cmake = _cmake()[0].rstrip()
+
+#@yaml/text-templated-strings
+---
 #@ def cmdline_cmake_base_configuration(
 #@        cmake_build_type=mandatory,
 #@        extra_compiler_flags="",
@@ -16,12 +27,9 @@
 - -DCMAKE_CXX_COMPILER="(@= data.values.regular_cxx_compiler @)"
 - -DCMAKE_C_FLAGS="(@= extra_compiler_flags @) (@= extra_c_flags @)"
 - -DCMAKE_CXX_FLAGS="(@= extra_compiler_flags @) (@= extra_cxx_flags @)"
-- -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 - -DCMAKE_BUILD_RPATH="$RPATH_PLACEHOLDER/lib:$RPATH_PLACEHOLDER/(@= data.values.sanitizers_libs_path @):$RPATH_PLACEHOLDER/lib/revng/analyses"
 - -DCMAKE_INSTALL_RPATH="$RPATH_PLACEHOLDER/lib:$RPATH_PLACEHOLDER/(@= data.values.sanitizers_libs_path @):$RPATH_PLACEHOLDER/lib/revng/analyses"
 - -DCMAKE_BUILD_TYPE="(@= cmake_build_type @)"
-- -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT"
-- -DCMAKE_INSTALL_SO_NO_EXE=0
 #@ end
 
 ---
@@ -66,7 +74,8 @@
     mkdir -p "$BUILD_DIR"
 
     cd "$BUILD_DIR";
-    cmake "$SOURCE_DIR" \
+    (@= cmake @) \
+      "$SOURCE_DIR" \
       -G"(@= build_system @)" \
       (@= expand_args(cmdline_cmake_base_configuration(cmake_build_type=opts["cmake_build_type"], extra_compiler_flags=opts["extra_compiler_flags"])) @) \
       (@= expand_args(extra_cmake_args) @)

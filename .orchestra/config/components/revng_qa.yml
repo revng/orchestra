@@ -1,5 +1,6 @@
 #@ load("@ytt:overlay", "overlay")
 #@ load("/lib/create_component.lib.yml", "single_build_component")
+#@ load("/lib/cmake.lib.yml", "cmake")
 
 #@yaml/text-templated-strings
 ---
@@ -9,8 +10,8 @@ license: LICENSE
 configure: |
   mkdir -p "$BUILD_DIR"
   cd "$BUILD_DIR"; \
-  cmake "$SOURCE_DIR" \
-    -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT" \
+  (@= cmake @) \
+    "$SOURCE_DIR" \
     -DTRIPLE_x86_64="x86_64-gentoo-linux-musl" \
     -DTRIPLE_mips="mips-unknown-linux-musl" \
     -DTRIPLE_mipsel="mipsel-unknown-linux-musl" \
