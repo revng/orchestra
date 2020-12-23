@@ -17,10 +17,7 @@ configure: |
   ./source/configure \
     --enable-shared \
     --disable-static \
-    --prefix="$ORCHESTRA_ROOT" \
-    LDFLAGS="(@= data.values.use_old_glibc_ldflags @) (@= data.values.modern_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
-    CFLAGS="(@= data.values.use_old_glibc_cflags @)" \
-    CC="cc -fuse-ld=gold"
+    --prefix="$ORCHESTRA_ROOT"
 build_system: make
 build_dependencies:
   - host-c-toolchain
@@ -59,8 +56,6 @@ configure: |
     -Dlibkms=false \
     -Dvalgrind=false \
     -Db_ndebug=true \
-    -Dc_args="(@= data.values.use_old_glibc_cflags @) -w" \
-    -Dc_link_args="(@= data.values.use_old_glibc_ldflags @) -fuse-ld=gold -L$ORCHESTRA_ROOT/lib -Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
     "$BUILD_DIR" \
     "$BUILD_DIR/source"
 build_system: ninja

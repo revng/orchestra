@@ -67,8 +67,7 @@
     -opengl desktop \
     -egl \
     -no-eglfs \
-    -xkb \
-    -system-xcb \
+    -xcb \
     -xkbcommon \
     -no-icu \
     -no-zstd \
@@ -86,9 +85,8 @@
     -nomake examples \
     -c++std c++14 \
     -platform linux-clang \
-    (@= extra_qmake_options @) \
-    QMAKE_CXXFLAGS+="(@= data.values.use_old_glibc_cflags @) -ggdb3 (@= data.values.regular_cxx_flags @)" \
-    QMAKE_LFLAGS+="(@= data.values.use_old_glibc_ldflags @) -ggdb3 (@= data.values.regular_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib"
+    -no-pch \
+    (@= extra_qmake_options @)
 #@ end
 
 #@ def configure_base(**kwargs):
@@ -107,13 +105,9 @@ builds:
   #@ ndebug = opts["ndebug"]
   (@= flavor @):
     configure: |
-      extract.sh --into "$SOURCE_DIR" https://download.qt.io/official_releases/qt/5.14/5.14.1/single/qt-everywhere-src-5.14.1.tar.xz
+      extract.sh --into "$SOURCE_DIR" https://download.qt.io/official_releases/qt/5.15/5.15.2/single/qt-everywhere-src-5.15.2.tar.xz
       patch-if-exists "${ORCHESTRA_DOTDIR}/patches/qt-5.13.1-libcxx-include-array-linuxdmabuf.patch" "$SOURCE_DIR"
 
-      cat >> "$SOURCE_DIR/qtbase/mkspecs/linux-clang/qmake.conf" <<eof
-      QMAKE_CXXFLAGS += (@= data.values.use_old_glibc_cflags @) -ggdb3 (@= data.values.regular_cxx_flags @) -w # ORCHESTRA_TMP
-      QMAKE_LFLAGS += (@= data.values.use_old_glibc_ldflags @) -ggdb3 (@= data.values.regular_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib # ORCHESTRA_TMP
-      eof
       sed -i 's|QT_CONFIG(getauxval)|0|' "$SOURCE_DIR/qtbase/src/corelib/global/qrandom.cpp"
 
       (@= configure_base(extra_qmake_options=extra_qmake_options) @)

@@ -2,27 +2,31 @@
 #@ load("@ytt:overlay", "overlay")
 #@ load("/lib/create_component.lib.yml", "single_build_component")
 
-#@ source_url = "https://libbsd.freedesktop.org/releases/libbsd-0.10.0.tar.xz"
+#@ source_url = "https://thrysoee.dk/editline/libedit-20191231-3.1.tar.gz"
 
 #@yaml/text-templated-strings
 ---
-#@ def libbsd_args():
+#@ def libedit_args():
 license: COPYING
 configure: |
-  extract.sh --into "$BUILD_DIR" "(@= source_url @)"
   mkdir -p "$BUILD_DIR"
+  extract.sh --into "$BUILD_DIR" (@= source_url @)
   cd "$BUILD_DIR"
   ./configure \
+    --disable-examples \
     --disable-static \
+    --enable-shared \
     --prefix="$ORCHESTRA_ROOT"
 build_system: make
 build_dependencies:
-  - host-c-toolchain
+  - gcc-host-toolchain
   - glibc
+dependencies:
+  - ncurses
 #@ end
 
-#@overlay/match by=overlay.all
+#@overlay/match by=overlay.all, expects=1
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  ui/libbsd: #@ single_build_component(**libbsd_args())
+  libedit: #@ single_build_component(**libedit_args())

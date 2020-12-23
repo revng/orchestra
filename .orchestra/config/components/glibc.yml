@@ -46,6 +46,8 @@ install: |
     "$DESTDIR$INSTALL_LINK_ONLY_PATH/lib/libc.so"
   ln -s . "$DESTDIR$INSTALL_LINK_ONLY_PATH/usr"
   rm -f "$DESTDIR$INSTALL_LINK_ONLY_PATH"/libexec/getconf/POSIX_V7_LP64_OFF64*
+  rm -rf "$DESTDIR$INSTALL_LINK_ONLY_PATH"/bin
+  cp -a "$DESTDIR$INSTALL_LINK_ONLY_PATH"/lib/*.o "$DESTDIR$ORCHESTRA_ROOT"/lib/
 #@ end
 
 #@overlay/match by=overlay.all, expects=1

@@ -27,9 +27,7 @@ configure: |
 
   cd "$BUILD_DIR"
   ./configure \
-    --prefix="$ORCHESTRA_ROOT" \
-    LDFLAGS="(@= data.values.use_old_glibc_ldflags @) (@= data.values.modern_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
-    CFLAGS="(@= data.values.use_old_glibc_cflags @)"
+    --prefix="$ORCHESTRA_ROOT"
 build_system: make
 build_dependencies:
   - host-c-toolchain
@@ -51,9 +49,7 @@ configure: |
     --disable-selinux \
     --enable-shared \
     --disable-static \
-    --prefix="$ORCHESTRA_ROOT" \
-    LDFLAGS="(@= data.values.use_old_glibc_ldflags @) (@= data.values.modern_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
-    CFLAGS="(@= data.values.use_old_glibc_cflags @)"
+    --prefix="$ORCHESTRA_ROOT"
 build_system: make
 build_dependencies:
   - host-c-toolchain
@@ -79,10 +75,7 @@ configure: |
     --without-fop \
     --enable-shared \
     --disable-static \
-    --prefix="$ORCHESTRA_ROOT" \
-    CC="cc -fuse-ld=gold" \
-    LDFLAGS="(@= data.values.use_old_glibc_ldflags @) (@= data.values.modern_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
-    CFLAGS="(@= data.values.use_old_glibc_cflags @)"
+    --prefix="$ORCHESTRA_ROOT"
 build_system: make
 build_dependencies:
   - host-c-toolchain
@@ -108,10 +101,7 @@ configure: |
     --without-fop \
     --enable-shared \
     --disable-static \
-    --prefix="$ORCHESTRA_ROOT" \
-    CC="cc -fuse-ld=gold" \
-    LDFLAGS="(@= data.values.use_old_glibc_ldflags @) (@= data.values.modern_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
-    CFLAGS="(@= data.values.use_old_glibc_cflags @)"
+    --prefix="$ORCHESTRA_ROOT"
 build_system: make
 build_dependencies:
   - host-c-toolchain
@@ -133,10 +123,7 @@ configure: |
     --disable-selective-werror \
     --enable-shared \
     --disable-static \
-    --prefix="$ORCHESTRA_ROOT" \
-    CC="cc -fuse-ld=gold" \
-    LDFLAGS="(@= data.values.use_old_glibc_ldflags @) (@= data.values.modern_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib" \
-    CFLAGS="(@= data.values.use_old_glibc_cflags @)"
+    --prefix="$ORCHESTRA_ROOT"
 build_system: make
 build_dependencies:
   - host-c-toolchain
@@ -164,9 +151,7 @@ builds:
       cd "$BUILD_DIR"
       ./configure \
         --disable-selective-werror \
-        --prefix="$ORCHESTRA_ROOT" \
-        CC="cc -fuse-ld=gold" \
-        LDFLAGS="(@= data.values.modern_linker_flags @) -Wl,-rpath,$RPATH_PLACEHOLDER/lib"
+        --prefix="$ORCHESTRA_ROOT"
     install: |
       cd "$BUILD_DIR"
       (@= make @) install

@@ -1,23 +1,15 @@
 #@ load("@ytt:overlay", "overlay")
-
 #@ load("/lib/cmake.lib.yml", "cmake_boost_configuration", "typical_cmake_builds")
 
 ---
 #@ def build_args():
-test: true
-extra_cmake_args: #@ cmake_boost_configuration
+source_url: "https://github.com/seleznevae/libfort/archive/v0.4.2.tar.gz"
 build_dependencies:
+  - gcc-host-toolchain
   - cmake
   - glibc
-  - host-cxx-toolchain
 dependencies:
   - host-libcxx
-  - llvm
-  - revng
-  - revng-c
-  - boost
-  - libedit
-  - libfort
 use_asan: false
 #@ end
 
@@ -25,9 +17,7 @@ use_asan: false
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  caliban:
-    repository: caliban
-    license: LICENSE.md
-    binary_archives: private
+  libfort:
     default_build: optimized
+    license: LICENSE
     builds: #@ typical_cmake_builds(**build_args())

@@ -5,7 +5,7 @@
 #@ load("/lib/fn_args.lib.yml", "mandatory")
 #@ load("/lib/shell.lib.yml", "expand_args")
 
-#@ load("/components/toolchain/lib/common.lib.yml", "linker_flags", "new_gcc_path")
+#@ load("/components/toolchain/lib/common.lib.yml", "new_gcc_path")
 
 #@yaml/text-templated-strings
 ---
@@ -136,9 +136,9 @@ configure: |
     --without-zstd \
     (@= expand_args(extra_gcc_configure_options) @) \
     (@= expand_args(build_specific_configure_options) @) \
-    CFLAGS="-w -ggdb3 -O3 (@= data.values.use_old_glibc_cflags @)" \
-    CXXFLAGS="-w -ggdb3 -O3 (@= data.values.use_old_glibc_cflags @)" \
-    LDFLAGS="(@= linker_flags @) (@= data.values.use_old_glibc_ldflags @) -static-libgcc"
+    CFLAGS="-w -ggdb3 -O3 (@= data.values.hard_flags_compile @)" \
+    CXXFLAGS="-w -ggdb3 -O3 (@= data.values.hard_flags_compile @)" \
+    LDFLAGS="(@= data.values.hard_flags_link @) -static-libgcc"
 install: |
   cd "$BUILD_DIR"
   (@= make @) (@= extra_gcc_make_variables @)
@@ -146,13 +146,38 @@ install: |
 
   NEW_GCC_PATH="(@= new_gcc_path(triple=triple, gcc_version=gcc_version) @)"
 
-  if test -e "${DESTDIR}${NEW_GCC_PATH}/gcc" && ! test -e "${DESTDIR}${NEW_GCC_PATH}/cc"; then
-    ln -s gcc "${DESTDIR}${NEW_GCC_PATH}/cc"
+  if test -e "${DESTDIR}${NEW_GCC_PATH}/gcc"; then
+
+    if ! test -e "${DESTDIR}${NEW_GCC_PATH}/cc"; then
+      ln -s gcc "${DESTDIR}${NEW_GCC_PATH}/cc"
+    fi
+
+    mkdir -p "${DESTDIR}${ORCHESTRA_ROOT}/link-only/bin"
+    cp "${ORCHESTRA_DOTDIR}/support/hard-flags-compiler-wrapper.py" "${DESTDIR}${ORCHESTRA_ROOT}/link-only/bin/gcc"
+    ln -s gcc "${DESTDIR}${ORCHESTRA_ROOT}/link-only/bin/cc"
+    ln -s gcc "${DESTDIR}${ORCHESTRA_ROOT}/link-only/bin/x86_64-pc-linux-gnu-cc"
+    ln -s gcc "${DESTDIR}${ORCHESTRA_ROOT}/link-only/bin/x86_64-pc-linux-gnu-gcc"
+
+    cp -a "${DESTDIR}${ORCHESTRA_ROOT}"/lib/gcc/x86_64-pc-linux-gnu/(@= gcc_version @)/*.{a,o} "${DESTDIR}${ORCHESTRA_ROOT}"/lib/
+
   fi
-  if test -e "${DESTDIR}${NEW_GCC_PATH}/g++" && ! test -e "${DESTDIR}${NEW_GCC_PATH}/c++"; then
-    ln -s g++ "${DESTDIR}${NEW_GCC_PATH}/c++"
+
+  if test -e "${DESTDIR}${NEW_GCC_PATH}/g++"; then
+
+    if ! test -e "${DESTDIR}${NEW_GCC_PATH}/c++"; then
+      ln -s g++ "${DESTDIR}${NEW_GCC_PATH}/c++"
+    fi
+
+    cp "${ORCHESTRA_DOTDIR}/support/hard-flags-compiler-wrapper.py" "${DESTDIR}${ORCHESTRA_ROOT}/link-only/bin/g++"
+    ln -s g++ "${DESTDIR}${ORCHESTRA_ROOT}/link-only/bin/x86_64-pc-linux-gnu-g++"
+    mkdir -p "${DESTDIR}${ORCHESTRA_ROOT}/link-only/bin"
+    ln -s g++ "${DESTDIR}${ORCHESTRA_ROOT}/link-only/bin/c++"
+    ln -s g++ "${DESTDIR}${ORCHESTRA_ROOT}/link-only/bin/x86_64-pc-linux-gnu-c++"
+
   fi
+
   rm -f "${DESTDIR}${ORCHESTRA_ROOT}"/lib64/libcc1.*
+
 dependencies: #@ dependencies
 build_dependencies: #@ build_dependencies
 #@ end
