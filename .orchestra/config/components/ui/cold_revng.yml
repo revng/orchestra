@@ -7,7 +7,9 @@
 #@ def build_args():
 test: true
 pre_configure_script: |
-  orc clone --no-force ui/qt-creator
+  if ! test -e "$SOURCE_DIR/../qt-creator"; then
+    orc clone ui/qt-creator
+  fi
 extra_cmake_args:
   - #@ template.replace(cmake_boost_configuration)
   #! TODO: this is really ugly hack to get the same value of QTC_SOURCE as legacy orchestra
