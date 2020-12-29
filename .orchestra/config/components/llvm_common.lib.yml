@@ -24,6 +24,7 @@
     -DLLVM_ENABLE_TERMINFO=OFF \
     -DLIBCXX_ENABLE_ABI_LINKER_SCRIPT=OFF \
     -DLLVM_ENABLE_Z3_SOLVER=OFF \
+    -DLLVM_INCLUDE_GO_TESTS=OFF \
     (@= expand_args(additional_cmake_options) @) \
     -Wno-dev
 #@ end
