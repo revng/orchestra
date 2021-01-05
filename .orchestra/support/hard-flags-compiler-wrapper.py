@@ -57,10 +57,19 @@ def is_gold(arguments):
             return argument == "-fuse-ld=gold"
     return False
 
+def get_flags(flags, current_tags, must_have=set(), must_not_have=set()):
+    return list(chain(*(arguments
+                        for tags, arguments
+                        in flags
+                        if (tags.issubset(current_tags)
+                            and must_have.issubset(tags)
+                            and not tags.intersection(must_not_have)))))
+
 def add_arguments_for(original, action):
     is_linking = action == "link"
     old_arguments = []
     arguments = original
+    late_tag = set(["late"])
 
     while arguments != old_arguments:
         old_arguments = arguments
@@ -68,11 +77,9 @@ def add_arguments_for(original, action):
                             "cxx" if is_cxx else "c",
                             "clang" if is_clang else "gcc",
                             "gold" if is_gold(arguments) else "bfd"])
-        new_arguments = list(chain(*(arguments
-                                     for tags, arguments
-                                     in flags
-                                     if tags.issubset(current_tags))))
-        arguments = [original[0]] + new_arguments + original[1:]
+        early = get_flags(flags, current_tags, must_not_have=late_tag)
+        late = get_flags(flags, current_tags.union(late_tag), must_have=late_tag)
+        arguments = [original[0]] + early + original[1:] + late
 
     return arguments
 
