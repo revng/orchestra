@@ -23,13 +23,14 @@ configure: |
   mkdir -p "$BUILD_DIR"
   extract.sh --into "$BUILD_DIR" "(@= source_url @)"
   cd "$BUILD_DIR" &&
+  patch -p1 < "${ORCHESTRA_DOTDIR}/patches/blt-blo.patch"
+  patch -p1 < "${ORCHESTRA_DOTDIR}/patches/uclibc-0071-Fix-libgcc_s_resume-issue.patch"
+  echo 'false' > extra/config/lxdialog/check-lxdialog.sh
   (@= serial_make @) ARCH=(@= uclibc_arch_name @) defconfig &&
   cp "${ORCHESTRA_DOTDIR}/patches/uClibc.config" .config &&
   sed 's|$INSTALL_PATH|'"$ORCHESTRA_ROOT"'|g' .config -i &&
   sed 's|$FLAGS|(@= additional_cflags @)|g' .config -i &&
   true | (@= serial_make @) oldconfig &&
-  patch -p1 < "${ORCHESTRA_DOTDIR}/patches/blt-blo.patch"
-  patch -p1 < "${ORCHESTRA_DOTDIR}/patches/uclibc-0071-Fix-libgcc_s_resume-issue.patch"
   sed 's|^typedef __kernel_dev_t\s*__kernel_old_dev_t;$|\0\ntypedef long __kernel_long_t;\ntypedef unsigned long __kernel_ulong_t;|' libc/sysdeps/linux/arm/bits/kernel_types.h -i
 install: |
   export PATH="
