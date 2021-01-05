@@ -104,6 +104,10 @@ def replace_output(args, new_output):
 def main():
     sys.argv = replace_argv0(sys.argv)
 
+    disable_wrapper = int(os.environ.get("HARD_FLAGS_IGNORE", "0")) != 0
+    if disable_wrapper or "-E" in sys.argv:
+        exec(other(sys.argv))
+
     prefix = "HARD_FLAGS_"
     for name, value in os.environ.items():
         if name.startswith(prefix):
@@ -111,9 +115,6 @@ def main():
                               for tag
                               in name[len(prefix):].split("_")),
                           shlex.split(value)))
-
-    if "-E" in sys.argv:
-        exec(other(sys.argv))
 
     # Detect argument indexes representing source files
     has_inputs = False
