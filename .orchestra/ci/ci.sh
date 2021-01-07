@@ -156,77 +156,83 @@ for TARGET_COMPONENT in $TARGET_COMPONENTS; do
     fi
 done
 
-#
-# Promote `next-*` branches to `*`
-#
-if test "$RESULT" -eq 0; then
+if test "$PUSH_CHANGES" = 1; then
+    #
+    # Promote `next-*` branches to `*`
+    #
+    if test "$RESULT" -eq 0; then
 
-    # Clone all the components having branch next-*
-    for COMPONENT in $(orc components --branch 'next-*' | grep '^Component' | awk '{ print $2 }'); do
-        if ! test -d "sources/$COMPONENT"; then
-           orc clone "$COMPONENT"
-        fi
-    done
-
-    # Promote next-* to *
-    for SOURCE_PATH in $(orc ls --git-sources); do
-        if test -e "$SOURCE_PATH/.git"; then
-            cd "$SOURCE_PATH"
-            BRANCH="$(git rev-parse --abbrev-ref HEAD)"
-            if test "${BRANCH:0:5}" == "next-"; then
-                PUSH_TO="${BRANCH:5}"
-                git branch -d "$PUSH_TO" || true
-                git checkout -b "$PUSH_TO" "$BRANCH"
-                git push origin "$PUSH_TO"
+        # Clone all the components having branch next-*
+        for COMPONENT in $(orc components --branch 'next-*' | grep '^Component' | awk '{ print $2 }'); do
+            if ! test -d "sources/$COMPONENT"; then
+                orc clone "$COMPONENT"
             fi
-            cd -
+        done
+
+        # Promote next-* to *
+        for SOURCE_PATH in $(orc ls --git-sources); do
+            if test -e "$SOURCE_PATH/.git"; then
+                cd "$SOURCE_PATH"
+                BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+                if test "${BRANCH:0:5}" == "next-"; then
+                    PUSH_TO="${BRANCH:5}"
+                    git branch -d "$PUSH_TO" || true
+                    git checkout -b "$PUSH_TO" "$BRANCH"
+                    git push origin "$PUSH_TO"
+                fi
+                cd -
+            fi
+        done
+
+        orc fix-binary-archives-symlinks
+    fi
+
+    #
+    # Push to binary archives
+    #
+    for BINARY_ARCHIVE_PATH in $(orc ls --binary-archives); do
+
+        cd "$BINARY_ARCHIVE_PATH"
+
+        # Ensure we have git lfs
+        git lfs >& /dev/null
+
+        git config user.email "$PUSH_BINARY_ARCHIVE_EMAIL"
+        git config user.name "$PUSH_BINARY_ARCHIVE_NAME"
+
+        if ! test -e .gitattributes; then
+            git lfs track "*.tar.gz"
+            git add .gitattributes
+            git commit -m'Initialize .gitattributes'
         fi
+
+        ls -lh
+        git add .
+
+        # TODO: cleanup-binary-archives.sh
+
+        if ! git diff --cached --quiet; then
+            git commit -m'Automatic binary archives'
+            git status
+            git stash
+            GIT_LFS_SKIP_SMUDGE=1 git fetch
+            GIT_LFS_SKIP_SMUDGE=1 git rebase -Xtheirs origin/master
+
+            git config --add lfs.dialtimeout 300
+            git config --add lfs.tlstimeout 300
+            git config --add lfs.activitytimeout 300
+            git config --add lfs.keepalive 300
+            git push
+            git lfs push origin master
+        else
+            log "Nothing new to push"
+        fi
+
     done
 
-    orc fix-binary-archives-symlinks
+    exit "$RESULT"
+
+else
+    echo "PUSH_CHANGES != 1, exiting without pushing changes"
+    exit $RESULT
 fi
-
-#
-# Push to binary archives
-#
-for BINARY_ARCHIVE_PATH in $(orc ls --binary-archives); do
-
-    cd "$BINARY_ARCHIVE_PATH"
-
-    # Ensure we have git lfs
-    git lfs >& /dev/null
-
-    git config user.email "$PUSH_BINARY_ARCHIVE_EMAIL"
-    git config user.name "$PUSH_BINARY_ARCHIVE_NAME"
-
-    if ! test -e .gitattributes; then
-        git lfs track "*.tar.gz"
-        git add .gitattributes
-        git commit -m'Initialize .gitattributes'
-    fi
-
-    ls -lh
-    git add .
-
-    # TODO: cleanup-binary-archives.sh
-
-    if ! git diff --cached --quiet; then
-        git commit -m'Automatic binary archives'
-        git status
-        git stash
-        GIT_LFS_SKIP_SMUDGE=1 git fetch
-        GIT_LFS_SKIP_SMUDGE=1 git rebase -Xtheirs origin/master
-
-        git config --add lfs.dialtimeout 300
-        git config --add lfs.tlstimeout 300
-        git config --add lfs.activitytimeout 300
-        git config --add lfs.keepalive 300
-        git push
-        git lfs push origin master
-    else
-        log "Nothing new to push"
-    fi
-
-done
-
-exit "$RESULT"
