@@ -134,8 +134,16 @@ find ..
 orc update --no-config
 
 # Print debugging information
-orc graph -b revng-distributable
+# Full dependency graph
+orc graph -b
+# Solved dependency graph for the target component
+orc graph --solved -b "$TARGET_COMPONENT"
+# Information about the components
 orc components --hashes --deps
+# Binary archives commit
+for BINARY_ARCHIVE_PATH in $(orc ls --binary-archives); do
+    echo "Commit for $BINARY_ARCHIVE_PATH:" "$(git -C "$BINARY_ARCHIVE_PATH" rev-parse HEAD)"
+done
 
 #
 # Actually run the build
