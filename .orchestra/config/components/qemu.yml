@@ -18,7 +18,6 @@ builds:
       configure: |
         mkdir -p "$BUILD_DIR"
         cd "$BUILD_DIR";
-        export LLVM_CONFIG="$ORCHESTRA_ROOT/bin/llvm-config";
         "$SOURCE_DIR/configure" \
           --cc="(@= data.values.regular_c_compiler @)" \
           --prefix="$ORCHESTRA_ROOT" \
