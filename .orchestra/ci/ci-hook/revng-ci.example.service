@@ -1,0 +1,19 @@
+[Unit]
+Description=revng-ci
+Requires=revng-ci.socket
+After=network.target
+
+[Service]
+Type=notify
+DynamicUser=yes
+RuntimeDirectory=revng-ci
+WorkingDirectory={{ application_root }}
+ExecStart={{ application_root }}/venv/bin/gunicorn --workers 4 --bind unix:/run/revng-ci.sock wsgi:app
+EnvironmentFile={{ application_root }}/environment
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=5
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,11 @@
+{
+    "allowed_to_push": ["user1", "user2"],
+    "github_to_gitlab_mapping": {
+        "someone-github-username": "someone-gitlab-username"
+    },
+    "default_user": "anonymous-ci-user",
+    "ci_user": "push-ci-user",
+    "gitlab_url": "https://gitlab-url.com",
+    "project_id": 123,
+    "branch": "master"
+}
