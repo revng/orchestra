@@ -6,7 +6,7 @@ This repository contains the orchestra configuration for rev.ng.
 
 * Install orchestra script
   ```sh
-  pip3 install --user git+https://github.com/revng/revng-orchestra.git
+  pip3 install --user --force-reinstall https://github.com/revng/revng-orchestra/archive/master.zip
   ```
 * Make sure `orc` is in PATH
   ```sh
