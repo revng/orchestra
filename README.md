@@ -26,12 +26,14 @@ This repository contains the orchestra configuration for rev.ng.
 
 The default configuration gives you read-only access to the rev.ng open source components.
 
-If you have your own fork of certain components on GitHub, you need to customize `.orchestra/config/user_options.yml` as follows (note `$YOUR_GITHUB_USERNAME`):
-
-```yaml
-remote_base_urls:
-  - $YOUR_GITHUB_USERNAME: "git@github.com:$YOUR_GITHUB_USERNAME"
-  ...
+If you want to work a fork of certain components the suggested workflow is to add your remote to the
+repository as cloned by orchestra.
+For example, to fork the `revng` project do the following:
+```bash
+# ensure revng is cloned
+orchestra clone revng
+cd sources/revng
+git remote add myremote <your-remote-url>
 ```
 
 ## Configuration for rev.ng developers
@@ -43,8 +45,6 @@ If you have access to rev.ng GitLab, in order to access private components, your
 ---
 #@overlay/match missing_ok=True
 remote_base_urls:
-  - $YOUR_GITHUB_USERNAME: "git@github.com:$YOUR_GITHUB_USERNAME"
-  - $YOUR_GITLAB_USERNAME: "git@rev.ng:$YOUR_GITLAB_USERNAME"
   - public: "git@github.com:revng"
   - private: "git@rev.ng:revng-private"
 
@@ -84,6 +84,31 @@ build_from_source:
   orc shell revng
   ninja
   ctest -j$(nproc)
+  ```
+
+## Building from a fork
+
+The recommended workflow is:
+
+* Clone the component you want to fork
+  ```sh
+  orc clone <component>
+  ```
+* Add a remote to the component
+  ```sh
+  cd sources/<component>
+  git remote add <myremotename> <remote-url>
+  git fetch --all <myremotename>
+  ```
+* Switch to your branch
+  ```sh
+  cd sources/<component>
+  git switch <myremotename>/<branch>
+  git checkout -b <branch> <myremotename>/<branch>
+  ```
+* Update orchestra
+  ```sh
+  orc update
   ```
 
 ## How do I...
