@@ -22,6 +22,12 @@ environment:
   - HARD_FLAGS_LINK: #@ str(datavalue("hard_flags_link"))
   - HARD_FLAGS_LINK_LATE: #@ str(datavalue("hard_flags_link_late"))
   - HARD_FLAGS_LINK_GOLD: #@ str(datavalue("hard_flags_link_gold"))
+  - "-LD_LIBRARY_PATH": ""
+  - "-COMPILER_PATH": ""
+  - "-CPATH": ""
+  - "-C_INCLUDE_PATH": ""
+  - "-CPLUS_INCLUDE_PATH": ""
+  - "-OBJC_INCLUDE_PATH": ""
 
 paths: #@ datavalue("paths", default={})
 remote_base_urls: #@ datavalue("remote_base_urls")
