@@ -15,7 +15,6 @@ dependencies:
   - revng
   - boost
   - revng-qa
-use_asan: false
 #@ end
 
 #@overlay/match by=overlay.all, expects=1

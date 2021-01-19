@@ -16,17 +16,18 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def llvm_component(use_asan=False):
+#@ def llvm_component():
 repository: llvm-project
 license: llvm/LICENSE.TXT
 default_build: #@ data.values.revng_components_default_build
 builds:
-  #@ for flavor, f_options in typical_project_flavors(use_asan=use_asan).items():
+  #@ for flavor, f_options in typical_project_flavors().items():
     #@ build_type = f_options["cmake_build_type"]
     #@ cflags = f_options["extra_compiler_flags"]
     #@ ndebug = f_options["ndebug"]
+    #@ asan = f_options["asan"]
     (@= flavor @):
-      configure: #@ configure_llvm(cmake_build_type=build_type, cflags=cflags, additional_cmake_options=cmake_opts(), source_dir="$SOURCE_DIR")
+      configure: #@ configure_llvm(cmake_build_type=build_type, cflags=cflags, additional_cmake_options=cmake_opts(), source_dir="$SOURCE_DIR", use_asan=asan)
       install: |
         cd "$BUILD_DIR"
         (@= ninja @) install
@@ -48,8 +49,8 @@ builds:
       dependencies:
         - host-libcxx
         - libunwind
-      #@ if/end ndebug == False:
-      ndebug: false
+      ndebug: #@ ndebug
+      asan: #@ asan
   #@ end
 #@ end
 

@@ -13,7 +13,6 @@ build_dependencies:
 dependencies:
   - host-libcxx
   - ui/qt
-use_asan: false
 #@ end
 
 #@overlay/match by=overlay.all, expects=1

@@ -19,7 +19,6 @@ dependencies:
   - boost
   - libedit
   - libfort
-use_asan: false
 #@ end
 
 #@overlay/match by=overlay.all, expects=1

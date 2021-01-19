@@ -25,13 +25,13 @@ build_dependencies:
   - host-cxx-toolchain
   - glibc
   - qemu
-  - toolchain/x86-64/gcc
-  - toolchain/i386/gcc
-  - toolchain/arm/gcc
-  - toolchain/aarch64/gcc
-  - toolchain/s390x/gcc
-  - toolchain/mips/gcc
-  - toolchain/mipsel/gcc
+  - toolchain/x86-64/gcc@stage2
+  - toolchain/i386/gcc@stage2
+  - toolchain/arm/gcc@stage2
+  - toolchain/aarch64/gcc@stage2
+  - toolchain/s390x/gcc@stage2
+  - toolchain/mips/gcc@stage2
+  - toolchain/mipsel/gcc@stage2
 #@ end
 
 #@overlay/match by=overlay.all, expects=1

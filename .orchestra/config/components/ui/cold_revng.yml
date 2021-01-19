@@ -29,7 +29,6 @@ dependencies:
   - ui/qt-creator
 post_install_script: |
   ln -s qtcreator "${TMP_ROOT}${ORCHESTRA_ROOT}/bin/revng-ui"
-use_asan: false
 #@ end
 
 #@overlay/match by=overlay.all, expects=1

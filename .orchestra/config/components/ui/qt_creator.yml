@@ -46,6 +46,8 @@ default_build: #@ data.values.revng_components_default_build
 builds:
   #@ for flavor, opts in qmake_optimization_flavors.items():
   #@ extra_qmake_args = opts["extra_qmake_args"]
+  #@ ndebug = opts["ndebug"]
+  #@ asan = opts["asan"]
   (@= flavor @):
     configure: #@ configure_base(extra_qmake_args=extra_qmake_args)
     install: |
@@ -59,8 +61,8 @@ builds:
     build_dependencies:
       - host-c-toolchain
       - glibc
-    #@ if/end opts["ndebug"] == False:
-    ndebug: false
+    ndebug: #@ ndebug
+    asan: #@ asan
   #@ end
 #@ end
 
