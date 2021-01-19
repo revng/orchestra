@@ -22,6 +22,7 @@ apt-get install --no-install-recommends --yes \
   git \
   graphviz \
   graphviz-dev \
+  jq \
   libc-dev \
   libexpat1-dev \
   libglib2.0-dev \
