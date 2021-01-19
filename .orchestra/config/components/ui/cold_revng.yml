@@ -1,3 +1,4 @@
+#@ load("@ytt:data", "data")
 #@ load("@ytt:overlay", "overlay")
 #@ load("@ytt:template", "template")
 
@@ -39,5 +40,5 @@ components:
     repository: ui-cold-revng
     license: LICENSE.md
     binary_archives: private
-    default_build: optimized
+    default_build: #@ data.values.revng_components_default_build
     builds: #@ typical_cmake_builds(**build_args())

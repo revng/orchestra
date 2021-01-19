@@ -25,6 +25,7 @@
 # PROMOTE_BRANCHES: if == 1, promote next-* branches
 # PUSH_CHANGES:
 #   if == 1, push binary archives and promote next-* branches
+# REVNG_COMPONENTS_DEFAULT_BUILD: the default build for revng core components
 # PUSH_BINARY_ARCHIVE_EMAIL: used as author's email in binary archive commit
 # PUSH_BINARY_ARCHIVE_NAME: used as author's name in binary archive commit
 # SSH_PRIVATE_KEY: private key used to push binary archives
@@ -139,7 +140,7 @@ if test -n "$TARGET_COMPONENTS_URL"; then
                          | grep '^Component' \
                          | cut -d' ' -f2)"
         if test -z "$NEW_COMPONENT"; then
-            log "Warning: ignoring URL $TARGET_COMPONENT_URL since it doesn't match any component"
+            log_err "Warning: ignoring URL $TARGET_COMPONENT_URL since it doesn't match any component"
         else
             TARGET_COMPONENTS="$NEW_COMPONENT $TARGET_COMPONENTS"
         fi
@@ -175,7 +176,12 @@ cat >> "$USER_OPTIONS" <<EOF
   - master
 EOF
 
-# Print debug information
+# Set default builds
+if [[ -n "$REVNG_COMPONENTS_DEFAULT_BUILD" ]]; then
+    echo "#@overlay/replace" >> "$USER_OPTIONS"
+    echo "revng_components_default_build: $REVNG_COMPONENTS_DEFAULT_BUILD" >> "$USER_OPTIONS"
+fi
+
 log "User options:"
 cat "$USER_OPTIONS"
 

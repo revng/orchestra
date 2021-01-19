@@ -44,6 +44,7 @@ BRANCH = config["branch"]
 mapping = config["github_to_gitlab_mapping"]
 default_user = config["default_user"]
 ci_user = config["ci_user"]
+revng_components_build_names = ["optimized", "debug", "release"]
 
 ORCHESTRA_CONFIG_REPO_HTTP_URL = config["orchestra_config_repo_http_url"]
 ORCHESTRA_CONFIG_REPO_SSH_URL = config["orchestra_config_repo_ssh_url"]
@@ -122,14 +123,18 @@ def trigger_ci(username, repo_url, ref, before, after):
             variables["SSH_PRIVATE_KEY"] = revng_push_ci_private_key
             variables["PUSH_CHANGES"] = "1"
 
-        parameters = {
-            "ref": BRANCH,
-            "variables": [{"key": key, "value": value}
-                          for key, value
-                          in variables.items()]
-        }
-        print(json.dumps(parameters, indent=2))
-        pipeline = project.pipelines.create(parameters)
+        # Create a job for each build name
+        for default_build_name in revng_components_build_names:
+            variables["REVNG_COMPONENTS_DEFAULT_BUILD"] = default_build_name
+
+            parameters = {
+                "ref": BRANCH,
+                "variables": [{"key": key, "value": value}
+                              for key, value
+                              in variables.items()]
+            }
+            print(json.dumps(parameters, indent=2))
+            pipeline = project.pipelines.create(parameters)
 
 
 @app.route('/ci-hook/gitlab', methods=["POST"])

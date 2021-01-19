@@ -98,7 +98,7 @@
 ---
 #@ def qt_component():
 license: LICENSE.GPLv3
-default_build: optimized
+default_build: #@ data.values.revng_components_default_build
 builds:
   #@ for flavor, opts in qt_optimization_flavors.items():
   #@ extra_qmake_options = opts["extra_qmake_options"]

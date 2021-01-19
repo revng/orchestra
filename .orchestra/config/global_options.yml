@@ -36,3 +36,5 @@ branches:
   - develop
   - master
 nonredistributable_base_url: "https://dummydomain.com/nonredistributable/"
+
+revng_components_default_build: optimized
