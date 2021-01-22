@@ -240,9 +240,10 @@ if test "$PUSH_CHANGES" = 1; then
         git config user.email "$PUSH_BINARY_ARCHIVE_EMAIL"
         git config user.name "$PUSH_BINARY_ARCHIVE_NAME"
 
-        if ! test -e .gitattributes; then
-            git lfs track "*.tar.gz"
-            git add .gitattributes
+        # Ensure we track the correct files
+        git lfs track "*.tar.*"
+        git add .gitattributes
+        if ! git diff --staged --exit-code -- .gitattributes > /dev/null; then
             git commit -m'Initialize .gitattributes'
         fi
 
