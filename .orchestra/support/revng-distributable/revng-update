@@ -84,7 +84,7 @@ def main():
     if args.update_url:
         update_url = args.update_url
     else:
-        update_url = "https://rev.ng/downloads/revng-distributable/none_{}.tar.gz"
+        update_url = "https://rev.ng/downloads/revng-distributable/none_{}.tar.xz"
         update_url = update_url.format(branch)
 
     password_manager = HTTPPasswordMgrWithDefaultRealm()
