@@ -1,0 +1,34 @@
+#@ load("@ytt:overlay", "overlay")
+#@ load("@ytt:template", "template")
+
+#@ def architectures():
+x86-64: x86_64-apple-darwin11
+i686: i686-apple-darwin11
+#@ end
+
+#@yaml/text-templated-strings
+---
+#@ def clang_components():
+#@ for name, triple in dict(architectures()).items():
+toolchain/macos/(@= name @)/clang:
+  builds:
+    default:
+      configure: |
+        mkdir -p "$BUILD_DIR"
+      install: |
+        rm -f "${TMP_ROOT}${ORCHESTRA_ROOT}/bin/(@= triple @)-clang"
+        cp "$ORCHESTRA_DOTDIR/support/add-sysroot-wrapper.sh" "${TMP_ROOT}${ORCHESTRA_ROOT}/bin/(@= triple @)-clang"
+        rm -f "${TMP_ROOT}${ORCHESTRA_ROOT}/bin/(@= triple @)-clang++"
+        cp "$ORCHESTRA_DOTDIR/support/add-sysroot-wrapper.sh" "${TMP_ROOT}${ORCHESTRA_ROOT}/bin/(@= triple @)-clang++"
+      dependencies:
+        - clang-release
+        - toolchain/macos/sdk
+        - toolchain/macos/(@= name @)/ld64
+#@ end
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  _: #@ template.replace(clang_components())
