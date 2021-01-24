@@ -3,6 +3,7 @@
 #@yaml/text-templated-strings
 ---
 #@ def macosx_sdk_component():
+binary_archives: private
 builds:
   default:
     configure: |
