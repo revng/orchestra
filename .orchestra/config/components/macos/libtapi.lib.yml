@@ -8,7 +8,7 @@
 #@yaml/text-templated-strings
 ---
 #@ def libtapi_component():
-license: COPYING
+license: src/LICENSE.TXT
 builds:
   default:
     configure: |
