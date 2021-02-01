@@ -20,6 +20,8 @@ apt-get install --no-install-recommends --yes \
   g++-multilib \
   gawk \
   git \
+  graphviz \
+  graphviz-dev \
   libc-dev \
   libexpat1-dev \
   libglib2.0-dev \
@@ -35,7 +37,6 @@ apt-get install --no-install-recommends --yes \
   python3-pip \
   python3-dev \
   python3-cffi \
-  python3-pygraphviz \
   python3-setuptools \
   rsync \
   sed \
@@ -68,7 +69,7 @@ apt install --no-install-recommends --yes \
   libxkbcommon-x11-dev \
   libxrender-dev
 
-pip3 install --user --upgrade setuptools wheel mako meson pyelftools
+pip3 install --user --upgrade setuptools wheel mako meson pyelftools pygraphviz==1.6
 
 if ! which git-lfs >& /dev/null; then
   curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash
