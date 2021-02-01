@@ -1,3 +1,5 @@
+#@ load("@ytt:overlay", "overlay")
+
 #@ load("/lib/make.lib.yml", "make")
 #@ load("/lib/cmake.lib.yml", "cmake", "cmdline_cmake_base_configuration")
 #@ load("/lib/shell.lib.yml", "expand_args")
@@ -8,7 +10,7 @@
 #@yaml/text-templated-strings
 ---
 #@ def libtapi_component():
-license: COPYING
+license: src/LICENSE.TXT
 builds:
   default:
     configure: |
@@ -39,3 +41,9 @@ builds:
     dependencies:
       - host-libcxx
 #@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  toolchain/macos/libtapi: #@ libtapi_component()

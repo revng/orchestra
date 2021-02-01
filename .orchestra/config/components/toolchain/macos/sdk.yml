@@ -1,8 +1,11 @@
+#@ load("@ytt:overlay", "overlay")
+
 #@ sdk_archive_name = "Xcode_9.xip-MacOSX.sdk.tar.gz"
 
 #@yaml/text-templated-strings
 ---
-#@ def macosx_sdk_component():
+#@ def sdk_component():
+binary_archives: private
 builds:
   default:
     configure: |
@@ -13,3 +16,9 @@ builds:
       extract.sh --into "${TMP_ROOT}${ORCHESTRA_ROOT}" "(@= sdk_archive_name @)"
 add_to_path: "$ORCHESTRA_DOTDIR/support/repackage-apple-sdk"
 #@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  toolchain/macos/sdk: #@ sdk_component()
