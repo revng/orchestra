@@ -1,0 +1,13 @@
+# Gitlab API token
+GITLAB_SECRET={GITLAB_SECRET}
+
+# Gitlab API token
+GITHUB_SECRET={GITHUB_SECRET}
+
+# Gitlab admin impersonation token
+GITLAB_ADMIN_TOKEN={GITLAB_ADMIN_TOKEN}
+
+# Private ssh key with push permissions.
+# Escapes such as \ to go to newline and \n to insert it in place are supported since systemd 239,
+# so for now we must encode the SSH private key with `base64 -w0`
+REVNG_PUSH_CI_PRIVATE_KEY_BASE64={REVNG_PUSH_CI_PRIVATE_KEY_BASE64}
