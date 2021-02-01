@@ -19,7 +19,7 @@ cd "$DIR"
 #
 set +x
 if test -n "$SSH_PRIVATE_KEY"; then
-    eval $(ssh-agent -s)
+    eval "$(ssh-agent -s)"
     echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
     unset SSH_PRIVATE_KEY
     mkdir -p ~/.ssh
@@ -29,8 +29,8 @@ if test -n "$SSH_PRIVATE_KEY"; then
     if ! test -e ~/.ssh/config; then
         cat > ~/.ssh/config <<EOF
 Host *
-   StrictHostKeyChecking no
-   UserKnownHostsFile=/dev/null
+    StrictHostKeyChecking no
+    UserKnownHostsFile=/dev/null
 EOF
     fi
 fi
@@ -75,7 +75,7 @@ if test -e ../config/user_options.yml; then
 fi
 
 REMOTE="$(git remote get-url origin | sed 's|^\([^:]*:\)\([^/]\)|\1/\2|')"
-GITLAB_ROOT="$(dirname $(dirname $REMOTE))"
+GITLAB_ROOT="$(dirname "$(dirname "$REMOTE")")"
 echo "$BASE_USER_OPTIONS_YML" | sed "s|%GITLAB_ROOT%|$GITLAB_ROOT|g" > ../config/user_options.yml
 
 # Register target components
