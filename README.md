@@ -6,6 +6,7 @@ This repository contains the orchestra configuration for rev.ng.
 
 * Install orchestra script
   ```sh
+  pip3 cache remove orchestra # pip fails to detect stale caches when downloading zips from github
   pip3 install --user --force-reinstall https://github.com/revng/revng-orchestra/archive/master.zip
   ```
 * Make sure `orc` is in PATH
