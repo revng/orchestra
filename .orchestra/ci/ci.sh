@@ -4,6 +4,7 @@ set -e
 set -x
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+ORCHESTRA_ROOT="$DIR/../.."
 
 function log() {
     echo "$1" > /dev/stderr
@@ -164,7 +165,8 @@ if test "$PUSH_CHANGES" = 1; then
 
         # Clone all the components having branch next-*
         for COMPONENT in $(orc components --branch 'next-*' | grep '^Component' | awk '{ print $2 }'); do
-            if ! test -d "sources/$COMPONENT"; then
+            # TODO: find a more robust way to clone if not already cloned
+            if ! test -d "$ORCHESTRA_ROOT/sources/$COMPONENT"; then
                 orc clone "$COMPONENT"
             fi
         done
