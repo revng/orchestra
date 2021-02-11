@@ -8,7 +8,7 @@ repository: llvm-project
 license: llvm/LICENSE.TXT
 builds:
   default:
-    depencencies:
+    dependencies:
       - llvm
     configure: |
       rm -rf "$BUILD_DIR"

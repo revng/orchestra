@@ -5,7 +5,7 @@ repository: llvmcpy
 license: LICENSE.txt
 builds:
   default:
-    depencencies:
+    dependencies:
       - llvm
     configure: |
       mkdir -p "$BUILD_DIR"

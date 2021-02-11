@@ -43,9 +43,6 @@ build_dependencies:
 #! and we want take it into account without checking explicitly for specific musl
 
 #@   source_url = "http://www.musl-libc.org/releases/musl-" + musl_version + ".tar.gz"
-build: |
-  cd "$BUILD_DIR"
-  (@= make @) include/bits/alltypes.h || (@= make @) obj/include/bits/alltypes.h
 install: |
   cd "$BUILD_DIR"
   (@= make @) include/bits/alltypes.h || (@= make @) obj/include/bits/alltypes.h
