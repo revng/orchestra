@@ -46,7 +46,7 @@ builds:
       (@- if build_system == "make": @)
       cd "$BUILD_DIR"
       (@= make @)
-      (@= make @) install
+      (@= make @) install DESTDIR="$DESTDIR"
       (@- elif build_system == "ninja": @)
       cd "$BUILD_DIR"
       (@= ninja @) install
