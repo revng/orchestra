@@ -95,7 +95,7 @@
     (@- if test: @)
     if test "$RUN_TESTS" -eq 1; then
       cd "$BUILD_DIR"
-      ctest ${JOBS:+-j$JOBS}
+      ctest --output-on-failure ${JOBS:+-j$JOBS}
       cd -
     fi
     (@ end -@)
