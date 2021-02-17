@@ -69,7 +69,7 @@ apt install --no-install-recommends --yes \
   libxkbcommon-x11-dev \
   libxrender-dev
 
-pip3 install --user --upgrade setuptools wheel mako meson pyelftools pygraphviz==1.6
+pip3 install --user --upgrade setuptools wheel mako meson==0.56.2 pyelftools pygraphviz==1.6
 
 if ! which git-lfs >& /dev/null; then
   curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash
