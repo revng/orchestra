@@ -192,12 +192,16 @@ if test "$PUSH_CHANGES" = 1; then
     #
     # Push to binary archives
     #
+
+    # Ensure we have git lfs
+    git lfs >& /dev/null
+
+    # Remove old binary archives
+    orc binary-archives clean
+
     for BINARY_ARCHIVE_PATH in $(orc ls --binary-archives); do
 
         cd "$BINARY_ARCHIVE_PATH"
-
-        # Ensure we have git lfs
-        git lfs >& /dev/null
 
         git config user.email "$PUSH_BINARY_ARCHIVE_EMAIL"
         git config user.name "$PUSH_BINARY_ARCHIVE_NAME"
@@ -210,8 +214,6 @@ if test "$PUSH_CHANGES" = 1; then
 
         ls -lh
         git add .
-
-        # TODO: cleanup-binary-archives.sh
 
         if ! git diff --cached --quiet; then
             git commit -m'Automatic binary archives'
@@ -227,7 +229,7 @@ if test "$PUSH_CHANGES" = 1; then
             git push
             git lfs push origin master
         else
-            log "Nothing new to push"
+            log "No changes to push for $BINARY_ARCHIVE_PATH"
         fi
 
     done
