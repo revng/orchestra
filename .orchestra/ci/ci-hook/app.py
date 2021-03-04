@@ -45,6 +45,9 @@ mapping = config["github_to_gitlab_mapping"]
 default_user = config["default_user"]
 ci_user = config["ci_user"]
 
+ORCHESTRA_CONFIG_REPO_HTTP_URL = config["orchestra_config_repo_http_url"]
+ORCHESTRA_CONFIG_REPO_SSH_URL = config["orchestra_config_repo_ssh_url"]
+
 
 pusher_user_options = dedent("""
     #@data/values
@@ -109,12 +112,15 @@ def trigger_ci(username, repo_url, ref, before, after):
             "TARGET_COMPONENTS_URL": repo_url,
             "COMMIT_BEFORE": before,
             "COMMIT_AFTER": after,
-            "PUSHED_REF": ref
+            "PUSHED_REF": ref,
+            "ORCHESTRA_CONFIG_REPO_HTTP_URL": ORCHESTRA_CONFIG_REPO_HTTP_URL,
+            "ORCHESTRA_CONFIG_REPO_SSH_URL": ORCHESTRA_CONFIG_REPO_SSH_URL
         }
 
         if username in allowed_to_push:
             variables["BASE_USER_OPTIONS_YML"] = pusher_user_options
             variables["SSH_PRIVATE_KEY"] = revng_push_ci_private_key
+            variables["PUSH_CHANGES"] = 1
 
         parameters = {
             "ref": BRANCH,

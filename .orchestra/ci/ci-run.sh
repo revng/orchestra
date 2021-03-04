@@ -68,6 +68,11 @@ Host *
     UserKnownHostsFile=/dev/null
 EOF
     fi
+
+    # Change orchestra remote to ssh if we were given the URL
+    if [[ -n "$ORCHESTRA_CONFIG_REPO_SSH_URL" ]]; then
+        git -C "$ORCHESTRA_ROOT" remote set-url origin "$ORCHESTRA_CONFIG_REPO_SSH_URL"
+    fi
 fi
 set -x
 

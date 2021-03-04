@@ -7,5 +7,7 @@
     "ci_user": "push-ci-user",
     "gitlab_url": "https://gitlab-url.com",
     "project_id": 123,
-    "branch": "master"
+    "branch": "master",
+    "orchestra_config_repo_http_url": "https://github.com/revng/orchestra",
+    "orchestra_config_repo_ssh_url": "git@github.com:revng/orchestra"
 }
