@@ -190,5 +190,6 @@ default_build: stage2
 builds:
   stage1: #@ gcc_build(stage=1, **kwargs)
   stage2: #@ gcc_build(stage=2, **kwargs)
-add_to_path: ${ORCHESTRA_ROOT}/x86_64-pc-linux-gnu/(@= kwargs["triple"] @)/gcc-bin/(@= kwargs["gcc_version"] @)
+add_to_path:
+  - ${ORCHESTRA_ROOT}/x86_64-pc-linux-gnu/(@= kwargs["triple"] @)/gcc-bin/(@= kwargs["gcc_version"] @)
 #@ end

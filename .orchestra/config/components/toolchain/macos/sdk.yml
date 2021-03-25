@@ -14,7 +14,8 @@ builds:
       # echo "TODO: macosx sdk" && exit 1
       # create-package.sh Xcode_9.xip
       extract.sh --into "${TMP_ROOT}${ORCHESTRA_ROOT}" "(@= sdk_archive_name @)"
-add_to_path: "$ORCHESTRA_DOTDIR/support/repackage-apple-sdk"
+add_to_path:
+  - $ORCHESTRA_DOTDIR/support/repackage-apple-sdk
 #@ end
 
 #@overlay/match by=overlay.all, expects=1
