@@ -52,7 +52,8 @@ configure: |
     CFLAGS="-w -ggdb3 -O3" \
     CXXFLAGS="-w -ggdb3 -O3"
 build_system: make
-add_to_path: ${ORCHESTRA_ROOT}/x86_64-pc-linux-gnu/(@= triple @)/binutils-bin/(@= binutils_version @)
+add_to_path:
+  - ${ORCHESTRA_ROOT}/x86_64-pc-linux-gnu/(@= triple @)/binutils-bin/(@= binutils_version @)
 build_dependencies:
   - glibc
   - toolchain/host/gcc
