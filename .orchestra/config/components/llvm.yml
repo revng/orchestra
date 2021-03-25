@@ -26,7 +26,6 @@ builds:
     #@ cflags = f_options["extra_compiler_flags"]
     #@ ndebug = f_options["ndebug"]
     (@= flavor @):
-      test: true
       configure: #@ configure_llvm(cmake_build_type=build_type, cflags=cflags, additional_cmake_options=cmake_opts(), source_dir="$SOURCE_DIR")
       install: |
         cd "$BUILD_DIR"
