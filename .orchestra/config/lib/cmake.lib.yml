@@ -112,9 +112,6 @@
 
   #@ if/end opts["ndebug"] == False:
   ndebug: false
-
-  #@ if/end test:
-  test: #@ test
 #@ end
 
 #@ end
