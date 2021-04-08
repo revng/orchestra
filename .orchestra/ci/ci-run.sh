@@ -26,8 +26,7 @@
 # PUSH_BINARY_ARCHIVE_EMAIL: used as author's email in binary archive commit
 # PUSH_BINARY_ARCHIVE_NAME: used as author's name in binary archive commit
 # SSH_PRIVATE_KEY: private key used to push binary archives
-# REVNG_ORCHESTRA_URL:
-#   alternative URL from where orchestra is installed (passed to pip install)
+# REVNG_ORCHESTRA_URL: orchestra git repo URL (must be git+ssh:// or git+https://)
 
 set -e
 set -x
@@ -80,7 +79,13 @@ set -x
 # Install orchestra
 #
 if test -n "$REVNG_ORCHESTRA_URL"; then
-    pip3 install --user "$REVNG_ORCHESTRA_URL"
+    # COMPONENT_TARGET_BRANCH is not quoted on purpose -- if empty it has to be ignored instead of being expanded to
+    # and empty string
+    for REVNG_ORCHESTRA_TARGET_BRANCH in $COMPONENT_TARGET_BRANCH next-develop develop next-master master; do
+        if pip3 install --user "$REVNG_ORCHESTRA_URL@$REVNG_ORCHESTRA_TARGET_BRANCH"; then
+            break
+        fi
+    done
 else
     pip3 install --user revng-orchestra
 fi
