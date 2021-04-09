@@ -120,7 +120,7 @@ def trigger_ci(username, repo_url, ref, before, after):
         if username in allowed_to_push:
             variables["BASE_USER_OPTIONS_YML"] = pusher_user_options
             variables["SSH_PRIVATE_KEY"] = revng_push_ci_private_key
-            variables["PUSH_CHANGES"] = 1
+            variables["PUSH_CHANGES"] = "1"
 
         parameters = {
             "ref": BRANCH,
