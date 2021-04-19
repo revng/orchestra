@@ -1,19 +1,44 @@
+#@ load("/lib/assert.lib.yml", "fail")
+
+---
+#@ def is_dict_like(o):
+#@ return type(o) == "dict" or type(o) == "yamlfragment" and str(o) == "yamlfragment(*yamlmeta.Map)"
+#@ end
+
+---
+#@ def is_list_like(o):
+#@ return type(o) == "dict" or type(o) == "yamlfragment" and str(o) == "yamlfragment(*yamlmeta.Array)"
+#@ end
+
 #@yaml/text-templated-strings
 ---
-#@ def _expand_args(args_list):
+#@ def _expand_args_list(args_list):
 - |2
     (@ for arg in args_list: @)
     (@= arg @) \
     (@- end @)
 #@ end
 
+#@yaml/text-templated-strings
 ---
-#@ def expand_args(args_list):
-#@   if not args_list:
+#@ def _expand_args_dict(args_dict, sep="="):
+- |2
+    (@ for name, val in args_dict.items(): @)
+    (@= name @)(@= sep @)"(@= val @)" \
+    (@- end @)
+#@ end
+
+---
+#@ def expand_args(args, sep="="):
+#@   if not args:
 #@     return ""
-#@   elif type(args_list) in ["str", "string"]:
-#@     return args_list
+#@   elif type(args) == "string":
+#@     return args
+#@   elif is_dict_like(args):
+#@     return _expand_args_dict(dict(args), sep=sep)[0].strip().rstrip(" \\")
+#@   elif is_list_like(args):
+#@     return _expand_args_list(list(args))[0].strip().rstrip(" \\")
 #@   else:
-#@     return _expand_args(list(args_list))[0].strip().rstrip(" \\")
+#@     fail("Unexpected type " + type(args) + " given to expand_args")
 #@   end
 #@ end

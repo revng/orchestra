@@ -5,13 +5,10 @@
 #@ load("/lib/fn_args.lib.yml", "mandatory")
 #@ load("/lib/ninja.lib.yml", "ninja")
 
-#@yaml/text-templated-strings
 ---
 #@ def cmake_opts():
-- -DBUILD_SHARED_LIBS=ON
-- -DLLVM_ENABLE_PROJECTS="clang"
-- -DCMAKE_C_COMPILER="(@= data.values.regular_c_compiler @)"
-- -DCMAKE_CXX_COMPILER="(@= data.values.regular_cxx_compiler @)"
+-DBUILD_SHARED_LIBS: "ON"
+-DLLVM_ENABLE_PROJECTS: "clang"
 #@ end
 
 #@yaml/text-templated-strings
@@ -26,7 +23,7 @@ builds:
     #@ cflags = f_options["extra_compiler_flags"]
     #@ ndebug = f_options["ndebug"]
     (@= flavor @):
-      configure: #@ configure_llvm(cmake_build_type=build_type, cflags=cflags, additional_cmake_options=cmake_opts(), source_dir="$SOURCE_DIR")
+      configure: #@ configure_llvm(cmake_build_type=build_type, cflags=cflags, additional_cmake_options=all_cmake_opts, source_dir="$SOURCE_DIR")
       install: |
         cd "$BUILD_DIR"
         (@= ninja @) install
