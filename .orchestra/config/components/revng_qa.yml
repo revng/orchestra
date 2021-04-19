@@ -2,6 +2,17 @@
 #@ load("/lib/create_component.lib.yml", "single_build_component")
 #@ load("/lib/cmake.lib.yml", "cmake")
 
+---
+#@ def cmake_args():
+-DTRIPLE_x86_64: "x86_64-gentoo-linux-musl"
+-DTRIPLE_mips: "mips-unknown-linux-musl"
+-DTRIPLE_mipsel: "mipsel-unknown-linux-musl"
+-DTRIPLE_i386: "i386-gentoo-linux-musl"
+-DTRIPLE_arm: "armv7a-hardfloat-linux-uclibceabi"
+-DTRIPLE_aarch64: "aarch64-unknown-linux-musl"
+-DTRIPLE_s390x: "s390x-ibm-linux-musl"
+#@ end
+
 #@yaml/text-templated-strings
 ---
 #@ def revng_qa_args():
@@ -9,16 +20,9 @@ repository: revng-qa
 license: LICENSE
 configure: |
   mkdir -p "$BUILD_DIR"
-  cd "$BUILD_DIR"; \
-  (@= cmake @) \
-    "$SOURCE_DIR" \
-    -DTRIPLE_x86_64="x86_64-gentoo-linux-musl" \
-    -DTRIPLE_mips="mips-unknown-linux-musl" \
-    -DTRIPLE_mipsel="mipsel-unknown-linux-musl" \
-    -DTRIPLE_i386="i386-gentoo-linux-musl" \
-    -DTRIPLE_arm="armv7a-hardfloat-linux-uclibceabi" \
-    -DTRIPLE_aarch64="aarch64-unknown-linux-musl" \
-    -DTRIPLE_s390x="s390x-ibm-linux-musl"
+  cd "$BUILD_DIR"
+  (@= cmake(additional_cmake_args=cmake_args()) @) \
+    "$SOURCE_DIR"
 build_system: make
 build_dependencies:
   - cmake
