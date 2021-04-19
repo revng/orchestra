@@ -31,12 +31,7 @@ builds:
         cd "$BUILD_DIR"
         (@= ninja @) install
 
-        CLANG_RELEASE_IDX="$ORCHESTRA_ROOT/share/orchestra/clang-release.idx"
-        if [ -e "$CLANG_RELEASE_IDX" ]; then
-          cat "$CLANG_RELEASE_IDX" | while read f; do
-            rm "${TMP_ROOT}${ORCHESTRA_ROOT}/$f" || true
-          done
-        fi
+        remove-files-from-other-component.sh clang-release "${TMP_ROOT}${ORCHESTRA_ROOT}"
 
         if test "$RUN_TESTS" -eq 1; then
           (@= ninja @) check-all
