@@ -11,9 +11,11 @@
 ---
 #@ def gcc_dependencies(stage, toolchain_name, musl_version, uclibc_version, linux_version, mingw64_version):
 #@ if stage == 1:
-#@   build = "~headers"
+#@   suffixes = ["-headers"]
+#@   mingw_builds = ["@headers"]
 #@ elif stage == 2:
-#@   build = ""
+#@   suffixes = ["-headers", "-extra-libraries"]
+#@   mingw_builds = [""]
 #@ else:
 #@   fail("GCC stage must be 1 or 2")
 #@ end
@@ -23,28 +25,41 @@
 - toolchain/host/binutils
 #@ end
 
-#@ if/end musl_version:
-- toolchain/(@= toolchain_name @)/musl(@= build @)
-#@ if/end uclibc_version:
-- toolchain/(@= toolchain_name @)/uclibc(@= build @)
-#@ if/end mingw64_version:
-- toolchain/(@= toolchain_name @)/mingw64(@= build @)
+#@ if musl_version:
+#@ for suffix in suffixes:
+- toolchain/(@= toolchain_name @)/musl(@= suffix @)
+#@ end
+#@ end
 
-#@ if/end linux_version:
+#@ if uclibc_version:
+#@ for suffix in suffixes:
+- toolchain/(@= toolchain_name @)/uclibc(@= suffix @)
+#@ end
+#@ end
+
+#@ if mingw64_version:
+#@ for build in mingw_builds:
+- toolchain/(@= toolchain_name @)/mingw64(@= build @)
+#@ end
+#@ end
+
+#@ if linux_version:
 - toolchain/(@= toolchain_name @)/linux-headers
+#@ end
+
 #@ end
 
 #@yaml/text-templated-strings
 ---
 #@ def gcc_build_dependencies(stage, toolchain_name):
-
-#@ if/end stage == 2 and "host" not in toolchain_name:
-- toolchain/(@= toolchain_name @)/gcc~stage1
-
 - glibc
 - gmp
 - mpfr
 - mpc
+
+#@ if stage == 2 and "host" not in toolchain_name:
+- toolchain/(@= toolchain_name @)/gcc~stage1
+#@ end
 
 #@ end
 
