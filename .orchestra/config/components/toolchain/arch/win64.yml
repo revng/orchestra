@@ -17,6 +17,7 @@ extra_gcc_configure_options:
   - --enable-shared
 extra_gcc_stage2_configure_options: " --enable-threads=posix --enable-libstdcxx-threads=yes"
 dynamic: "0"
+custom_pkgconfig: true
 #@ end
 
 #@overlay/match by=overlay.all, expects=1

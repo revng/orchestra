@@ -15,6 +15,7 @@ extra_gcc_configure_options:
   - --disable-libssp
   - --disable-shared
 dynamic: "0"
+custom_pkgconfig: true
 #@ end
 
 #@overlay/match by=overlay.all, expects=1

@@ -11,6 +11,7 @@
 #@ load("/components/toolchain/lib/coreutils.lib.yml", "create_coreutils_component")
 #@ load("/components/toolchain/lib/mingw64.lib.yml", "create_mingw64_components")
 #@ load("/components/toolchain/lib/spec.lib.yml", "create_spec_components")
+#@ load("/components/toolchain/lib/pkgconfig.lib.yml", "create_pkgconfig_component")
 
 #@yaml/text-templated-strings
 ---
@@ -35,6 +36,7 @@
 #@    extra_gcc_make_variables="",
 #@    dynamic=None,
 #@    spec=False,
+#@    custom_pkgconfig=False,
 #@ ):
 
 #@ if/end binutils_version:
@@ -47,7 +49,7 @@
 (@= "toolchain/" + toolchain_name + "/linux-headers" @): #@ create_linux_headers_component(triple=triple, linux_version=linux_version, arch_name=linux_arch_name)
 
 #@ if/end gcc_version:
-(@= "toolchain/" + toolchain_name + "/gcc" @): #@ create_gcc_component(toolchain_name=toolchain_name, triple=triple, gcc_sysroot=gcc_sysroot, gcc_version=gcc_version, extra_gcc_configure_options=extra_gcc_configure_options, extra_gcc_stage2_configure_options=extra_gcc_stage2_configure_options, extra_gcc_make_variables=extra_gcc_make_variables, musl_version=musl_version, uclibc_version=uclibc_version, linux_version=linux_version, mingw64_version=mingw64_version, binutils_version=binutils_version)
+(@= "toolchain/" + toolchain_name + "/gcc" @): #@ create_gcc_component(toolchain_name=toolchain_name, triple=triple, gcc_sysroot=gcc_sysroot, gcc_version=gcc_version, extra_gcc_configure_options=extra_gcc_configure_options, extra_gcc_stage2_configure_options=extra_gcc_stage2_configure_options, extra_gcc_make_variables=extra_gcc_make_variables, musl_version=musl_version, uclibc_version=uclibc_version, linux_version=linux_version, mingw64_version=mingw64_version, binutils_version=binutils_version, custom_pkgconfig=custom_pkgconfig)
 
 #@ if/end mingw64_version:
 _: #@ template.replace(create_mingw64_components(toolchain_name=toolchain_name, triple=triple, mingw64_version=mingw64_version, gcc_version=gcc_version))
@@ -63,5 +65,8 @@ _: #@ template.replace(create_uclibc_components(triple=triple, toolchain_name=to
 
 #@ if/end spec:
 _: #@ template.replace(create_spec_components(triple=triple, toolchain_name=toolchain_name))
+
+#@ if/end custom_pkgconfig:
+toolchain/(@= toolchain_name @)/pkgconfig: #@ create_pkgconfig_component(triple=triple, toolchain_name=toolchain_name)
 
 #@ end

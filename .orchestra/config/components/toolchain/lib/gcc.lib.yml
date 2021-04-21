@@ -9,7 +9,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def gcc_dependencies(stage, toolchain_name, musl_version, uclibc_version, linux_version, mingw64_version):
+#@ def gcc_dependencies(stage, toolchain_name, musl_version, uclibc_version, linux_version, mingw64_version, custom_pkgconfig):
 #@ if stage == 1:
 #@   suffixes = ["-headers"]
 #@   mingw_suffixes = ["-headers"]
@@ -45,6 +45,10 @@
 
 #@ if linux_version:
 - toolchain/(@= toolchain_name @)/linux-headers
+
+#@ if/end custom_pkgconfig:
+- toolchain/(@= toolchain_name @)/pkgconfig
+
 #@ end
 
 #@ end
@@ -80,6 +84,7 @@
 #@    gcc_sysroot = None,
 #@    extra_gcc_make_variables = "",
 #@    binutils_version = None,
+#@    custom_pkgconfig = False,
 #@  ):
 
 #@    source_url = "https://ftp.gnu.org/gnu/gcc/gcc-" + gcc_version + "/gcc-" + gcc_version + ".tar.gz"
@@ -94,7 +99,7 @@
 #@ else:
 #@   fail("GCC stage must be 1 or 2")
 #@ end
-#@ dependencies = gcc_dependencies(stage, toolchain_name, musl_version, uclibc_version, linux_version, mingw64_version) or []
+#@ dependencies = gcc_dependencies(stage, toolchain_name, musl_version, uclibc_version, linux_version, mingw64_version, custom_pkgconfig) or []
 #@ build_dependencies = gcc_build_dependencies(stage, toolchain_name) or []
 
 #@ if "win" in toolchain_name:
