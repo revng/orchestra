@@ -15,6 +15,7 @@ extra_gcc_configure_options:
   - --disable-libsanitizer
   - --disable-libssp
   - --enable-shared
+extra_gcc_stage2_configure_options: " --enable-threads=posix --enable-libstdcxx-threads=yes"
 dynamic: "0"
 #@ end
 
