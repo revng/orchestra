@@ -65,9 +65,6 @@ builds:
         if test "$RUN_TESTS" -eq 1; then
           (@= ninja @) check-all
         fi
-        (@- if platform == "windows": @)
-        ln -s ../../x86_64-w64-mingw32/usr/bin/libwinpthread-1.dll "${TMP_ROOT}${ORCHESTRA_ROOT}/win64/bin/"
-        (@ end -@)
       build_dependencies:
         - cmake
         - host-cxx-toolchain
