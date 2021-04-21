@@ -79,6 +79,7 @@
 #@    extra_gcc_stage2_configure_options="",
 #@    gcc_sysroot = None,
 #@    extra_gcc_make_variables = "",
+#@    binutils_version = None,
 #@  ):
 
 #@    source_url = "https://ftp.gnu.org/gnu/gcc/gcc-" + gcc_version + "/gcc-" + gcc_version + ".tar.gz"
@@ -95,6 +96,10 @@
 #@ end
 #@ dependencies = gcc_dependencies(stage, toolchain_name, musl_version, uclibc_version, linux_version, mingw64_version) or []
 #@ build_dependencies = gcc_build_dependencies(stage, toolchain_name) or []
+
+#@ if "win" in toolchain_name:
+#@   binutils_bindir = "${ORCHESTRA_ROOT}/x86_64-pc-linux-gnu/" + triple + "/binutils-bin/" + binutils_version
+#@ end
 
 #! The sed is required to make `--sysroot=/` work with `--with-gxx-include-dir`
 #! properly.
@@ -197,7 +202,11 @@ install: |
 
   # Fixinclude locates the wrong pthread.h
   find "${DESTDIR}${ORCHESTRA_ROOT}" -type d -name include-fixed -exec rm -f {}/pthread.h \;
-
+  (@- if "win" in toolchain_name: @)
+  # Symlink needed for making windres use the right gcc
+  mkdir -p "${TMP_ROOT}(@= binutils_bindir @)"
+  ln -s "../../gcc-bin/(@= gcc_version @)/(@= triple @)-gcc" "${TMP_ROOT}(@= binutils_bindir @)/(@= triple @)-gcc"
+  (@ end -@)
 dependencies: #@ dependencies
 build_dependencies: #@ build_dependencies
 #@ end
