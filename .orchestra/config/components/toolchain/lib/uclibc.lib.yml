@@ -33,14 +33,13 @@ configure: |
   true | (@= serial_make @) oldconfig
   sed 's|^typedef __kernel_dev_t\s*__kernel_old_dev_t;$|\0\ntypedef long __kernel_long_t;\ntypedef unsigned long __kernel_ulong_t;|' libc/sysdeps/linux/arm/bits/kernel_types.h -i
 install: |
-  export PATH="
-      (@-= new_gcc_path(triple=triple, gcc_version=gcc_version) @):
-      (@-= binutils_path(triple=triple, binutils_version=binutils_version) -@)
-      :$PATH"
   (@= serial_make @) -C "$BUILD_DIR"
   (@= serial_make @) -C "$BUILD_DIR" install DESTDIR="${DESTDIR}${ORCHESTRA_ROOT}/(@= triple @)"
+
+  # Remove files already installed by uclibc-headers
+  remove-files-from-other-component.sh "toolchain/(@= toolchain_name @)/uclibc-headers" "${TMP_ROOT}${ORCHESTRA_ROOT}"
 build_dependencies:
-  - toolchain/(@= toolchain_name @)/gcc~stage1
+  - toolchain/(@= toolchain_name @)/gcc
 #@ end
 
 #@yaml/text-templated-strings
@@ -54,24 +53,28 @@ install: |
   (@= serial_make @) DESTDIR="${DESTDIR}${ORCHESTRA_ROOT}/(@= triple @)" install_headers
 #@overlay/remove
 build_dependencies:
-  - toolchain/(@= toolchain_name @)/gcc~stage1
+  - toolchain/(@= toolchain_name @)/gcc
 #@ end
 
 #@yaml/text-templated-strings
 ---
-#@ def create_uclibc_component(**kwargs):
+#@ def create_uclibc_components(**kwargs):
 #@    toolchain_name = kwargs["toolchain_name"]
 #@    triple = kwargs["triple"]
 #@    uclibc_arch_name = kwargs["uclibc_arch_name"]
 #@    uclibc_version = kwargs["uclibc_version"]
 #@    gcc_version = kwargs["gcc_version"]
 #@    binutils_version = kwargs["binutils_version"]
+toolchain/(@= toolchain_name @)/uclibc-headers:
+  license: COPYING.LIB
+  builds:
+    default: #@ overlay.apply(uclibc_build(**kwargs), uclibc_headers_overlay(**kwargs))
 
-license: COPYING.LIB
-default_build: default
-builds:
-  headers: #@ overlay.apply(uclibc_build(**kwargs), uclibc_headers_overlay(**kwargs))
-  #@ for flavor, flags in libc_optimization_flavors.items():
-  (@= flavor @): #@ uclibc_build(additional_cflags=flags, **kwargs)
-  #@ end
+toolchain/(@= toolchain_name @)/uclibc-extra-libraries:
+  license: COPYING.LIB
+  default_build: default
+  builds:
+    #@ for flavor, flags in libc_optimization_flavors.items():
+    (@= flavor @): #@ uclibc_build(additional_cflags=flags, **kwargs)
+    #@ end
 #@ end

@@ -2,6 +2,7 @@
 
 #! Do not push upstream components defined here.
 #! You should define them in a separate file and use overlay annotations.
+min_orchestra_version: "3.1.0"
 components: {}
 add_to_path:
   - $ORCHESTRA_ROOT/link-only/bin
