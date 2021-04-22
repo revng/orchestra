@@ -9,7 +9,7 @@
 #@ def params():
 toolchain_name: host
 triple: x86_64-pc-linux-gnu
-binutils_version: "2.35"
+binutils_version: "2.36.1"
 gdb_version: "9.2"
 gcc_version: #@ str(datavalue("gcc_host_version"))
 gcc_sysroot: /
@@ -38,8 +38,8 @@ extra_gcc_configure_options:
   - --enable-default-pie
   - --enable-default-ssp
   - --enable-libmpx
-  - CFLAGS_FOR_TARGET="-I/usr/include/tirpc (@= data.values.hard_flags_compile @)"
-  - CXXFLAGS_FOR_TARGET="-I/usr/include/tirpc (@= data.values.hard_flags_compile @)"
+  - CFLAGS_FOR_TARGET="-I/usr/include/tirpc -I$ORCHESTRA_ROOT/link-only/include"
+  - CXXFLAGS_FOR_TARGET="-I/usr/include/tirpc -I$ORCHESTRA_ROOT/link-only/include"
   - LDFLAGS_FOR_TARGET="-L$INSTALL_LINK_ONLY_PATH/lib -L$ORCHESTRA_ROOT/lib -lrt --sysroot=/ -Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath,$RPATH_PLACEHOLDER/lib"
 extra_binutils_configure_options:
   - --enable-gold=default
