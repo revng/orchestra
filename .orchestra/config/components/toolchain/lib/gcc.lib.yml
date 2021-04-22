@@ -178,6 +178,9 @@ install: |
 
   rm -f "${DESTDIR}${ORCHESTRA_ROOT}"/lib64/libcc1.*
 
+  # Fixinclude locates the wrong pthread.h
+  find "${DESTDIR}${ORCHESTRA_ROOT}" -type d -name include-fixed -exec rm -f {}/pthread.h \;
+
 dependencies: #@ dependencies
 build_dependencies: #@ build_dependencies
 #@ end
