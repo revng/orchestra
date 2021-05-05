@@ -4,7 +4,6 @@
 #@ load("/lib/make.lib.yml", "make", "serial_make")
 #@ load("/lib/fn_args.lib.yml", "mandatory")
 #@ load("/lib/optimization_flavors.lib.yml", "libc_optimization_flavors")
-#@ load("/components/toolchain/lib/common.lib.yml", "new_gcc")
 
 #@yaml/text-templated-strings
 ---
@@ -23,7 +22,7 @@ configure: |
   extract.sh --into "$BUILD_DIR" "(@= source_url @)"
   patch-if-exists "${ORCHESTRA_DOTDIR}/patches/musl-(@= musl_version @)-printf-floating-point-rounding.patch" "$BUILD_DIR"
 
-  cd "$BUILD_DIR" && CC="(@= new_gcc(triple=triple, gcc_version=gcc_version) @)" CFLAGS=" (@= additional_cflags @)" "$BUILD_DIR/configure" \
+  cd "$BUILD_DIR" && CC="(@= triple @)-gcc" CFLAGS=" (@= additional_cflags @)" "$BUILD_DIR/configure" \
     --target=(@= triple @) \
     --prefix="$ORCHESTRA_ROOT/(@= triple @)/usr" \
     --syslibdir="$ORCHESTRA_ROOT/(@= triple @)/lib" \
@@ -32,8 +31,11 @@ install: |
   cd "$BUILD_DIR"
   (@= make @)
   (@= serial_make @) install
+
+  # Remove files already installed by musl-headers
+  remove-files-from-other-component.sh "toolchain/(@= toolchain_name @)/musl-headers" "${TMP_ROOT}${ORCHESTRA_ROOT}"
 build_dependencies:
-  - toolchain/(@= toolchain_name @)/gcc~stage1
+  - toolchain/(@= toolchain_name @)/gcc
 #@ end
 
 #@yaml/text-templated-strings
@@ -62,17 +64,22 @@ configure: |
 
 #@yaml/text-templated-strings
 ---
-#@ def create_musl_component(
+#@ def create_musl_components(
 #@      triple=mandatory,
 #@      musl_version=mandatory,
 #@      toolchain_name=mandatory,
 #@      gcc_version=mandatory
 #@ ):
-license: COPYRIGHT
-default_build: default
-builds:
-  headers: #@ musl_headers(triple=triple, musl_version=musl_version, toolchain_name=toolchain_name)
-  #@ for flavor, flags in libc_optimization_flavors.items():
-  (@= flavor @): #@ musl_build(triple=triple, musl_version=musl_version, toolchain_name=toolchain_name, additional_cflags=flags, gcc_version=gcc_version)
-  #@ end
+toolchain/(@= toolchain_name @)/musl-headers:
+  license: COPYRIGHT
+  builds:
+    default: #@ musl_headers(triple=triple, musl_version=musl_version, toolchain_name=toolchain_name)
+
+toolchain/(@= toolchain_name @)/musl-extra-libraries:
+  license: COPYRIGHT
+  default_build: default
+  builds:
+    #@ for flavor, flags in libc_optimization_flavors.items():
+    (@= flavor @): #@ musl_build(triple=triple, musl_version=musl_version, toolchain_name=toolchain_name, additional_cflags=flags, gcc_version=gcc_version)
+    #@ end
 #@ end

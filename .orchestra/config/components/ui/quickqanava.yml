@@ -4,7 +4,7 @@
 ---
 #@ def build_args():
 extra_cmake_args:
-  - -DQML_PLUGIN_INSTALL_DIRECTORY="$ORCHESTRA_ROOT/qml"
+  -DQML_PLUGIN_INSTALL_DIRECTORY: "$ORCHESTRA_ROOT/qml"
 build_dependencies:
   - cmake
   - glibc
