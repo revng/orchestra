@@ -5,7 +5,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def _configure_llvm(cmake_build_type=mandatory, cflags=mandatory, additional_cmake_options=mandatory, source_dir="$SOURCE_DIR"):
+#@ def _configure_llvm(cmake_build_type=mandatory, cflags=mandatory, additional_cmake_options=mandatory, source_dir="$SOURCE_DIR", use_asan=False):
 - |
   mkdir -p "$BUILD_DIR"
   cd "$BUILD_DIR";
@@ -25,6 +25,9 @@
     -DLIBCXX_ENABLE_ABI_LINKER_SCRIPT=OFF \
     -DLLVM_ENABLE_Z3_SOLVER=OFF \
     -DLLVM_INCLUDE_GO_TESTS=OFF \
+    (@ if use_asan: -@)
+    -DLLVM_USE_SANITIZER=Address \
+    (@ end -@)
     (@= expand_args(additional_cmake_options) @) \
     -Wno-dev
 #@ end

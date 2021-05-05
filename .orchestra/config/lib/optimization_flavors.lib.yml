@@ -1,4 +1,5 @@
 #@ load("@ytt:data", "data")
+#@ load("@ytt:template", "template")
 
 #! returned values are wrapped with dict() so we can call items() on them
 
@@ -14,88 +15,140 @@ o3: -ggdb3 -Wl,--gc-sections -ffunction-sections -O3
 
 #@yaml/text-templated-strings
 ---
-#@ def _typical_project_flavors(use_asan=False):
+#@ def __typical_project_flavors(use_asan):
 #@   asan="-fsanitize=address" if use_asan else ""
-optimized:
+#@   asan_s="-asan" if use_asan else ""
+optimized(@= asan_s @):
   cmake_build_type: Debug
   extra_compiler_flags: -ggdb3 -O2 -fno-omit-frame-pointer (@= asan @)
   ndebug: false
-debug:
+  asan: #@ use_asan
+debug(@= asan_s @):
   cmake_build_type: Debug
   extra_compiler_flags: -ggdb3 -O0 (@= asan @)
   ndebug: false
-release:
+  asan: #@ use_asan
+release(@= asan_s @):
   cmake_build_type: Release
   extra_compiler_flags: -ggdb3 -O2 (@= asan @)
   ndebug: true
+  asan: #@ use_asan
 #@ end
 
 ---
-#@ def typical_project_flavors(use_asan=False):
-#@    return dict(_typical_project_flavors(use_asan=use_asan))
+#@ def _typical_project_flavors(use_asan):
+_: #@ template.replace(__typical_project_flavors(False))
+#@ if/end use_asan:
+_: #@ template.replace(__typical_project_flavors(True))
+#@ end
+
+---
+#@ def typical_project_flavors(use_asan=True):
+#@    return dict(_typical_project_flavors(use_asan))
 #@ end
 
 #@yaml/text-templated-strings
 ---
-#@ def _typical_cmake_flavors(use_asan=False):
+#@ def __typical_cmake_flavors(use_asan):
 #@   asan="-fsanitize=address" if use_asan else ""
-optimized:
+#@   asan_s="-asan" if use_asan else ""
+optimized(@= asan_s @):
   cmake_build_type: Debug
   extra_compiler_flags: -ggdb3 -O2 -fno-omit-frame-pointer (@= asan @)
   ndebug: false
-debug:
+  asan: #@ use_asan
+debug(@= asan_s @):
   cmake_build_type: Debug
   extra_compiler_flags: -ggdb3 -O0 (@= asan @)
   ndebug: false
-release:
+  asan: #@ use_asan
+release(@= asan_s @):
   cmake_build_type: Release
   extra_compiler_flags: -ggdb3 -O2 (@= asan @)
   ndebug: true
+  asan: #@ use_asan
 #@ end
 
 ---
-#@ def typical_cmake_flavors(use_asan=False):
-#@    return dict(_typical_cmake_flavors(use_asan=use_asan))
+#@ def _typical_cmake_flavors(use_asan):
+_: #@ template.replace(__typical_cmake_flavors(False))
+#@ if/end use_asan:
+_: #@ template.replace(__typical_cmake_flavors(True))
 #@ end
 
 ---
-#@ def _qt_optimization_flavors():
-debug:
-  extra_qmake_options: -debug QMAKE_CXXFLAGS+="-fno-omit-frame-pointer"
-  ndebug: false
-optimized:
-  extra_qmake_options: -debug QMAKE_CXXFLAGS+="-O2 -fno-omit-frame-pointer"
-  ndebug: false
-release:
-  extra_qmake_options: -release
-  ndebug: true
+#@ def typical_cmake_flavors(use_asan=True):
+#@    return dict(_typical_cmake_flavors(use_asan))
 #@ end
-
-#@ qt_optimization_flavors = dict(_qt_optimization_flavors())
 
 #@yaml/text-templated-strings
 ---
-#@ def _qmake_optimization_flavors():
-debug:
+#@ def __qt_optimization_flavors(use_asan):
+#@   asan="-sanitize address" if use_asan else ""
+#@   asan_s="-asan" if use_asan else ""
+debug(@= asan_s @):
+  extra_qmake_options: -debug QMAKE_CXXFLAGS+="-fno-omit-frame-pointer" (@= asan @)
+  ndebug: false
+  asan: #@ use_asan
+optimized(@= asan_s @):
+  extra_qmake_options: -debug QMAKE_CXXFLAGS+="-O2 -fno-omit-frame-pointer" (@= asan @)
+  ndebug: false
+  asan: #@ use_asan
+release(@= asan_s @):
+  extra_qmake_options: -release (@= asan @)
+  ndebug: true
+  asan: #@ use_asan
+#@ end
+
+---
+#@ def _qt_optimization_flavors(use_asan):
+_: #@ template.replace(__qt_optimization_flavors(False))
+#@ if/end use_asan:
+_: #@ template.replace(__qt_optimization_flavors(True))
+#@ end
+
+#@ qt_optimization_flavors = dict(_qt_optimization_flavors(True))
+
+#@yaml/text-templated-strings
+---
+#@ def __qmake_optimization_flavors(use_asan):
+#@   asan_s="-asan" if use_asan else ""
+debug(@= asan_s @):
   extra_qmake_args:
     - CONFIG+=debug
     - CONFIG-=release
+    #@ if/end use_asan:
+    - CONFIG+="sanitizer sanitize_address"
     - QMAKE_CXXFLAGS_DEBUG+="-ggdb3 -O0 -fno-omit-frame-pointer"
     - QMAKE_LFLAGS+="-ggdb3 -O0"
   ndebug: false
-optimized:
+  asan: #@ use_asan
+optimized(@= asan_s @):
   extra_qmake_args:
     - CONFIG+=debug
     - CONFIG-=release
+    #@ if/end use_asan:
+    - CONFIG+="sanitizer sanitize_address"
     - QMAKE_CXXFLAGS_DEBUG+="-ggdb3 -O2 -fno-omit-frame-pointer"
     - QMAKE_LFLAGS+="-ggdb3 -O2"
   ndebug: false
-release:
+  asan: #@ use_asan
+release(@= asan_s @):
   extra_qmake_args:
     - CONFIG+=release
+    #@ if/end use_asan:
+    - CONFIG+="sanitizer sanitize_address"
     - QMAKE_CXXFLAGS_RELEASE+="-ggdb3 -O2"
     - QMAKE_LFLAGS+="-ggdb3 -O2"
   ndebug: true
+  asan: #@ use_asan
 #@ end
 
-#@ qmake_optimization_flavors = dict(_qmake_optimization_flavors())
+---
+#@ def _qmake_optimization_flavors(use_asan):
+_: #@ template.replace(__qmake_optimization_flavors(False))
+#@ if/end use_asan:
+_: #@ template.replace(__qmake_optimization_flavors(True))
+#@ end
+
+#@ qmake_optimization_flavors = dict(_qmake_optimization_flavors(True))

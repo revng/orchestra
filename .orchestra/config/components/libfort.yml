@@ -10,7 +10,6 @@ build_dependencies:
   - glibc
 dependencies:
   - host-libcxx
-use_asan: false
 #@ end
 
 #@overlay/match by=overlay.all, expects=1

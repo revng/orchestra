@@ -21,8 +21,11 @@
 #   %GITLAB_ROOT% is replaced with the base URL of the Gitlab instance.
 # COMPONENT_TARGET_BRANCH:
 #   branch name to try first when checking out component sources
+# PUSH_BINARY_ARCHIVES: if == 1, push binary archives
+# PROMOTE_BRANCHES: if == 1, promote next-* branches
 # PUSH_CHANGES:
-#   if != 1 do not push binary archives and do not promote next-* branches
+#   if == 1, push binary archives and promote next-* branches
+# REVNG_COMPONENTS_DEFAULT_BUILD: the default build for revng core components
 # PUSH_BINARY_ARCHIVE_EMAIL: used as author's email in binary archive commit
 # PUSH_BINARY_ARCHIVE_NAME: used as author's name in binary archive commit
 # SSH_PRIVATE_KEY: private key used to push binary archives
@@ -36,8 +39,12 @@ ORCHESTRA_ROOT="$(realpath "$DIR/../..")"
 ORCHESTRA_DOTDIR="$ORCHESTRA_ROOT/.orchestra"
 USER_OPTIONS="$ORCHESTRA_DOTDIR/config/user_options.yml"
 
-function log() {
-    echo "$1" > /dev/stderr
+function log () {
+    echo '[+]' "$@" > /dev/stderr
+}
+
+function log_err () {
+    echo '[!]' "$@" > /dev/stderr
 }
 
 PUSH_BINARY_ARCHIVE_EMAIL="${PUSH_BINARY_ARCHIVE_EMAIL:-sysadmin@rev.ng}"
@@ -98,7 +105,7 @@ which orc
 # Prepare the user_options.yml file
 #
 if test -e "$USER_OPTIONS"; then
-    log "$USER_OPTIONS already exists!"
+    log_err "$USER_OPTIONS already exists!"
     exit 1
 fi
 
@@ -114,7 +121,7 @@ if test -n "$TARGET_COMPONENTS_URL"; then
                          | grep '^Component' \
                          | cut -d' ' -f2)"
         if test -z "$NEW_COMPONENT"; then
-            log "Warning: ignoring URL $TARGET_COMPONENT_URL since it doesn't "\
+            log_err "Warning: ignoring URL $TARGET_COMPONENT_URL since it doesn't "\
                 "match any component"
         else
             TARGET_COMPONENTS="$NEW_COMPONENT $TARGET_COMPONENTS"
@@ -162,16 +169,22 @@ EOF
 cat "$USER_OPTIONS"
 find ..
 
+# Set default builds
+if [[ -n "$REVNG_COMPONENTS_DEFAULT_BUILD" ]]; then
+    echo "#@overlay/replace" >> "$USER_OPTIONS"
+    echo "revng_components_default_build: $REVNG_COMPONENTS_DEFAULT_BUILD" >> "$USER_OPTIONS"
+fi
+
 orc update --no-config
 
 # Print debugging information
-# Full dependency graph
+log "Full dependency graph"
 orc graph -b
-# Solved dependency graph for the target component
-orc graph --solved -b "$TARGET_COMPONENT"
-# Information about the components
+log "Solved dependency graph for the target component"
+orc graph --solved -b "$TARGET_COMPONENTS"
+log "Information about the components"
 orc components --hashes --deps
-# Binary archives commit
+log "Binary archives HEADs"
 for BINARY_ARCHIVE_PATH in $(orc ls --binary-archives); do
     echo "Commit for $BINARY_ARCHIVE_PATH: "\
            "$(git -C "$BINARY_ARCHIVE_PATH" rev-parse HEAD)"
@@ -188,7 +201,7 @@ for TARGET_COMPONENT in $TARGET_COMPONENTS; do
     fi
 done
 
-if test "$PUSH_CHANGES" = 1; then
+if [[ "$PROMOTE_BRANCHES" = 1 ]] || [[ "$PUSH_CHANGES" = 1 ]]; then
     #
     # Promote `next-*` branches to `*`
     #
@@ -223,7 +236,11 @@ if test "$PUSH_CHANGES" = 1; then
 
         orc fix-binary-archives-symlinks
     fi
+else
+    echo "Skipping branch promotion (\$PROMOTE_BRANCHES = '$PROMOTE_BRANCHES', \$PUSH_CHANGES = '$PUSH_CHANGES')"
+fi
 
+if [[ "$PUSH_BINARY_ARCHIVES" = 1 ]] || [[ "$PUSH_CHANGES" = 1 ]]; then
     # Ensure we have git lfs
     git lfs >& /dev/null
 
@@ -240,9 +257,10 @@ if test "$PUSH_CHANGES" = 1; then
         git config user.email "$PUSH_BINARY_ARCHIVE_EMAIL"
         git config user.name "$PUSH_BINARY_ARCHIVE_NAME"
 
-        if ! test -e .gitattributes; then
-            git lfs track "*.tar.gz"
-            git add .gitattributes
+        # Ensure we track the correct files
+        git lfs track "*.tar.*"
+        git add .gitattributes
+        if ! git diff --staged --exit-code -- .gitattributes > /dev/null; then
             git commit -m'Initialize .gitattributes'
         fi
 
@@ -267,10 +285,8 @@ if test "$PUSH_CHANGES" = 1; then
         fi
 
     done
-
-    exit "$RESULT"
-
 else
-    echo "PUSH_CHANGES != 1, exiting without pushing changes"
-    exit $RESULT
+    echo "Skipping binary archives push (\$PUSH_BINARY_ARCHIVES = '$PUSH_BINARY_ARCHIVES', \$PUSH_CHANGES = '$PUSH_CHANGES')"
 fi
+
+exit "$RESULT"

@@ -2,15 +2,49 @@
 #@ load("@ytt:assert", "assert")
 
 #@ fail = "dummy-string-because-starlark-does-not-have-is-operator"
+#@ undefined = "another-dummy-string-because-starlark-does-not-have-is-operator"
+
+#@ def recursive_hasattr(obj, attrname):
+#@   leftmost_attrname, sep, rest = attrname.partition(".")
+#@   if not hasattr(obj, leftmost_attrname):
+#@     return False
+#@   end
+#@   if not sep and not rest:
+#@     return True
+#@   end
+#@   attr_value = getattr(obj, leftmost_attrname)
+#@   return recursive_hasattr(attr_value, rest)
+#@ end
+
+#@ def _recursive_getattr(obj, attrname, default, complete_attrname):
+#@   leftmost_attrname, sep, rest = attrname.partition(".")
+#@   if not hasattr(obj, leftmost_attrname):
+#@     if default == fail:
+#@       assert.fail("Could not get property " + complete_attrname)
+#@     else:
+#@       return default
+#@     end
+#@   end
+#@   attr_value = getattr(obj, leftmost_attrname)
+#@   if not sep and not rest:
+#@     return attr_value
+#@   end
+#@   return _recursive_getattr(attr_value, rest, default, complete_attrname)
+#@ end
+
+#@ def recursive_getattr(obj, attrname, default=fail):
+#@   return _recursive_getattr(obj, attrname, default, attrname)
+#@ end
 
 #@ def datavalue(attrname, default=fail):
-#@   if not hasattr(data.values, attrname):
+#@   value = recursive_getattr(data.values, attrname, default=undefined)
+#@   if value == undefined:
 #@     if default == fail:
 #@       assert.fail("You must provide a data value for " + attrname)
 #@     else:
 #@       return default
 #@     end
 #@   else:
-#@     return getattr(data.values, attrname)
+#@     return value
 #@   end
 #@ end

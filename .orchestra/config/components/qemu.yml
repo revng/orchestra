@@ -5,15 +5,16 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def qemu_component(use_asan=False):
+#@ def qemu_component():
 repository: qemu
 license: LICENSE
 default_build: optimized
 builds:
-  #@ for flavor, f_options in typical_project_flavors(use_asan=use_asan).items():
+  #@ for flavor, f_options in typical_project_flavors().items():
     #@ build_type = f_options["cmake_build_type"]
     #@ cflags = f_options["extra_compiler_flags"]
     #@ ndebug = f_options["ndebug"]
+    #@ asan = f_options["asan"]
     (@= flavor @):
       configure: |
         mkdir -p "$BUILD_DIR"
@@ -47,8 +48,8 @@ builds:
       dependencies:
         - zlib
         - glib
-      #@ if/end ndebug == False:
-      ndebug: false
+      ndebug: #@ ndebug
+      asan: #@ asan
   #@ end
 #@ end
 

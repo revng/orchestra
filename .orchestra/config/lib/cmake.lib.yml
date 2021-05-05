@@ -51,7 +51,7 @@
 #@        build_system="Ninja",
 #@        dependencies=[],
 #@        build_dependencies=[],
-#@        use_asan=False,
+#@        use_asan=True,
 #@        source_url=None,
 #@        pre_configure_script="",
 #@        post_configure_script="",
@@ -112,6 +112,8 @@
 
   #@ if/end opts["ndebug"] == False:
   ndebug: false
+
+  asan: #@ opts["asan"]
 #@ end
 
 #@ end
