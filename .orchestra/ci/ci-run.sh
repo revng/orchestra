@@ -29,6 +29,7 @@
 # PUSH_BINARY_ARCHIVE_NAME: used as author's name in binary archive commit
 # SSH_PRIVATE_KEY: private key used to push binary archives
 # REVNG_ORCHESTRA_URL: orchestra git repo URL (must be git+ssh:// or git+https://)
+# BUILD_ALL_FROM_SOURCE: if == 1 do not use binary archives and build everything
 
 set -e
 set -x
@@ -44,6 +45,12 @@ function log() {
 
 PUSH_BINARY_ARCHIVE_EMAIL="${PUSH_BINARY_ARCHIVE_EMAIL:-sysadmin@rev.ng}"
 PUSH_BINARY_ARCHIVE_NAME="${PUSH_BINARY_ARCHIVE_NAME:-rev.ng CI}"
+
+if [[ "$BUILD_ALL_FROM_SOURCE" == 1 ]]; then
+    BUILD_MODE="-B"
+else
+    BUILD_MODE="-b"
+fi
 
 cd "$DIR"
 
@@ -168,9 +175,9 @@ orc update --no-config
 
 # Print debugging information
 # Full dependency graph
-orc graph -b
+orc graph "$BUILD_MODE"
 # Solved dependency graph for the target component
-orc graph --solved -b "$TARGET_COMPONENT"
+orc graph --solved "$BUILD_MODE" "$TARGET_COMPONENT"
 # Information about the components
 orc components --hashes --deps
 # Binary archives commit
@@ -184,7 +191,7 @@ done
 #
 RESULT=0
 for TARGET_COMPONENT in $TARGET_COMPONENTS; do
-    if ! orc --quiet install -b --test --create-binary-archives "$TARGET_COMPONENT"; then
+    if ! orc --quiet install "$BUILD_MODE" --test --create-binary-archives "$TARGET_COMPONENT"; then
         RESULT=1
         break
     fi
