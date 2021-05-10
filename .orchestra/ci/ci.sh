@@ -45,8 +45,15 @@ if [[ -n "$PUSHED_REF" ]]; then
     fi
 fi
 
-# Switch orchestra to the target branch or try the default list
 ogit fetch
+
+# If the target branch is not part of the default list and it does not already
+# exist, create it
+if [[ ! "$COMPONENT_TARGET_BRANCH" =~ ^(next-)?(develop|master)$ ]]; then
+    ogit branch -b "$COMPONENT_TARGET_BRANCH" master
+fi
+
+# Switch orchestra to the target branch or try the default list
 for B in "$COMPONENT_TARGET_BRANCH" next-develop develop next-master master; do
     if ogit checkout "$B"; then
         ORCHESTRA_TARGET_BRANCH="$B"
