@@ -88,6 +88,11 @@ build_from_source:
   ctest -j$(nproc)
   ```
 
+When building some of the components from source you might require some extra dependencies. You can either install them manually or by using a script:
+```sh
+./<orchestra_directory>/.orchestra/ci/install-dependencies.sh
+```
+
 ## Building from a fork
 
 The recommended workflow is:
