@@ -250,7 +250,15 @@ if test "$PUSH_CHANGES" = 1; then
         git add .
 
         if ! git diff --cached --quiet; then
-            git commit -m'Automatic binary archives'
+            set +x
+            COMMIT_MSG="Automatic binary archives
+
+ORCHESTRA_CONFIG_COMMIT=$(git -C "$ORCHESTRA_ROOT" rev-parse --short HEAD || true)
+ORCHESTRA_CONFIG_BRANCH=$(git -C "$ORCHESTRA_ROOT" name-rev --name-only HEAD || true)
+COMPONENT_TARGET_BRANCH=$COMPONENT_TARGET_BRANCH"
+            set -x
+
+            git commit -m "$COMMIT_MSG"
             git status
             git stash
             GIT_LFS_SKIP_SMUDGE=1 git fetch
