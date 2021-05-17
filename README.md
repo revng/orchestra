@@ -83,7 +83,7 @@ build_from_source:
   ```
 * Manually build:
   ```sh
-  orc shell revng
+  orc shell -c revng
   ninja
   ctest -j$(nproc)
   ```
@@ -100,7 +100,7 @@ The recommended workflow is:
   ```sh
   cd sources/<component>
   git remote add <myremotename> <remote-url>
-  git fetch --all <myremotename>
+  git fetch --all
   ```
 * Switch to your branch
   ```sh
