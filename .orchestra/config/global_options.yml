@@ -13,18 +13,20 @@
 
 #@ clang_release_version = "10.0.0"
 #@ gcc_host_version = "10.1.0"
+#@ regular_cxx_stdlib = "-stdlib=libc++"
 
 #@data/values
 #@yaml/text-templated-strings
 ---
 clang_release_version: #@ clang_release_version
 gcc_host_version: #@ gcc_host_version
+regular_cxx_stdlib: #@ regular_cxx_stdlib
 
 regular_c_compiler: clang
 regular_cxx_compiler: clang++
 sanitizers_libs_path: lib64/clang/(@= clang_release_version @)/lib/linux
 hard_flags_compile: --sysroot $INSTALL_LINK_ONLY_PATH -idirafter /usr/local/include -idirafter /usr/include/x86_64-linux-gnu -idirafter /usr/include
-hard_flags_cxx_clang: -stdlib=libc++
+hard_flags_cxx_clang: (@= regular_cxx_stdlib @)
 hard_flags_clang: -gcc-toolchain $ORCHESTRA_ROOT/lib64/gcc/x86_64-pc-linux-gnu/(@= gcc_host_version @)
 hard_flags_link: -L$INSTALL_LINK_ONLY_PATH/lib -L$ORCHESTRA_ROOT/lib -lrt --sysroot=/ -Wl,-z,origin -Wl,--enable-new-dtags -fuse-ld=gold
 hard_flags_link_late: -Wl,-rpath,$RPATH_PLACEHOLDER/lib
