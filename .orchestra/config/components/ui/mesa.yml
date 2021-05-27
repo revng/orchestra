@@ -2,7 +2,7 @@
 #@ load("@ytt:overlay", "overlay")
 #@ load("/lib/create_component.lib.yml", "single_build_component")
 
-#@ source_url = "https://mesa.freedesktop.org/archive/mesa-20.1.2.tar.xz"
+#@ source_url = "https://mesa.freedesktop.org/archive/mesa-20.1.7.tar.xz"
 
 #@yaml/text-templated-strings
 ---
