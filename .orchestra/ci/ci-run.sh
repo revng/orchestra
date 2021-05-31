@@ -21,12 +21,15 @@
 #   %GITLAB_ROOT% is replaced with the base URL of the Gitlab instance.
 # COMPONENT_TARGET_BRANCH:
 #   branch name to try first when checking out component sources
+# PUSH_BINARY_ARCHIVES: if == 1, push binary archives
+# PROMOTE_BRANCHES: if == 1, promote next-* branches
 # PUSH_CHANGES:
-#   if != 1 do not push binary archives and do not promote next-* branches
+#   if == 1, push binary archives and promote next-* branches
 # PUSH_BINARY_ARCHIVE_EMAIL: used as author's email in binary archive commit
 # PUSH_BINARY_ARCHIVE_NAME: used as author's name in binary archive commit
 # SSH_PRIVATE_KEY: private key used to push binary archives
 # REVNG_ORCHESTRA_URL: orchestra git repo URL (must be git+ssh:// or git+https://)
+# BUILD_ALL_FROM_SOURCE: if == 1 do not use binary archives and build everything
 
 set -e
 set -x
@@ -42,6 +45,12 @@ function log() {
 
 PUSH_BINARY_ARCHIVE_EMAIL="${PUSH_BINARY_ARCHIVE_EMAIL:-sysadmin@rev.ng}"
 PUSH_BINARY_ARCHIVE_NAME="${PUSH_BINARY_ARCHIVE_NAME:-rev.ng CI}"
+
+if [[ "$BUILD_ALL_FROM_SOURCE" == 1 ]]; then
+    BUILD_MODE="-B"
+else
+    BUILD_MODE="-b"
+fi
 
 cd "$DIR"
 
@@ -166,9 +175,9 @@ orc update --no-config
 
 # Print debugging information
 # Full dependency graph
-orc graph -b
+orc graph "$BUILD_MODE"
 # Solved dependency graph for the target component
-orc graph --solved -b "$TARGET_COMPONENT"
+orc graph --solved "$BUILD_MODE" "$TARGET_COMPONENT"
 # Information about the components
 orc components --hashes --deps
 # Binary archives commit
@@ -182,13 +191,13 @@ done
 #
 RESULT=0
 for TARGET_COMPONENT in $TARGET_COMPONENTS; do
-    if ! orc --quiet install -b --test --create-binary-archives "$TARGET_COMPONENT"; then
+    if ! orc --quiet install "$BUILD_MODE" --test --create-binary-archives "$TARGET_COMPONENT"; then
         RESULT=1
         break
     fi
 done
 
-if test "$PUSH_CHANGES" = 1; then
+if [[ "$PROMOTE_BRANCHES" = 1 ]] || [[ "$PUSH_CHANGES" = 1 ]]; then
     #
     # Promote `next-*` branches to `*`
     #
@@ -223,8 +232,12 @@ if test "$PUSH_CHANGES" = 1; then
 
         orc fix-binary-archives-symlinks
     fi
+else
+    echo "Skipping branch promotion (\$PROMOTE_BRANCHES = '$PROMOTE_BRANCHES', \$PUSH_CHANGES = '$PUSH_CHANGES')"
+fi
 
-    # Ensure we have git lfs
+if [[ "$PUSH_BINARY_ARCHIVES" = 1 ]] || [[ "$PUSH_CHANGES" = 1 ]]; then
+        # Ensure we have git lfs
     git lfs >& /dev/null
 
     # Remove old binary archives
@@ -240,9 +253,10 @@ if test "$PUSH_CHANGES" = 1; then
         git config user.email "$PUSH_BINARY_ARCHIVE_EMAIL"
         git config user.name "$PUSH_BINARY_ARCHIVE_NAME"
 
-        if ! test -e .gitattributes; then
-            git lfs track "*.tar.gz"
-            git add .gitattributes
+        # Ensure we track the correct files
+        git lfs track "*.tar.*"
+        git add .gitattributes
+        if ! git diff --staged --exit-code -- .gitattributes > /dev/null; then
             git commit -m'Initialize .gitattributes'
         fi
 
@@ -275,10 +289,8 @@ COMPONENT_TARGET_BRANCH=$COMPONENT_TARGET_BRANCH"
         fi
 
     done
-
-    exit "$RESULT"
-
 else
-    echo "PUSH_CHANGES != 1, exiting without pushing changes"
-    exit $RESULT
+    echo "Skipping binary archives push (\$PUSH_BINARY_ARCHIVES = '$PUSH_BINARY_ARCHIVES', \$PUSH_CHANGES = '$PUSH_CHANGES')"
 fi
+
+exit "$RESULT"
