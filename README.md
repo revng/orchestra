@@ -22,6 +22,10 @@ This repository contains the orchestra configuration for rev.ng.
   ```sh
   orc components
   ```
+* Install dependencies (currently Ubuntu-only):
+  ```sh
+  ./.orchestra/ci/install-dependencies.sh
+  ```
 
 ## Configuration for the public
 
