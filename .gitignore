@@ -4,9 +4,6 @@ sources
 .orchestra/tmproot
 .orchestra/binary-archives/*
 .orchestra/source_archives
-.orchestra/installed_components
-.orchestra/config_cache.yml
-.orchestra/config_cache.json
-.orchestra/remote_refs_cache.json
+.orchestra/cache
 .orchestra/config/user_*.yml
 .idea
