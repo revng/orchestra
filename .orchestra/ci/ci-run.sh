@@ -32,23 +32,36 @@
 # BUILD_ALL_FROM_SOURCE: if == 1 do not use binary archives and build everything
 
 set -e
-set -x
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 ORCHESTRA_ROOT="$(realpath "$DIR/../..")"
 ORCHESTRA_DOTDIR="$ORCHESTRA_ROOT/.orchestra"
 USER_OPTIONS="$ORCHESTRA_DOTDIR/config/user_options.yml"
 
+BOLD="\e[1m"
+RED="\e[31m"
+RESET="\e[0m"
+
 function log() {
-    echo "$1" > /dev/stderr
+    echo -en "${BOLD}" > /dev/stderr
+    echo -n '[+]' "$1" > /dev/stderr
+    echo -e "${RESET}" > /dev/stderr
+}
+
+function log_err() {
+    echo -en "${BOLD}${RED}" > /dev/stderr
+    echo -n '[!]' "$1" > /dev/stderr
+    echo -e "${RESET}" > /dev/stderr
 }
 
 PUSH_BINARY_ARCHIVE_EMAIL="${PUSH_BINARY_ARCHIVE_EMAIL:-sysadmin@rev.ng}"
 PUSH_BINARY_ARCHIVE_NAME="${PUSH_BINARY_ARCHIVE_NAME:-rev.ng CI}"
 
 if [[ "$BUILD_ALL_FROM_SOURCE" == 1 ]]; then
+    log "Build mode: building all components from source"
     BUILD_MODE="-B"
 else
+    log "Build mode: binary archives enabled"
     BUILD_MODE="-b"
 fi
 
@@ -60,7 +73,6 @@ cd "$DIR"
 #
 # Register deploy key, if any
 #
-set +x
 if test -n "$SSH_PRIVATE_KEY"; then
     eval "$(ssh-agent -s)"
     echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
@@ -82,7 +94,6 @@ EOF
         git -C "$ORCHESTRA_ROOT" remote set-url origin "$ORCHESTRA_CONFIG_REPO_SSH_URL"
     fi
 fi
-set -x
 
 #
 # Install orchestra
@@ -107,7 +118,7 @@ which orc
 # Prepare the user_options.yml file
 #
 if test -e "$USER_OPTIONS"; then
-    log "$USER_OPTIONS already exists!"
+    log_err "$USER_OPTIONS already exists!"
     exit 1
 fi
 
@@ -123,13 +134,14 @@ if test -n "$TARGET_COMPONENTS_URL"; then
                          | grep '^Component' \
                          | cut -d' ' -f2)"
         if test -z "$NEW_COMPONENT"; then
-            log "Warning: ignoring URL $TARGET_COMPONENT_URL since it doesn't "\
-                "match any component"
+            log "Warning: ignoring URL $TARGET_COMPONENT_URL since it doesn't match any component"
         else
             TARGET_COMPONENTS="$NEW_COMPONENT $TARGET_COMPONENTS"
         fi
     done
 fi
+
+log "Target components: $TARGET_COMPONENTS"
 
 if test -z "$TARGET_COMPONENTS"; then
     log "Nothing to do!"
@@ -168,22 +180,23 @@ cat >> "$USER_OPTIONS" <<EOF
 EOF
 
 # Print debug information
+log "User options:"
 cat "$USER_OPTIONS"
-find ..
 
 orc update --no-config
 
 # Print debugging information
-# Full dependency graph
+log "Complete dependency graph"
 orc graph "$BUILD_MODE"
-# Solved dependency graph for the target component
-orc graph --solved "$BUILD_MODE" "$TARGET_COMPONENT"
-# Information about the components
-orc components --hashes --deps
-# Binary archives commit
+for TARGET_COMPONENT in $TARGET_COMPONENTS; do
+    log "Solved dependency graph for the target component $TARGET_COMPONENT"
+    orc graph --solved "$BUILD_MODE" "$TARGET_COMPONENT"
+done
+log "Information about the components"
+orc components --hashes
+log "Binary archives commit"
 for BINARY_ARCHIVE_PATH in $(orc ls --binary-archives); do
-    echo "Commit for $BINARY_ARCHIVE_PATH: "\
-           "$(git -C "$BINARY_ARCHIVE_PATH" rev-parse HEAD)"
+    log "Commit for $BINARY_ARCHIVE_PATH: $(git -C "$BINARY_ARCHIVE_PATH" rev-parse HEAD)"
 done
 
 #
@@ -191,6 +204,7 @@ done
 #
 RESULT=0
 for TARGET_COMPONENT in $TARGET_COMPONENTS; do
+    log "Building target component $TARGET_COMPONENT"
     if ! orc --quiet install "$BUILD_MODE" --test --create-binary-archives "$TARGET_COMPONENT"; then
         RESULT=1
         break
@@ -233,7 +247,7 @@ if [[ "$PROMOTE_BRANCHES" = 1 ]] || [[ "$PUSH_CHANGES" = 1 ]]; then
         orc fix-binary-archives-symlinks
     fi
 else
-    echo "Skipping branch promotion (\$PROMOTE_BRANCHES = '$PROMOTE_BRANCHES', \$PUSH_CHANGES = '$PUSH_CHANGES')"
+    log "Skipping branch promotion (PROMOTE_BRANCHES='$PROMOTE_BRANCHES', PUSH_CHANGES='$PUSH_CHANGES')"
 fi
 
 if [[ "$PUSH_BINARY_ARCHIVES" = 1 ]] || [[ "$PUSH_CHANGES" = 1 ]]; then
@@ -290,7 +304,7 @@ COMPONENT_TARGET_BRANCH=$COMPONENT_TARGET_BRANCH"
 
     done
 else
-    echo "Skipping binary archives push (\$PUSH_BINARY_ARCHIVES = '$PUSH_BINARY_ARCHIVES', \$PUSH_CHANGES = '$PUSH_CHANGES')"
+    log "Skipping binary archives push (PUSH_BINARY_ARCHIVES='$PUSH_BINARY_ARCHIVES', PUSH_CHANGES='$PUSH_CHANGES')"
 fi
 
 exit "$RESULT"
