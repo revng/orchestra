@@ -216,15 +216,10 @@ if [[ "$PROMOTE_BRANCHES" = 1 ]] || [[ "$PUSH_CHANGES" = 1 ]]; then
     # Promote `next-*` branches to `*`
     #
     if test "$RESULT" -eq 0; then
-
         # Clone all the components having branch next-*
-        for COMPONENT in $(orc components --branch 'next-*' \
-                | grep '^Component' \
-                | awk '{ print $2 }'); do
-            # TODO: find a more robust way to clone if not already cloned
-            if ! test -d "$ORCHESTRA_ROOT/sources/$COMPONENT"; then
-                orc clone "$COMPONENT"
-            fi
+        for COMPONENT in $(orc components --json --branch 'next-*' | jq -r ".[].name"); do
+            log "Cloning $COMPONENT"
+            orc clone --no-force "$COMPONENT"
         done
 
         # Promote next-* to *.
