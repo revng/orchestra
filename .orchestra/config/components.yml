@@ -28,6 +28,7 @@ environment:
   - "-C_INCLUDE_PATH": ""
   - "-CPLUS_INCLUDE_PATH": ""
   - "-OBJC_INCLUDE_PATH": ""
+min_orchestra_version: "3.2.0"
 
 paths: #@ datavalue("paths", default={})
 remote_base_urls: #@ datavalue("remote_base_urls")
