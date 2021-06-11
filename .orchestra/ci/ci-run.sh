@@ -102,17 +102,17 @@ if test -n "$REVNG_ORCHESTRA_URL"; then
     # COMPONENT_TARGET_BRANCH is not quoted on purpose -- if empty it has to be ignored instead of being expanded to
     # and empty string
     for REVNG_ORCHESTRA_TARGET_BRANCH in $COMPONENT_TARGET_BRANCH next-develop develop next-master master; do
-        if pip3 install --user "$REVNG_ORCHESTRA_URL@$REVNG_ORCHESTRA_TARGET_BRANCH"; then
+        if pip3 -q install --user "$REVNG_ORCHESTRA_URL@$REVNG_ORCHESTRA_TARGET_BRANCH"; then
             break
         fi
     done
 else
-    pip3 install --user revng-orchestra
+    pip3 -q install --user revng-orchestra
 fi
 
 # Make sure we can run orchestra
 export PATH="$HOME/.local/bin:$PATH"
-which orc
+which orc >/dev/null
 
 #
 # Prepare the user_options.yml file
