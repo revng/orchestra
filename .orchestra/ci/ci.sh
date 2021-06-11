@@ -61,7 +61,8 @@ ogit fetch
 
 # If the target branch is not part of the default list and it does not already
 # exist, create it
-if [[ ! "$COMPONENT_TARGET_BRANCH" =~ ^(next-)?(develop|master)$ ]]; then
+if [[ ! "$COMPONENT_TARGET_BRANCH" =~ ^(next-)?(develop|master)$ ]] && \
+    ! git rev-parse --quiet --verify "$COMPONENT_TARGET_BRANCH" >/dev/null ; then
     log "Creating branch $COMPONENT_TARGET_BRANCH for orchestra configuration from master"
     ogit checkout -b "$COMPONENT_TARGET_BRANCH" master
 fi
