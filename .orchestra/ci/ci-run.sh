@@ -211,6 +211,9 @@ for TARGET_COMPONENT in $TARGET_COMPONENTS; do
     fi
 done
 
+log "Components JSON dump"
+orc components --json
+
 if [[ "$PROMOTE_BRANCHES" = 1 ]] || [[ "$PUSH_CHANGES" = 1 ]]; then
     #
     # Promote `next-*` branches to `*`
