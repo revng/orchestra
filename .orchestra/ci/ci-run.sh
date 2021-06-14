@@ -136,15 +136,6 @@ if test -z "$TARGET_COMPONENTS"; then
     exit 1
 fi
 
-# Register components to build from source
-cat >> "$USER_OPTIONS" <<EOF
-#@overlay/replace
-build_from_source:
-EOF
-for TARGET_COMPONENT in $TARGET_COMPONENTS; do
-    echo "  - $TARGET_COMPONENT" >> "$USER_OPTIONS"
-done
-
 # Build branches list
 cat >> "$USER_OPTIONS" <<EOF
 #@overlay/replace
@@ -176,8 +167,11 @@ orc update --no-config
 # Print debugging information
 # Full dependency graph
 orc graph "$BUILD_MODE"
-# Solved dependency graph for the target component
-orc graph --solved "$BUILD_MODE" "$TARGET_COMPONENT"
+# Solved dependency graph for the target components
+for TARGET_COMPONENT in $TARGET_COMPONENTS; do
+    echo "Graph for $TARGET_COMPONENT"
+    orc graph --solved "$BUILD_MODE" "$TARGET_COMPONENT"
+done
 # Information about the components
 orc components --hashes --deps
 # Binary archives commit
