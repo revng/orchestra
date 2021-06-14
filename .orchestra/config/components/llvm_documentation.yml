@@ -38,7 +38,7 @@ builds:
       sed -i 's|XCODE_INSTALL="$(shell xcode-select -print-path)"||' Makefile
       sed -i 's|<string>doxygen</string>|<string>llvm</string>|' Info.plist
       (@= make @)
-      sed -i -s 's/ inherit / /' llvm.docset/Contents/Resources/Documents/*.html
+      find llvm.docset/Contents/Resources/Documents -iname "*.html" | xargs -n 10 sed -i -s 's/ inherit / /'
 
 
       download_file.sh "$BUILD_DIR/build/docs/doxygen/html/llvm.docset/Contents/Resources/Documents" \
@@ -51,7 +51,7 @@ builds:
       sed -i 's|XCODE_INSTALL="$(shell xcode-select -print-path)"||' Makefile
       sed -i 's|<string>doxygen</string>|<string>clang</string>|' Info.plist
       (@= make @)
-      sed -i -s 's/ inherit / /' clang.docset/Contents/Resources/Documents/*.html
+      find clang.docset/Contents/Resources/Documents -iname "*.html" | xargs -n 10 sed -i -s 's/ inherit / /'
 
       download_file.sh "$BUILD_DIR/build/tools/clang/docs/doxygen/html/clang.docset/Contents/Resources/Documents" \
                         "https://opensource.apple.com/source/lldb/lldb-310.2.36/www/cpp_reference/html" \
