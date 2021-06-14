@@ -4,9 +4,9 @@ set -e
 
 export DEBIAN_FRONTEND=noninteractive
 
-apt-get update
+apt-get -qq update
 
-apt-get install --no-install-recommends --yes \
+apt-get -qq install --no-install-recommends --yes \
   aufs-tools \
   autoconf \
   automake \
@@ -22,6 +22,7 @@ apt-get install --no-install-recommends --yes \
   git \
   graphviz \
   graphviz-dev \
+  jq \
   libc-dev \
   libexpat1-dev \
   libglib2.0-dev \
@@ -47,7 +48,7 @@ apt-get install --no-install-recommends --yes \
   zlib1g-dev
 
 # Dependencies for Qt
-apt install --no-install-recommends --yes \
+apt-get -qq install --no-install-recommends --yes \
   gperf \
   libcap-dev \
   libfontconfig1-dev \
@@ -69,9 +70,9 @@ apt install --no-install-recommends --yes \
   libxkbcommon-x11-dev \
   libxrender-dev
 
-pip3 install --user --upgrade setuptools wheel mako meson==0.56.2 pyelftools pygraphviz==1.6
+pip3 -q install --user --upgrade setuptools wheel mako meson==0.56.2 pyelftools pygraphviz==1.6
 
 if ! which git-lfs &> /dev/null; then
   curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash
-  apt-get install --no-install-recommends --yes git-lfs
+  apt-get -qq install --no-install-recommends --yes git-lfs
 fi
