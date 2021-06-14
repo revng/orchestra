@@ -26,7 +26,7 @@
 - -DCMAKE_C_COMPILER="(@= data.values.regular_c_compiler @)"
 - -DCMAKE_CXX_COMPILER="(@= data.values.regular_cxx_compiler @)"
 - -DCMAKE_C_FLAGS="(@= extra_compiler_flags @) (@= extra_c_flags @)"
-- -DCMAKE_CXX_FLAGS="(@= extra_compiler_flags @) (@= extra_cxx_flags @)"
+- -DCMAKE_CXX_FLAGS="(@= data.values.regular_cxx_stdlib @) (@= extra_compiler_flags @) (@= extra_cxx_flags @)"
 - -DCMAKE_BUILD_RPATH="$RPATH_PLACEHOLDER/lib:$RPATH_PLACEHOLDER/(@= data.values.sanitizers_libs_path @):$RPATH_PLACEHOLDER/lib/revng/analyses"
 - -DCMAKE_INSTALL_RPATH="$RPATH_PLACEHOLDER/lib:$RPATH_PLACEHOLDER/(@= data.values.sanitizers_libs_path @):$RPATH_PLACEHOLDER/lib/revng/analyses"
 - -DCMAKE_BUILD_TYPE="(@= cmake_build_type @)"
