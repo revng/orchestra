@@ -20,7 +20,7 @@ configure: |
     --prefix="$ORCHESTRA_ROOT"
 build_system: make
 build_dependencies:
-  - host-c-toolchain
+  - toolchain/host/cxx-toolchain
   - glibc
 #@ end
 
@@ -60,7 +60,7 @@ configure: |
     "$BUILD_DIR/source"
 build_system: ninja
 build_dependencies:
-  - host-c-toolchain
+  - toolchain/host/cxx-toolchain
   - glibc
 dependencies:
   - ui/libpciaccess

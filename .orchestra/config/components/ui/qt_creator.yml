@@ -52,11 +52,11 @@ builds:
       (@= make @)
       (@= make @) install INSTALL_ROOT="$DESTDIR$ORCHESTRA_ROOT"
     dependencies:
-      - host-libcxx
+      - toolchain/host/cxx-runtime
       - llvm
       - ui/qt
     build_dependencies:
-      - host-c-toolchain
+      - toolchain/host/cxx-toolchain
       - glibc
     #@ if/end opts["ndebug"] == False:
     ndebug: false

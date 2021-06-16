@@ -102,7 +102,7 @@ install: |
   cp -a "$BUILD_DIR/source/src/libudev/libudev.h" include/
   cp -a "$BUILD_DIR/src/libudev/libudev.pc" share/pkgconfig/
 build_dependencies:
-  - host-c-toolchain
+  - toolchain/host/cxx-toolchain
 #@ end
 
 #@overlay/match by=overlay.all, expects=1

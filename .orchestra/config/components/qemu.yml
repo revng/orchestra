@@ -41,7 +41,7 @@ builds:
         cd "$BUILD_DIR"
         (@= make @) install
       build_dependencies:
-        - host-c-toolchain
+        - toolchain/host/cxx-toolchain
         - clang-release
         - glibc
         - llvm

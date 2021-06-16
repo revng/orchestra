@@ -8,9 +8,9 @@ extra_cmake_args:
 build_dependencies:
   - cmake
   - glibc
-  - host-cxx-toolchain
+  - toolchain/host/cxx-toolchain
 dependencies:
-  - host-libcxx
+  - toolchain/host/cxx-runtime
   - ui/qt
 use_asan: false
 #@ end

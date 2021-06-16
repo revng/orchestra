@@ -44,6 +44,7 @@ extra_gcc_configure_options:
 extra_binutils_configure_options:
   - --enable-gold=default
 extra_gcc_make_variables: LIBRARY_PATH=/usr/lib/x86_64-linux-gnu
+create_cxx_toolchain_meta_component: false
 #@ end
 
 #@overlay/match by=overlay.all, expects=1
@@ -52,11 +53,39 @@ extra_gcc_make_variables: LIBRARY_PATH=/usr/lib/x86_64-linux-gnu
 components:
   _: #@ template.replace(create_toolchain_components(**params()))
 
-  gcc-host-toolchain:
+  toolchain/host/gcc-toolchain:
     builds:
       default:
         dependencies:
           - toolchain/host/gcc
           - toolchain/host/binutils
-        install: exit 0
-        configure: mkdir -p "$BUILD_DIR"
+        configure: |
+          echo "Dummy configure script for toolchain/host/gcc-toolchain"
+          mkdir -p "$BUILD_DIR"
+        install: |
+          echo "Dummy install script for toolchain/host/gcc-toolchain"
+
+  toolchain/host/cxx-toolchain:
+    builds:
+      default:
+        dependencies:
+          - glibc
+          - toolchain/host/binutils
+          - clang-release
+        configure: |
+          echo "Dummy configure script for toolchain/host/cxx-toolchain"
+          mkdir -p "$BUILD_DIR"
+        install: |
+          echo "Dummy install script for toolchain/host/cxx-toolchain"
+
+  toolchain/host/cxx-runtime:
+    builds:
+      default:
+        dependencies:
+          - clang-release
+          - toolchain/host/gcc
+        configure: |
+          echo "Dummy configure script for toolchain/host/cxx-runtime"
+          mkdir -p "$BUILD_DIR"
+        install: |
+          echo "Dummy install script for toolchain/host/cxx-runtime"

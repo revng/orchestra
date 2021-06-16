@@ -63,9 +63,9 @@ All functions must be explicitly imported using a `load` statement.
 
 Commonly required dependencies:
 
-- `host-c-toolchain` and `host-cxx-toolchain` will ensure a modern C/C++ compiler is available
+- `host-toolchain/host/cxx-toolchain` and `host-cxx-toolchain` will ensure a modern C/C++ compiler is available
 - `glibc` will ensure a legacy glibc is available in `$ORCHESTRA_ROOT/link-only`
-- `host-libcxx` will ensure a modern C++ stdlib is installed
+- `toolchain/host/libcxx` will ensure a modern C++ stdlib is installed
 
 ### Components with a single build
 
