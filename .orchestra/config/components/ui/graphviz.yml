@@ -33,7 +33,6 @@ configure: |
     --without-fontconfig \
     --without-freetype2 \
     --without-ipsepcola \
-    --without-libgd \
     --with-sfdp \
     --without-ming \
     --with-cgraph \
