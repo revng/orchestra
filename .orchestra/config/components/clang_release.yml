@@ -6,7 +6,7 @@
 
 ---
 #@ def cmake_opts():
--DLLVM_ENABLE_PROJECTS: "clang;compiler-rt;libcxxabi;libcxx;clang-tools-extra"
+-DLLVM_ENABLE_PROJECTS: "clang;compiler-rt;libcxxabi;libcxx;clang-tools-extra;lld"
 -DBUILD_SHARED_LIBS: "OFF"
 -DLLVM_ENABLE_ZLIB: "OFF"
 #@ end
