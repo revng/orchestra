@@ -5,7 +5,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def boost():
+#@ def boost(is_windows):
 license: LICENSE_1_0.txt
 configure: |
   mkdir -p "$BUILD_DIR"
@@ -16,14 +16,47 @@ configure: |
 install: |
   cd "$BUILD_DIR"
 
-  ./b2 \
-    --prefix="${DESTDIR}${ORCHESTRA_ROOT}" \
-    --ignore-site-config toolset='clang'
+  (@- if is_windows: @)
+
+  echo "using clang : : x86_64-w64-mingw32-clang++ -pthread -stdlib=libc++ -D_WIN32_WINNT=0x6000 -D_LIBCPP_HAS_THREAD_API_WIN32 -fvisibility-inlines-hidden -fvisibility=hidden -fgnuc-version=4.8.0 : ;" > user-config.jam
 
   ./b2 \
-    --prefix="${DESTDIR}${ORCHESTRA_ROOT}" \
-    --ignore-site-config toolset='clang' \
+    --user-config=user-config.jam \
+    --with-test \
+    --prefix="${DESTDIR}${ORCHESTRA_ROOT}/x86_64-w64-mingw32" \
+    --ignore-site-config \
+    address-model=64 \
+    architecture=x86 \
+    variant=release \
+    link=shared \
+    toolset=clang \
+    target-os=windows
+
+  ./b2 \
+    --user-config=user-config.jam \
+    --with-test \
+    --prefix="${DESTDIR}${ORCHESTRA_ROOT}/x86_64-w64-mingw32" \
+    --ignore-site-config \
+    address-model=64 \
+    architecture=x86 \
+    variant=release \
+    link=shared \
+    toolset=clang \
+    target-os=windows \
     install
+
+  (@- else: @)
+
+   ./b2 \
+     --prefix="${DESTDIR}${ORCHESTRA_ROOT}" \
+     --ignore-site-config toolset='clang'
+
+   ./b2 \
+     --prefix="${DESTDIR}${ORCHESTRA_ROOT}" \
+     --ignore-site-config toolset='clang' \
+     install
+
+  (@- end @)
 
 build_dependencies:
   - host-cxx-toolchain
@@ -37,4 +70,5 @@ dependencies:
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  boost: #@ single_build_component(**boost())
+  boost: #@ single_build_component(**boost(False))
+  windows/boost: #@ single_build_component(**boost(True))
