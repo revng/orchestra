@@ -34,31 +34,44 @@
 #@    extra_gcc_make_variables="",
 #@    dynamic=None,
 #@    spec=False,
+#@    create_cxx_toolchain_meta_component=True,
 #@ ):
 
+#@ if/end create_cxx_toolchain_meta_component:
+toolchain/(@= toolchain_name @)/cxx-toolchain:
+  builds:
+    default:
+      configure: |
+        echo "Dummy configure script for toolchain/(@= toolchain_name @)/cxx-toolchain"
+        mkdir -p "$BUILD_DIR"
+      install: |
+        echo "Dummy install script for toolchain/(@= toolchain_name @)/cxx-toolchain"
+      dependencies:
+        - toolchain/(@= toolchain_name @)/gcc@stage2
+
 #@ if/end binutils_version:
-(@= "toolchain/" + toolchain_name + "/binutils" @): #@ create_binutils_component(toolchain_name=toolchain_name, triple=triple, binutils_version=binutils_version, extra_binutils_configure_options=extra_binutils_configure_options, binutils_sysroot=binutils_sysroot)
+toolchain/(@= toolchain_name @)/binutils: #@ create_binutils_component(toolchain_name=toolchain_name, triple=triple, binutils_version=binutils_version, extra_binutils_configure_options=extra_binutils_configure_options, binutils_sysroot=binutils_sysroot)
 
 #@ if/end gdb_version:
-(@= "toolchain/" + toolchain_name + "/gdb" @): #@ create_gdb_component(triple=triple, gdb_version=gdb_version)
+toolchain/(@= toolchain_name @)/gdb: #@ create_gdb_component(triple=triple, gdb_version=gdb_version)
 
 #@ if/end linux_version:
-(@= "toolchain/" + toolchain_name + "/linux-headers" @): #@ create_linux_headers_component(triple=triple, linux_version=linux_version, arch_name=linux_arch_name)
+toolchain/(@= toolchain_name @)/linux-headers: #@ create_linux_headers_component(triple=triple, linux_version=linux_version, arch_name=linux_arch_name)
 
 #@ if/end gcc_version:
-(@= "toolchain/" + toolchain_name + "/gcc" @): #@ create_gcc_component(toolchain_name=toolchain_name, triple=triple, gcc_sysroot=gcc_sysroot, gcc_version=gcc_version, extra_gcc_configure_options=extra_gcc_configure_options, extra_gcc_make_variables=extra_gcc_make_variables, musl_version=musl_version, uclibc_version=uclibc_version, linux_version=linux_version, mingw64_version=mingw64_version)
+toolchain/(@= toolchain_name @)/gcc: #@ create_gcc_component(toolchain_name=toolchain_name, triple=triple, gcc_sysroot=gcc_sysroot, gcc_version=gcc_version, extra_gcc_configure_options=extra_gcc_configure_options, extra_gcc_make_variables=extra_gcc_make_variables, musl_version=musl_version, uclibc_version=uclibc_version, linux_version=linux_version, mingw64_version=mingw64_version)
 
 #@ if/end mingw64_version:
-(@= "toolchain/" + toolchain_name + "/mingw64" @): #@ create_mingw64_component(toolchain_name=toolchain_name, triple=triple, mingw64_version=mingw64_version, gcc_version=gcc_version)
+toolchain/(@= toolchain_name @)/mingw64: #@ create_mingw64_component(toolchain_name=toolchain_name, triple=triple, mingw64_version=mingw64_version, gcc_version=gcc_version)
 
 #@ if/end musl_version:
-(@= "toolchain/" + toolchain_name + "/musl" @): #@ create_musl_component(triple=triple, musl_version=musl_version, toolchain_name=toolchain_name, gcc_version=gcc_version)
+toolchain/(@= toolchain_name @)/musl: #@ create_musl_component(triple=triple, musl_version=musl_version, toolchain_name=toolchain_name, gcc_version=gcc_version)
 
 #@ if/end coreutils_version:
-(@= "toolchain/" + toolchain_name + "/coreutils" @): #@ create_coreutils_component(triple=triple, coreutils_version=coreutils_version)
+toolchain/(@= toolchain_name @)/coreutils: #@ create_coreutils_component(triple=triple, coreutils_version=coreutils_version)
 
 #@ if/end uclibc_version:
-(@= "toolchain/" + toolchain_name + "/uclibc" @): #@ create_uclibc_component(triple=triple, toolchain_name=toolchain_name, uclibc_version=uclibc_version, uclibc_arch_name=uclibc_arch_name, gcc_version=gcc_version, binutils_version=binutils_version)
+toolchain/(@= toolchain_name @)/uclibc: #@ create_uclibc_component(triple=triple, toolchain_name=toolchain_name, uclibc_version=uclibc_version, uclibc_arch_name=uclibc_arch_name, gcc_version=gcc_version, binutils_version=binutils_version)
 
 #@ if/end spec:
 _: #@ template.replace(create_spec_components(triple=triple, toolchain_name=toolchain_name))

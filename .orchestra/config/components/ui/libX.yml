@@ -30,7 +30,7 @@ configure: |
     --prefix="$ORCHESTRA_ROOT"
 build_system: make
 build_dependencies:
-  - host-c-toolchain
+  - toolchain/host/cxx-toolchain
   - glibc
 #@ end
 
@@ -52,7 +52,7 @@ configure: |
     --prefix="$ORCHESTRA_ROOT"
 build_system: make
 build_dependencies:
-  - host-c-toolchain
+  - toolchain/host/cxx-toolchain
   - glibc
 dependencies:
   - ui/xcb-proto
@@ -78,7 +78,7 @@ configure: |
     --prefix="$ORCHESTRA_ROOT"
 build_system: make
 build_dependencies:
-  - host-c-toolchain
+  - toolchain/host/cxx-toolchain
   - glibc
 dependencies:
   - ui/xtrans
@@ -104,7 +104,7 @@ configure: |
     --prefix="$ORCHESTRA_ROOT"
 build_system: make
 build_dependencies:
-  - host-c-toolchain
+  - toolchain/host/cxx-toolchain
   - glibc
 dependencies:
   - ui/libx11
@@ -126,7 +126,7 @@ configure: |
     --prefix="$ORCHESTRA_ROOT"
 build_system: make
 build_dependencies:
-  - host-c-toolchain
+  - toolchain/host/cxx-toolchain
   - glibc
 dependencies:
   - ui/libxcb

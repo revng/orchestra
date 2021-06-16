@@ -44,9 +44,9 @@ builds:
 
       build_dependencies:
         - cmake
-        - host-cxx-toolchain
+        - toolchain/host/cxx-toolchain
       dependencies:
-        - host-libcxx
+        - toolchain/host/cxx-runtime
         - libunwind
       #@ if/end ndebug == False:
       ndebug: false

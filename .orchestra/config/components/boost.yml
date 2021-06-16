@@ -26,10 +26,10 @@ install: |
     install
 
 build_dependencies:
-  - host-cxx-toolchain
+  - toolchain/host/cxx-toolchain
   - glibc
 dependencies:
-  - host-libcxx
+  - toolchain/host/cxx-runtime
   - libunwind
 #@ end
 
