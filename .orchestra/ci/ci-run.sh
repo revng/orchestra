@@ -111,6 +111,7 @@ if test -n "$REVNG_ORCHESTRA_URL"; then
             break
         fi
     done
+    log "Installed orchestra from $REVNG_ORCHESTRA_URL@$REVNG_ORCHESTRA_TARGET_BRANCH"
 else
     pip3 -q install --user revng-orchestra
 fi
