@@ -25,6 +25,7 @@ builds:
         -DCMAKE_BUILD_TYPE="Debug" \
         -DLLVM_BUILD_DOCS=ON \
         -DLLVM_ENABLE_DOXYGEN=ON \
+        -DLLVM_DOXYGEN_SVG=ON \
         -DLLVM_TARGETS_TO_BUILD="X86" \
         -DBUILD_SHARED_LIBS=ON \
         -DLLVM_ENABLE_PROJECTS="clang" \
