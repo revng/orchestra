@@ -5,7 +5,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def qemu_component(use_asan=False):
+#@ def qemu_component(is_windows, use_asan=False):
 repository: qemu
 license: LICENSE
 default_build: optimized
@@ -19,11 +19,21 @@ builds:
         mkdir -p "$BUILD_DIR"
         cd "$BUILD_DIR";
         "$SOURCE_DIR/configure" \
+          (@- if is_windows: @)
+          --cc="x86_64-w64-mingw32-clang" \
+          --cross-prefix="x86_64-w64-mingw32-" \
+          --prefix="$ORCHESTRA_ROOT/x86_64-w64-mingw32" \
+          --target-list="arm-libtinycode aarch64-libtinycode i386-libtinycode mips-libtinycode mipsel-libtinycode s390x-libtinycode x86_64-libtinycode" \
+          --extra-cflags="(@= cflags @)" \
+          --extra-ldflags="-Wl,--start-group -lmman -shared" \
+          --disable-stack-protector \
+          (@- else: @)
           --cc="(@= data.values.regular_c_compiler @)" \
           --prefix="$ORCHESTRA_ROOT" \
-          --target-list=" arm-libtinycode arm-linux-user aarch64-libtinycode aarch64-linux-user i386-libtinycode i386-linux-user mips-libtinycode mips-linux-user mipsel-libtinycode mipsel-linux-user s390x-libtinycode s390x-linux-user x86_64-libtinycode x86_64-linux-user " \
+          --target-list="arm-libtinycode arm-linux-user arm-llvmhelpers aarch64-libtinycode aarch64-linux-user aarch64-llvmhelpers i386-libtinycode i386-linux-user i386-llvmhelpers mips-libtinycode mips-linux-user mips-llvmhelpers mipsel-libtinycode mipsel-linux-user mipsel-llvmhelpers s390x-libtinycode s390x-linux-user s390x-llvmhelpers x86_64-libtinycode x86_64-linux-user x86_64-llvmhelpers" \
+          --extra-cflags="(@= cflags @)" \
+          (@- end @)
           --disable-werror \
-          --enable-llvm-helpers \
           --disable-kvm \
           --without-pixman \
           --disable-tools \
@@ -33,11 +43,12 @@ builds:
           --disable-gnutls \
           --disable-smartcard-nss \
           --disable-uuid \
+          --disable-cap-ng \
           --python="$(which python2)" \
-          (@ if build_type == "Debug": @)--enable-debug (@ end @)\
-          --extra-cflags="(@= cflags @)"
+          (@ if build_type == "Debug": @)--enable-debug (@ end @)
       install: |
         cd "$BUILD_DIR"
+        mkdir -p "${DESTDIR}${ORCHESTRA_ROOT}/x86_64-w64-mingw32/include"
         (@= make @) install
       build_dependencies:
         - host-c-toolchain
@@ -45,6 +56,7 @@ builds:
         - glibc
         - llvm
       dependencies:
+        #@ if/end not is_windows:
         - zlib
         - glib
       #@ if/end ndebug == False:
@@ -56,4 +68,5 @@ builds:
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  qemu: #@ qemu_component()
+  qemu: #@ qemu_component(False)
+  windows/qemu: #@ qemu_component(True)
