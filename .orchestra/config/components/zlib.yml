@@ -6,17 +6,41 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def zlib_args():
+#@ def zlib_args(is_windows):
 license: README
 configure: |
   mkdir -p "$BUILD_DIR"
   extract.sh --into "$BUILD_DIR" (@= source_url @)
+  (@ if is_windows: @)
+  sed -i \
+    -e 's/PREFIX.*=.*/\0x86_64-w64-mingw32-/' \
+    -e 's/SHARED_MODE.*=.*0/SHARED_MODE=1/' \
+    -e 's/zlib1\.dll/libz.dll/g' \
+    "$BUILD_DIR/win32/Makefile.gcc"
+  (@ else: @)
   cd "$BUILD_DIR"
   ./configure \
     --shared \
     --uname=linux \
     --prefix="$ORCHESTRA_ROOT"
+  (@ end @)
+#@ if is_windows:
+install: |
+  cd "$BUILD_DIR"
+  (@ if is_windows: @)
+  make \
+    -f win32/Makefile.gcc \
+    install \
+    CFLAGS="-fno-stack-protector" \
+    BINARY_PATH=${ORCHESTRA_ROOT}/x86_64-w64-mingw32/bin \
+    LIBRARY_PATH=${ORCHESTRA_ROOT}/x86_64-w64-mingw32/lib \
+    INCLUDE_PATH=${ORCHESTRA_ROOT}/x86_64-w64-mingw32/include
+  (@ else: @)
+  make -j16
+  (@ end @)
+#@ else:
 build_system: make
+#@ end
 build_dependencies:
   - host-c-toolchain
   - glibc
@@ -26,4 +50,5 @@ build_dependencies:
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  zlib: #@ single_build_component(**zlib_args())
+  zlib: #@ single_build_component(**zlib_args(False))
+  windows/zlib: #@ single_build_component(**zlib_args(True))
