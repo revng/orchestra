@@ -11,16 +11,6 @@
   mkdir -p "$BUILD_DIR"
   cd "$BUILD_DIR";
 
-  mkdir -p "$BUILD_DIR/bin"
-  cat > "$BUILD_DIR/bin/pmake" <<eof
-  #!/bin/sh
-  exec make -j$(nproc) $*
-  eof
-  chmod +x "$BUILD_DIR/bin/pmake"
-
-  export PATH=$BUILD_DIR/bin:$PATH
-
-  MAKE="pmake" \
   $SOURCE_DIR/configure \
     -recheck-all \
     -prefix "$ORCHESTRA_ROOT" \
