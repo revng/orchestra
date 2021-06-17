@@ -30,16 +30,28 @@
 #@yaml/text-templated-strings
 ---
 #@ def cmdline_cmake_base_configuration(
+#@        is_windows=mandatory,
 #@        cmake_generator=mandatory,
 #@        cmake_build_type=mandatory,
 #@        extra_compiler_flags="",
 #@        extra_c_flags="",
 #@        extra_cxx_flags="",
 #@  ):
+#@ if is_windows:
+-DCMAKE_C_COMPILER: x86_64-w64-mingw32-clang
+-DCMAKE_CXX_COMPILER: x86_64-w64-mingw32-clang++
+-DCMAKE_INSTALL_PREFIX: "$ORCHESTRA_ROOT/x86_64-w64-mingw32"
+-DCMAKE_PREFIX_PATH: "$ORCHESTRA_ROOT/x86_64-w64-mingw32"
+-DCMAKE_SKIP_RPATH: "ON"
+-DCMAKE_SYSTEM_NAME: "Windows"
+-DCMAKE_CROSSCOMPILING: "TRUE"
+-DCMAKE_CXX_FLAGS: "-pthread -stdlib=libc++ -D_WIN32_WINNT=0x6000 -D_LIBCPP_HAS_THREAD_API_WIN32 -fvisibility-inlines-hidden -fvisibility=hidden -fgnuc-version=4.8.0 -fuse-ld=lld (@= extra_compiler_flags @) (@= extra_cxx_flags @)"
+#@ else:
 -DCMAKE_C_COMPILER: #@ data.values.regular_c_compiler
 -DCMAKE_CXX_COMPILER: #@ data.values.regular_cxx_compiler
--DCMAKE_C_FLAGS: "(@= extra_compiler_flags @) (@= extra_c_flags @)"
 -DCMAKE_CXX_FLAGS: "(@= extra_compiler_flags @) (@= extra_cxx_flags @)"
+#@ end
+-DCMAKE_C_FLAGS: "(@= extra_compiler_flags @) (@= extra_c_flags @)"
 -DCMAKE_BUILD_RPATH: "$RPATH_PLACEHOLDER/lib:$RPATH_PLACEHOLDER/(@= data.values.sanitizers_libs_path @):$RPATH_PLACEHOLDER/lib/revng/analyses"
 -DCMAKE_INSTALL_RPATH: "$RPATH_PLACEHOLDER/lib:$RPATH_PLACEHOLDER/(@= data.values.sanitizers_libs_path @):$RPATH_PLACEHOLDER/lib/revng/analyses"
 -DCMAKE_BUILD_TYPE: #@ cmake_build_type
@@ -76,6 +88,7 @@ ninja: "Ninja"
 #@        pre_install_script="",
 #@        post_install_script="",
 #@        test=False,
+#@        is_windows=False,
 #@ ):
 #@ build_system = build_system.lower()
 #@ assert(build_system in build_system_to_cmake_generator())
@@ -83,7 +96,7 @@ ninja: "Ninja"
 
 #@ for flavor, opts in typical_cmake_flavors(use_asan=use_asan).items():
 (@= flavor @):
-  #@ additional_cmake_args = dict(cmdline_cmake_base_configuration(cmake_generator=cmake_generator, cmake_build_type=opts["cmake_build_type"], extra_compiler_flags=opts["extra_compiler_flags"]))
+  #@ additional_cmake_args = dict(cmdline_cmake_base_configuration(is_windows=is_windows, cmake_generator=cmake_generator, cmake_build_type=opts["cmake_build_type"], extra_compiler_flags=opts["extra_compiler_flags"]))
   #@ additional_cmake_args.update(dict(extra_cmake_args))
   configure: |
     (@- if pre_configure_script: @)
