@@ -19,7 +19,7 @@ configure: |
     CFLAGS="-Wno-error"
 build_system: make
 build_dependencies:
-  - host-c-toolchain
+  - toolchain/host/cxx-toolchain
   - glibc
 #@ end
 

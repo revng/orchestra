@@ -22,7 +22,7 @@ configure: |
     -DCMAKE_USE_OPENSSL=OFF
 build_system: make
 build_dependencies:
-  - gcc-host-toolchain
+  - toolchain/host/gcc-toolchain
 #@ end
 
 #@overlay/match by=overlay.all, expects=1

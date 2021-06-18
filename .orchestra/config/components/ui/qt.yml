@@ -132,7 +132,7 @@ builds:
       grep -v ORCHESTRA_TMP "qmake.conf.tmp" > "qmake.conf"
       rm "qmake.conf.tmp"
     dependencies:
-      - host-libcxx
+      - toolchain/host/cxx-runtime
       - ui/freetype
       - ui/libdrm
       - ui/mesa
@@ -149,7 +149,7 @@ builds:
       - ui/xkbcommon
       - zlib
     build_dependencies:
-      - host-cxx-toolchain
+      - toolchain/host/cxx-toolchain
       - glibc
     #@ if/end ndebug == False:
     ndebug: false

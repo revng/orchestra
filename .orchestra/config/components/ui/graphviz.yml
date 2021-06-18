@@ -71,7 +71,7 @@ post_install: |
 build_system: make
 build_dependencies:
   - glibc
-  - host-c-toolchain
+  - toolchain/host/cxx-toolchain
 dependencies:
   - libltdl
   - zlib

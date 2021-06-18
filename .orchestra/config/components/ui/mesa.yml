@@ -56,7 +56,7 @@ configure: |
     "$BUILD_DIR/source"
 build_system: ninja
 build_dependencies:
-  - host-c-toolchain
+  - toolchain/host/cxx-toolchain
   - glibc
 dependencies:
   - elfutils
@@ -65,7 +65,7 @@ dependencies:
   - ui/libdrm
   - ui/libx11
   - ui/libxshmfence
-  - host-libcxx
+  - toolchain/host/cxx-runtime
 #@ end
 
 #@overlay/match by=overlay.all, expects=1

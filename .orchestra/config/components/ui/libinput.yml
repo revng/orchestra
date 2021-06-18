@@ -30,7 +30,7 @@ configure: |
     "$BUILD_DIR/source"
 build_system: ninja
 build_dependencies:
-  - host-c-toolchain
+  - toolchain/host/cxx-toolchain
 #@ end
 
 #@overlay/match by=overlay.all, expects=1

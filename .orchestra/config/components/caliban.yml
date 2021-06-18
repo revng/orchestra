@@ -9,9 +9,9 @@ extra_cmake_args: #@ cmake_boost_configuration
 build_dependencies:
   - cmake
   - glibc
-  - host-cxx-toolchain
+  - toolchain/host/cxx-toolchain
 dependencies:
-  - host-libcxx
+  - toolchain/host/cxx-runtime
   - llvm
   - revng
   - revng-c

@@ -22,16 +22,16 @@ configure: |
 build_system: make
 build_dependencies:
   - cmake
-  - host-cxx-toolchain
   - glibc
   - qemu
-  - toolchain/x86-64/gcc
-  - toolchain/i386/gcc
-  - toolchain/arm/gcc
-  - toolchain/aarch64/gcc
-  - toolchain/s390x/gcc
-  - toolchain/mips/gcc
-  - toolchain/mipsel/gcc
+  - toolchain/host/cxx-toolchain
+  - toolchain/x86-64/cxx-toolchain
+  - toolchain/i386/cxx-toolchain
+  - toolchain/arm/cxx-toolchain
+  - toolchain/aarch64/cxx-toolchain
+  - toolchain/s390x/cxx-toolchain
+  - toolchain/mips/cxx-toolchain
+  - toolchain/mipsel/cxx-toolchain
 #@ end
 
 #@overlay/match by=overlay.all, expects=1

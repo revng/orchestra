@@ -9,9 +9,9 @@ build_dependencies:
   - cmake
   - revng-qa
   - glibc
-  - host-cxx-toolchain
+  - toolchain/host/cxx-toolchain
 dependencies:
-  - host-libcxx
+  - toolchain/host/cxx-runtime
   - llvm
   - qemu
   - boost

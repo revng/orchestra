@@ -43,7 +43,7 @@ install: |
   (@= ninja @)
   (@= ninja @) install
 build_dependencies:
-  - host-c-toolchain
+  - toolchain/host/cxx-toolchain
   - glibc
 dependencies:
   - libffi
