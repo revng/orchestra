@@ -33,6 +33,7 @@ builds:
           --disable-gnutls \
           --disable-smartcard-nss \
           --disable-uuid \
+          --disable-cap-ng \
           --python="$(which python2)" \
           (@ if build_type == "Debug": @)--enable-debug (@ end @)\
           --extra-cflags="(@= cflags @)"
