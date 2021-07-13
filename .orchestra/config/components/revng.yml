@@ -2,7 +2,7 @@
 #@ load("/lib/cmake.lib.yml", "cmake_boost_configuration", "typical_cmake_builds")
 
 ---
-#@ def build_args():
+#@ def build_args(is_windows):
 test: true
 extra_cmake_args: #@ cmake_boost_configuration
 build_dependencies:
@@ -17,6 +17,7 @@ dependencies:
   - boost
   - clang-release
 use_asan: false
+is_windows: #@ is_windows
 #@ end
 
 #@overlay/match by=overlay.all, expects=1
@@ -27,4 +28,9 @@ components:
     repository: revng
     license: LICENSE.md
     default_build: optimized
-    builds: #@ typical_cmake_builds(**build_args())
+    builds: #@ typical_cmake_builds(**build_args(False))
+  windows/revng:
+    repository: revng
+    license: LICENSE.md
+    default_build: optimized
+    builds: #@ typical_cmake_builds(**build_args(True))

@@ -4,10 +4,11 @@
 #@ load("/lib/ninja.lib.yml", "ninja")
 
 #@ source_url = "https://download.gnome.org/sources/glib/2.64/glib-2.64.5.tar.xz"
+#@ proxy_libintl_url = "https://github.com/frida/proxy-libintl/archive/refs/tags/0.1.tar.gz"
 
 #@yaml/text-templated-strings
 ---
-#@ def glib_args():
+#@ def glib_args(is_windows):
 license: source/COPYING
 configure: |
   mkdir -p "$BUILD_DIR/source"
@@ -16,13 +17,51 @@ configure: |
   sed -i 's|^.*HAVE_LANGINFO_.*1.*$||' "$BUILD_DIR/source/meson.build"
   sed -i -e '/subdir.*tests/d' "$BUILD_DIR"/source/{.,gio,glib}/meson.build
 
-  CC=clang \
-  CXX=clang++ \
+  (@- if is_windows: @)
+
+  extract.sh --into "$BUILD_DIR/source/subprojects/proxy-libintl" (@= proxy_libintl_url @)
+
+  export CC=x86_64-w64-mingw32-clang
+  export CXX=x86_64-w64-mingw32-clang++
+
+  echo "
+  [binaries]
+  c = 'x86_64-w64-mingw32-gcc'
+  cpp = 'x86_64-w64-mingw32-g++'
+  ranlib = 'x86_64-w64-mingw32-ranlib'
+  ar = 'x86_64-w64-mingw32-ar'
+  strip = 'x86_64-w64-mingw32-strip'
+  pkgconfig = 'x86_64-w64-mingw32-pkg-config'
+  windres = 'x86_64-w64-mingw32-windres'
+
+  [properties]
+  needs_exe_wrapper = true
+
+  [host_machine]
+  system = 'windows'
+  cpu_family = 'x86_64'
+  cpu = 'x86_64'
+  endian = 'little'
+  " > windows.meson
+
+  (@- else: @)
+
+  export CC=clang
+  export CXX=clang++
+
+  (@- end @)
+
   meson setup \
+    (@- if is_windows: @)
+    --cross-file windows.meson \
+    --prefix "$ORCHESTRA_ROOT/x86_64-w64-mingw32" \
+    -Dlibelf=disabled \
+    (@- else: @)
+    --prefix "$ORCHESTRA_ROOT" \
+    (@- end @)
+    --wrap-mode nodownload \
     --buildtype plain \
     --libdir=lib \
-    --prefix "$ORCHESTRA_ROOT" \
-    --wrap-mode nodownload \
     -Ddefault_library=shared \
     -Dselinux=disabled \
     -Dxattr=false \
@@ -54,4 +93,5 @@ dependencies:
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  glib: #@ single_build_component(**glib_args())
+  glib: #@ single_build_component(**glib_args(False))
+  windows/glib: #@ single_build_component(**glib_args(True))

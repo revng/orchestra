@@ -18,13 +18,20 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def _configure_base(extra_qmake_args=[]):
+#@ def _configure_base(is_windows, extra_qmake_args=[]):
 #! TODO: In legacy orchestra QMAKE_RPATHDIR has +="" in debug and release but ="" in optimized. Is it intentional?
 - |
   mkdir -p "$BUILD_DIR"
   cd "$BUILD_DIR";
   qmake -r "$SOURCE_DIR" \
+    (@- if is_windows: @)
+    -spec win32-clang-g++ \
+    QMAKE_CXX=x86_64-w64-mingw32-clang++ \
+    QMAKE_CXXFLAGS+="-D_WIN32_WINNT=0x6000 -D_LIBCPP_HAS_THREAD_API_WIN32" \
+    QMAKE_LFLAGS+="-pthread" \
+    (@- else: @)
     -spec linux-clang \
+    (@- end @)
     DEFINES+="COLD_REVNG" \
     (@= expand_args(extra_qmake_args) @) \
     QMAKE_LFLAGS_RPATH= \
@@ -32,13 +39,13 @@
     ONLY_PLUGINS="(@= " ".join(qt_creator_plugins()) @)"
 #@ end
 
-#@ def configure_base(**kwargs):
-#@    return _configure_base(**kwargs)[0].strip()
+#@ def configure_base(*args, **kwargs):
+#@    return _configure_base(*args, **kwargs)[0].strip()
 #@ end
 
 #@yaml/text-templated-strings
 ---
-#@ def qt_creator_component():
+#@ def qt_creator_component(is_windows):
 repository: ui-qt-creator
 license: LICENSE.GPL3-EXCEPT
 default_build: optimized
@@ -46,11 +53,15 @@ builds:
   #@ for flavor, opts in qmake_optimization_flavors.items():
   #@ extra_qmake_args = opts["extra_qmake_args"]
   (@= flavor @):
-    configure: #@ configure_base(extra_qmake_args=extra_qmake_args)
+    configure: #@ configure_base(is_windows, extra_qmake_args=extra_qmake_args)
     install: |
       cd "$BUILD_DIR"
       (@= make @)
+      (@ if is_windows: @)
+      (@= make @) install INSTALL_ROOT="$DESTDIR$ORCHESTRA_ROOT/x86_64-w64-mingw32"
+      (@ else: @)
       (@= make @) install INSTALL_ROOT="$DESTDIR$ORCHESTRA_ROOT"
+      (@ end @)
     dependencies:
       - host-libcxx
       - llvm
@@ -67,4 +78,5 @@ builds:
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  ui/qt-creator: #@ qt_creator_component()
+  ui/qt-creator: #@ qt_creator_component(False)
+  windows/ui/qt-creator: #@ qt_creator_component(True)

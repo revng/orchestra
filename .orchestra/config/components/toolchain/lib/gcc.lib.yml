@@ -9,11 +9,13 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def gcc_dependencies(stage, toolchain_name, musl_version, uclibc_version, linux_version, mingw64_version):
+#@ def gcc_dependencies(stage, toolchain_name, musl_version, uclibc_version, linux_version, mingw64_version, custom_pkgconfig):
 #@ if stage == 1:
-#@   build = "~headers"
+#@   suffixes = ["-headers"]
+#@   mingw_suffixes = ["-headers"]
 #@ elif stage == 2:
-#@   build = ""
+#@   suffixes = ["-headers", "-extra-libraries"]
+#@   mingw_suffixes = ["-headers", "-base", "-extra-libraries"]
 #@ else:
 #@   fail("GCC stage must be 1 or 2")
 #@ end
@@ -23,28 +25,45 @@
 - toolchain/host/binutils
 #@ end
 
-#@ if/end musl_version:
-- toolchain/(@= toolchain_name @)/musl(@= build @)
-#@ if/end uclibc_version:
-- toolchain/(@= toolchain_name @)/uclibc(@= build @)
-#@ if/end mingw64_version:
-- toolchain/(@= toolchain_name @)/mingw64(@= build @)
+#@ if musl_version:
+#@ for suffix in suffixes:
+- toolchain/(@= toolchain_name @)/musl(@= suffix @)
+#@ end
+#@ end
 
-#@ if/end linux_version:
+#@ if uclibc_version:
+#@ for suffix in suffixes:
+- toolchain/(@= toolchain_name @)/uclibc(@= suffix @)
+#@ end
+#@ end
+
+#@ if mingw64_version:
+#@ for suffix in mingw_suffixes:
+- toolchain/(@= toolchain_name @)/mingw64(@= suffix @)
+#@ end
+#@ end
+
+#@ if linux_version:
 - toolchain/(@= toolchain_name @)/linux-headers
+
+#@ if/end custom_pkgconfig:
+- toolchain/(@= toolchain_name @)/pkgconfig
+
+#@ end
+
 #@ end
 
 #@yaml/text-templated-strings
 ---
 #@ def gcc_build_dependencies(stage, toolchain_name):
-
-#@ if/end stage == 2 and "host" not in toolchain_name:
-- toolchain/(@= toolchain_name @)/gcc~stage1
-
 - glibc
 - gmp
 - mpfr
 - mpc
+
+#@ if stage == 2 and "host" not in toolchain_name:
+- toolchain/(@= toolchain_name @)/gcc~stage1
+#@ end
 
 #@ end
 
@@ -61,8 +80,11 @@
 #@    linux_version=None,
 #@    mingw64_version=None,
 #@    extra_gcc_configure_options="",
+#@    extra_gcc_stage2_configure_options="",
 #@    gcc_sysroot = None,
 #@    extra_gcc_make_variables = "",
+#@    binutils_version = None,
+#@    custom_pkgconfig = False,
 #@  ):
 
 #@    source_url = "https://ftp.gnu.org/gnu/gcc/gcc-" + gcc_version + "/gcc-" + gcc_version + ".tar.gz"
@@ -72,12 +94,17 @@
 #@ if stage == 1:
 #@    build_specific_configure_options = "--enable-languages=c"
 #@ elif stage == 2:
-#@    build_specific_configure_options = "--enable-languages=c,c++"
+#@    build_specific_configure_options = "--enable-languages=c,c++ " + extra_gcc_stage2_configure_options
+#@    build_specific_configure_options = build_specific_configure_options.strip()
 #@ else:
 #@   fail("GCC stage must be 1 or 2")
 #@ end
-#@ dependencies = gcc_dependencies(stage, toolchain_name, musl_version, uclibc_version, linux_version, mingw64_version) or []
+#@ dependencies = gcc_dependencies(stage, toolchain_name, musl_version, uclibc_version, linux_version, mingw64_version, custom_pkgconfig) or []
 #@ build_dependencies = gcc_build_dependencies(stage, toolchain_name) or []
+
+#@ if "win" in toolchain_name:
+#@   binutils_bindir = "${ORCHESTRA_ROOT}/x86_64-pc-linux-gnu/" + triple + "/binutils-bin/" + binutils_version
+#@ end
 
 #! The sed is required to make `--sysroot=/` work with `--with-gxx-include-dir`
 #! properly.
@@ -180,7 +207,11 @@ install: |
 
   # Fixinclude locates the wrong pthread.h
   find "${DESTDIR}${ORCHESTRA_ROOT}" -type d -name include-fixed -exec rm -f {}/pthread.h \;
-
+  (@- if "win" in toolchain_name: @)
+  # Symlink needed for making windres use the right gcc
+  mkdir -p "${TMP_ROOT}(@= binutils_bindir @)"
+  ln -s "../../gcc-bin/(@= gcc_version @)/(@= triple @)-gcc" "${TMP_ROOT}(@= binutils_bindir @)/(@= triple @)-gcc"
+  (@ end -@)
 dependencies: #@ dependencies
 build_dependencies: #@ build_dependencies
 #@ end

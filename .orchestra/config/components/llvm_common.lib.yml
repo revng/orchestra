@@ -3,30 +3,41 @@
 #@ load("/lib/shell.lib.yml", "expand_args")
 #@ load("/lib/cmake.lib.yml", "cmake")
 
+---
+#@ def _default_cmake_options(cmake_build_type, cflags):
+-DCMAKE_BUILD_RPATH: "\\$ORIGIN/../lib:$ORCHESTRA_ROOT/lib"
+-DCMAKE_INSTALL_RPATH: "$RPATH_PLACEHOLDER/lib"
+-DCMAKE_BUILD_TYPE: #@ cmake_build_type
+-DCMAKE_EXE_LINKER_FLAGS: #@ cflags
+-DCMAKE_SHARED_LINKER_FLAGS: #@ cflags
+-DCMAKE_MODULE_LINKER_FLAGS: #@ cflags
+-DCMAKE_CXX_FLAGS: #@ cflags
+-DLLVM_TARGETS_TO_BUILD: "AArch64;AMDGPU;ARM;Mips;SystemZ;X86"
+-DLLVM_ENABLE_DUMP: "ON"
+-DLLVM_ENABLE_TERMINFO: "OFF"
+-DLIBCXX_ENABLE_ABI_LINKER_SCRIPT: "OFF"
+-DLLVM_ENABLE_Z3_SOLVER: "OFF"
+-DLLVM_INCLUDE_GO_TESTS: "OFF"
+-DCMAKE_GENERATOR: "Ninja"
+#@ end
+
+---
+#@ def default_cmake_options(*args):
+#@ return dict(_default_cmake_options(*args))
+#@ end
+
+
 #@yaml/text-templated-strings
 ---
 #@ def _configure_llvm(cmake_build_type=mandatory, cflags=mandatory, additional_cmake_options=mandatory, source_dir="$SOURCE_DIR"):
+#@ cmake_opts = default_cmake_options(cmake_build_type, cflags)
+#@ cmake_opts.update(additional_cmake_options)
 - |
   mkdir -p "$BUILD_DIR"
   cd "$BUILD_DIR";
-  (@= cmake @) \
+  (@= cmake(additional_cmake_args=cmake_opts) @) \
     "(@= source_dir @)/llvm" \
-    -GNinja \
-    -DCMAKE_BUILD_RPATH="\$ORIGIN/../lib:$ORCHESTRA_ROOT/lib" \
-    -DCMAKE_INSTALL_RPATH="$RPATH_PLACEHOLDER/lib" \
-    -DCMAKE_BUILD_TYPE="(@= cmake_build_type @)" \
-    -DCMAKE_EXE_LINKER_FLAGS="(@= cflags @)" \
-    -DCMAKE_SHARED_LINKER_FLAGS="(@= cflags @)" \
-    -DCMAKE_MODULE_LINKER_FLAGS="(@= cflags @)" \
-    -DCMAKE_CXX_FLAGS="(@= cflags @)" \
-    -DLLVM_TARGETS_TO_BUILD="AArch64;AMDGPU;ARM;Mips;SystemZ;X86" \
-    -DLLVM_ENABLE_DUMP=ON \
-    -DLLVM_ENABLE_TERMINFO=OFF \
-    -DLIBCXX_ENABLE_ABI_LINKER_SCRIPT=OFF \
     -DCMAKE_CXX_STANDARD=20 \
-    -DLLVM_ENABLE_Z3_SOLVER=OFF \
-    -DLLVM_INCLUDE_GO_TESTS=OFF \
-    (@= expand_args(additional_cmake_options) @) \
     -Wno-dev
 #@ end
 

@@ -6,24 +6,13 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def _configure_base(extra_qmake_options=""):
+#@ def _configure_base(is_windows, extra_qmake_options=""):
 - |
   mkdir -p "$BUILD_DIR"
   cd "$BUILD_DIR";
 
-  mkdir -p "$BUILD_DIR/bin"
-  cat > "$BUILD_DIR/bin/pmake" <<eof
-  #!/bin/sh
-  exec make -j$(nproc) $*
-  eof
-  chmod +x "$BUILD_DIR/bin/pmake"
-
-  export PATH=$BUILD_DIR/bin:$PATH
-
-  MAKE="pmake" \
   $SOURCE_DIR/configure \
     -recheck-all \
-    -prefix "$ORCHESTRA_ROOT" \
     -confirm-license \
     -opensource \
     -skip qt3d \
@@ -57,21 +46,13 @@
     -skip qtwinextras  \
     -skip qtxmlpatterns  \
     -skip qtwebengine \
-    -openssl-runtime \
     -no-glib \
     -no-cups \
     -no-gtk \
     -qt-harfbuzz \
-    -fontconfig \
-    -system-freetype \
     -opengl desktop \
-    -egl \
-    -no-eglfs \
-    -xcb \
-    -xkbcommon \
     -no-icu \
     -no-zstd \
-    -libinput \
     -qt-libpng \
     -qt-libjpeg \
     -qt-sqlite \
@@ -84,19 +65,36 @@
     -nomake tests \
     -nomake examples \
     -c++std c++14 \
+    (@- if is_windows: @)
+    -prefix "$ORCHESTRA_ROOT/x86_64-w64-mingw32" \
+    -xplatform win32-clang-g++ \
+    -device-option CROSS_COMPILE=x86_64-w64-mingw32- \
+    QMAKE_CXXFLAGS+="-D_WIN32_WINNT=0x6000 -D_LIBCPP_HAS_THREAD_API_WIN32" \
+    QMAKE_LFLAGS+="-pthread" \
+    (@- else: @)
+    -prefix "$ORCHESTRA_ROOT" \
+    -openssl-runtime \
+    -fontconfig \
+    -system-freetype \
+    -egl \
+    -no-eglfs \
+    -xcb \
+    -xkbcommon \
+    -libinput \
     -platform linux-clang \
+    (@- end @)
     -no-pch \
     (@= extra_qmake_options @)
 #@ end
 
-#@ def configure_base(**kwargs):
-#@    return _configure_base(**kwargs)[0]
+#@ def configure_base(*args, **kwargs):
+#@    return _configure_base(*args, **kwargs)[0]
 #@ end
 
 
 #@yaml/text-templated-strings
 ---
-#@ def qt_component():
+#@ def qt_component(is_windows):
 license: LICENSE.GPLv3
 default_build: optimized
 builds:
@@ -110,24 +108,35 @@ builds:
 
       sed -i 's|QT_CONFIG(getauxval)|0|' "$SOURCE_DIR/qtbase/src/corelib/global/qrandom.cpp"
 
-      (@= configure_base(extra_qmake_options=extra_qmake_options) @)
+      (@= configure_base(is_windows, extra_qmake_options=extra_qmake_options) @)
     install: |
       cd "$BUILD_DIR"
 
       (@= make @)
       (@= make @) install INSTALL_ROOT=$TMP_ROOT
 
-      rm "${TMP_ROOT}${ORCHESTRA_ROOT}/lib64/cmake/Qt5Gui/Qt5GuiConfigExtras.cmake"
-      touch "${TMP_ROOT}${ORCHESTRA_ROOT}/lib64/cmake/Qt5Gui/Qt5GuiConfigExtras.cmake"
-      find "${TMP_ROOT}${ORCHESTRA_ROOT}" \( -name "*.pri" -or -name "*.pc" -or -name "*.pri"  \) \
+
+      (@ if is_windows: @)
+      mkdir -p "${TMP_ROOT}${ORCHESTRA_ROOT}/x86_64-w64-mingw32"
+      cd "${TMP_ROOT}${ORCHESTRA_ROOT}/x86_64-w64-mingw32"
+      cp -ar "${TMP_ROOT}${BUILD_DIR}/qtbase/bin/C:/Qt/"Qt-*/. .
+      LIBDIR=lib
+      (@ else: @)
+      LIBDIR=lib64
+      cd "${TMP_ROOT}${ORCHESTRA_ROOT}"
+      (@ end @)
+
+      rm "$LIBDIR/cmake/Qt5Gui/Qt5GuiConfigExtras.cmake"
+      touch "$LIBDIR/cmake/Qt5Gui/Qt5GuiConfigExtras.cmake"
+      find . \( -name "*.pri" -or -name "*.pc" -or -name "*.pri"  \) \
           -exec sed 's|/[^; ]*/lib\([^; ]*\)\.so|-l\1|g' {} -i ";"
 
-      cat > "${TMP_ROOT}${ORCHESTRA_ROOT}/bin/qt.conf" <<EOF
+      cat > "bin/qt.conf" <<EOF
       [Paths]
       Prefix = ..
       EOF
 
-      cd "${TMP_ROOT}${ORCHESTRA_ROOT}/mkspecs/linux-clang/"
+      cd "mkspecs/linux-clang/"
       mv "qmake.conf" "qmake.conf.tmp"
       grep -v ORCHESTRA_TMP "qmake.conf.tmp" > "qmake.conf"
       rm "qmake.conf.tmp"
@@ -161,4 +170,5 @@ builds:
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  ui/qt: #@ qt_component()
+  ui/qt: #@ qt_component(False)
+  windows/ui/qt: #@ qt_component(True)

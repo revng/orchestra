@@ -1,22 +1,44 @@
 #@ load("@ytt:data", "data")
 #@ load("@ytt:overlay", "overlay")
 #@ load("/components/llvm_common.lib.yml", "configure_llvm")
+#@ load("/lib/assert.lib.yml", "assert")
 #@ load("/lib/optimization_flavors.lib.yml", "typical_project_flavors")
 #@ load("/lib/fn_args.lib.yml", "mandatory")
 #@ load("/lib/ninja.lib.yml", "ninja")
 
-#@yaml/text-templated-strings
 ---
 #@ def cmake_opts():
-- -DBUILD_SHARED_LIBS=ON
-- -DLLVM_ENABLE_PROJECTS="clang"
-- -DCMAKE_C_COMPILER="(@= data.values.regular_c_compiler @)"
-- -DCMAKE_CXX_COMPILER="(@= data.values.regular_cxx_compiler @)"
+-DBUILD_SHARED_LIBS: "ON"
+-DLLVM_ENABLE_PROJECTS: "clang"
 #@ end
 
 #@yaml/text-templated-strings
 ---
-#@ def llvm_component(use_asan=False):
+#@ def additional_windows_cmake_opts():
+-DCMAKE_C_COMPILER: x86_64-w64-mingw32-clang
+-DCMAKE_CXX_COMPILER: x86_64-w64-mingw32-clang++
+-DCMAKE_CXX_FLAGS: "-pthread -stdlib=libc++ -D_WIN32_WINNT=0x6000 -D_LIBCPP_HAS_THREAD_API_WIN32 -fvisibility-inlines-hidden -fvisibility=hidden -fuse-ld=lld"
+-DCMAKE_INSTALL_PREFIX: "$ORCHESTRA_ROOT/x86_64-w64-mingw32"
+-DCMAKE_SKIP_RPATH: "ON"
+-DCMAKE_SYSTEM_NAME: "Windows"
+-DWIN32: "ON"
+-DWIN32_TARGET_REVNG: "ON"
+-DLLVM_DEFAULT_TARGET_TRIPLE: "x86_64-linux-gnu"
+-DLLVM_ENABLE_Z3_SOLVER: "OFF"
+-DLLVM_BUILD_EXAMPLES: "OFF"
+-DLLVM_INCLUDE_EXAMPLES: "OFF"
+-DLLVM_BUILD_TESTS: "OFF"
+-DLLVM_INCLUDE_TESTS: "OFF"
+-DLLVM_ENABLE_ZLIB: "OFF"
+-DLLVM_ENABLE_TERMINFO: "OFF"
+#@ end
+
+#@yaml/text-templated-strings
+---
+#@ def llvm_component(platform=mandatory, use_asan=False):
+#@ assert(platform in ["linux", "windows"])
+#@ all_cmake_opts = dict(cmake_opts())
+
 repository: llvm-project
 license: llvm/LICENSE.TXT
 default_build: optimized
@@ -26,25 +48,28 @@ builds:
     #@ cflags = f_options["extra_compiler_flags"]
     #@ ndebug = f_options["ndebug"]
     (@= flavor @):
-      configure: #@ configure_llvm(cmake_build_type=build_type, cflags=cflags, additional_cmake_options=cmake_opts(), source_dir="$SOURCE_DIR")
+      #@ if platform == "windows":
+      #@   all_cmake_opts.update(dict(additional_windows_cmake_opts()))
+      #@ end
+      configure: |
+        (@= configure_llvm(cmake_build_type=build_type, cflags=cflags, additional_cmake_options=all_cmake_opts, source_dir="$SOURCE_DIR") @)
       install: |
         cd "$BUILD_DIR"
         (@= ninja @) install
 
-        CLANG_RELEASE_IDX="$ORCHESTRA_ROOT/share/orchestra/clang-release.idx"
-        if [ -e "$CLANG_RELEASE_IDX" ]; then
-          cat "$CLANG_RELEASE_IDX" | while read f; do
-            rm "${TMP_ROOT}${ORCHESTRA_ROOT}/$f" || true
-          done
-        fi
+        remove-files-from-other-component.sh clang-release "${TMP_ROOT}${ORCHESTRA_ROOT}"
 
         if test "$RUN_TESTS" -eq 1; then
           (@= ninja @) check-all
         fi
-
+        (@- if platform == "windows": @)
+        ln -s ../../x86_64-w64-mingw32/usr/bin/libwinpthread-1.dll "${TMP_ROOT}${ORCHESTRA_ROOT}/win64/bin/"
+        (@ end -@)
       build_dependencies:
         - cmake
         - host-cxx-toolchain
+        #@ if/end platform == "windows":
+        - toolchain/win64/gcc
       dependencies:
         - host-libcxx
         - libunwind
@@ -57,4 +82,5 @@ builds:
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  llvm: #@ llvm_component()
+  llvm: #@ llvm_component(platform="linux")
+  windows/llvm: #@ llvm_component(platform="windows")

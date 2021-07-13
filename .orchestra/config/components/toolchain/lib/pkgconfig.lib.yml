@@ -1,0 +1,31 @@
+#@yaml/text-templated-strings
+
+#@ load("/lib/fn_args.lib.yml", "mandatory")
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+
+#@yaml/text-templated-strings
+---
+#@ def pkgconfig_args(
+#@        triple=mandatory,
+#@ ):
+configure: |
+  mkdir -p "$BUILD_DIR"
+  # Nothing else to do
+install: |
+  mkdir -p "${TMP_ROOT}${ORCHESTRA_ROOT}/(@= triple @)/bin"
+  cat >> "${TMP_ROOT}${ORCHESTRA_ROOT}/(@= triple @)/bin/(@= triple @)-pkg-config" << EOF
+  #!/bin/bash
+  DIR="\$( cd "\$( dirname "\${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+  export PKG_CONFIG_PATH="\$DIR/../lib/pkgconfig"
+  export PKG_CONFIG_LIBDIR="\$DIR/../lib/pkgconfig"
+  exec pkg-config "\$@"
+  EOF
+  chmod +x "${TMP_ROOT}${ORCHESTRA_ROOT}/(@= triple @)/bin/(@= triple @)-pkg-config"
+add_to_path:
+  - $ORCHESTRA_ROOT/(@= triple @)/bin
+#@ end
+
+---
+#@ def create_pkgconfig_component(toolchain_name=mandatory, triple=mandatory):
+#@ return single_build_component(**pkgconfig_args(triple=triple))
+#@ end

@@ -6,7 +6,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def libffi_args():
+#@ def libffi_args(is_windows):
 license: LICENSE
 configure: |
   mkdir -p "$BUILD_DIR"
@@ -14,11 +14,16 @@ configure: |
 
   cd "$BUILD_DIR"
   ./configure \
+    (@- if is_windows: @)
+    --host=x86_64-w64-mingw32 \
+    --prefix="$ORCHESTRA_ROOT/x86_64-w64-mingw32" \
+    (@- else: @)
+    --prefix="$ORCHESTRA_ROOT" \
+    (@- end @)
     --disable-multi-os-directory \
     --disable-static \
     --disable-pax_emutramp \
-    --disable-debug \
-    --prefix="$ORCHESTRA_ROOT"
+    --disable-debug
 build_system: make
 build_dependencies:
   - host-c-toolchain
@@ -29,4 +34,5 @@ build_dependencies:
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  libffi: #@ single_build_component(**libffi_args())
+  libffi: #@ single_build_component(**libffi_args(False))
+  windows/libffi: #@ single_build_component(**libffi_args(True))
