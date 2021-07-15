@@ -190,6 +190,12 @@ for BINARY_ARCHIVE_PATH in $(orc ls --binary-archives); do
     log "Commit for $BINARY_ARCHIVE_PATH: $(git -C "$BINARY_ARCHIVE_PATH" rev-parse HEAD)"
 done
 
+# TODO: remove, added to debug the CI
+log "Components JSON"
+log "------------------------------------"
+orc components --json
+log "------------------------------------"
+
 #
 # Actually run the build
 #
