@@ -157,7 +157,7 @@ def github_hook():
     if headers.get("X-Github-Event", "") == "push":
         data = request.json
         trigger_ci(hub_to_lab(data["sender"]["login"]),
-                   data["repository"]["clone_url"],
+                   data["repository"]["clone_url"] + " " + data["project"]["ssh_url"],
                    data["ref"],
                    data["before"],
                    data["after"])
