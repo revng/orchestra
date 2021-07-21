@@ -30,6 +30,7 @@
 # SSH_PRIVATE_KEY: private key used to push binary archives
 # REVNG_ORCHESTRA_URL: orchestra git repo URL (must be git+ssh:// or git+https://)
 # BUILD_ALL_FROM_SOURCE: if == 1 do not use binary archives and build everything
+# LFS_RETRIES: Number of times lfs pull/push operations are retried. Defaults to 3.
 
 set -e
 
@@ -63,6 +64,10 @@ if [[ "$BUILD_ALL_FROM_SOURCE" == 1 ]]; then
 else
     log "Build mode: binary archives enabled"
     BUILD_MODE="-b"
+fi
+
+if [[ -z "${LFS_RETRIES:-}" ]]; then
+    LFS_RETRIES=3
 fi
 
 cd "$DIR"
@@ -193,11 +198,11 @@ done
 #
 # Actually run the build
 #
-RESULT=0
+ERRORS=0
 for TARGET_COMPONENT in $TARGET_COMPONENTS; do
     log "Building target component $TARGET_COMPONENT"
-    if ! orc --quiet install "$BUILD_MODE" --test --create-binary-archives "$TARGET_COMPONENT"; then
-        RESULT=1
+    if ! orc --quiet install --lfs-retries "$LFS_RETRIES" "$BUILD_MODE" --test --create-binary-archives "$TARGET_COMPONENT"; then
+        ERRORS=1
         break
     fi
 done
@@ -206,7 +211,7 @@ if [[ "$PROMOTE_BRANCHES" = 1 ]] || [[ "$PUSH_CHANGES" = 1 ]]; then
     #
     # Promote `next-*` branches to `*`
     #
-    if test "$RESULT" -eq 0; then
+    if test "$ERRORS" -eq 0; then
         # Clone all the components having branch next-*
         for COMPONENT in $(orc components --json --branch 'next-*' | jq -r ".[].name"); do
             log "Cloning $COMPONENT"
@@ -283,7 +288,28 @@ COMPONENT_TARGET_BRANCH=$COMPONENT_TARGET_BRANCH"
             git config --add lfs.activitytimeout 300
             git config --add lfs.keepalive 300
             git push
-            git lfs push origin master
+
+            LFS_RETRY_WAIT=5
+            LFS_ERRORS=1
+            TRIES=0
+            while [[ "$TRIES" -lt "$LFS_RETRIES" ]]; do
+                if git lfs push origin master; then
+                    LFS_ERRORS=0
+                    break
+                fi
+                TRIES=$((TRIES + 1))
+
+                if [[ "$TRIES" -lt "$LFS_RETRIES" ]]; then
+                    log_err "git lfs push failed, waiting $LFS_RETRY_WAIT seconds before retrying"
+                    sleep "$LFS_RETRY_WAIT"
+                    LFS_RETRY_WAIT=$((LFS_RETRY_WAIT * 2))
+                fi
+            done
+
+            if [[ "$LFS_ERRORS" != 0 ]]; then
+                log_err "git lfs push failed $TRIES times, giving up"
+                ERRORS=1
+            fi
         else
             log "No changes to push for $BINARY_ARCHIVE_PATH"
         fi
@@ -293,4 +319,4 @@ else
     log "Skipping binary archives push (PUSH_BINARY_ARCHIVES='$PUSH_BINARY_ARCHIVES', PUSH_CHANGES='$PUSH_CHANGES')"
 fi
 
-exit "$RESULT"
+exit "$ERRORS"
