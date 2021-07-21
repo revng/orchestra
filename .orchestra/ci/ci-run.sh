@@ -30,6 +30,7 @@
 # SSH_PRIVATE_KEY: private key used to push binary archives
 # REVNG_ORCHESTRA_URL: orchestra git repo URL (must be git+ssh:// or git+https://)
 # BUILD_ALL_FROM_SOURCE: if == 1 do not use binary archives and build everything
+# LFS_RETRIES: Number of times lfs pull/push operations are retried. Defaults to 3.
 
 set -e
 
@@ -63,6 +64,10 @@ if [[ "$BUILD_ALL_FROM_SOURCE" == 1 ]]; then
 else
     log "Build mode: binary archives enabled"
     BUILD_MODE="-b"
+fi
+
+if [[ -z "${LFS_RETRIES:-}" ]]; then
+    LFS_RETRIES=3
 fi
 
 cd "$DIR"
@@ -196,7 +201,7 @@ done
 RESULT=0
 for TARGET_COMPONENT in $TARGET_COMPONENTS; do
     log "Building target component $TARGET_COMPONENT"
-    if ! orc --quiet install "$BUILD_MODE" --test --create-binary-archives "$TARGET_COMPONENT"; then
+    if ! orc --quiet install --lfs-retries "$LFS_RETRIES" "$BUILD_MODE" --test --create-binary-archives "$TARGET_COMPONENT"; then
         RESULT=1
         break
     fi
@@ -283,7 +288,19 @@ COMPONENT_TARGET_BRANCH=$COMPONENT_TARGET_BRANCH"
             git config --add lfs.activitytimeout 300
             git config --add lfs.keepalive 300
             git push
-            git lfs push origin master
+            TRIES=0
+            while true; do
+                if git lfs push origin master; then
+                    break
+                else
+                    TRIES=$((TRIES + 1))
+                fi
+                if [[ "$TRIES" -gt "$LFS_RETRIES" ]]; then
+                    log_err "git lfs push failed $TRIES times"
+                    RESULT=1
+                    break
+                fi
+            done
         else
             log "No changes to push for $BINARY_ARCHIVE_PATH"
         fi
