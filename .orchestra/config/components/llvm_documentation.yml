@@ -69,10 +69,10 @@ builds:
       cp -farl "$BUILD_DIR/build/tools/clang/docs/doxygen/html/clang.docset" "${DESTDIR}${ORCHESTRA_ROOT}/share/doc/clang"
 
       cat <<EOF
-      To install the Zeal docset run do the following:
+      To install the Zeal docset run the following commands from command line:
       ZEAL_PATH="\${XDG_DATA_HOME:-\$HOME/.local/share}/Zeal/Zeal/docsets/"
       ln -s \$(realpath -m --relative-to "\$ZEAL_PATH" \$ORCHESTRA_ROOT/share/doc/llvm/llvm.docset) "\$ZEAL_PATH"
-      ln -s \$(realpath -m --relative-to "\$ZEAL_PATH" \$ORCHESTRA_ROOT/share/doc/llvm/clang.docset) "\$ZEAL_PATH"
+      ln -s \$(realpath -m --relative-to "\$ZEAL_PATH" \$ORCHESTRA_ROOT/share/doc/clang/clang.docset) "\$ZEAL_PATH"
       EOF
 #@ end
 
