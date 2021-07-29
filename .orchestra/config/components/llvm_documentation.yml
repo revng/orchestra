@@ -40,6 +40,7 @@ builds:
       sed -i 's|$(XCODE_INSTALL)/usr/bin/docsetutil|'$ORCHESTRA_DOTDIR'/support/docsetutil|' Makefile
       sed -i 's|XCODE_INSTALL="$(shell xcode-select -print-path)"||' Makefile
       sed -i 's|<string>doxygen</string>|<string>llvm</string>|' Info.plist
+      sed -i 's|</dict>|<key>isJavaScriptEnabled</key><true/>\n</dict>|' Info.plist
       (@= make @)
       find llvm.docset/Contents/Resources/Documents -iname "*.html" | xargs -n 10 sed -i -s 's/ inherit / /'
 
@@ -53,6 +54,7 @@ builds:
       sed -i 's|$(XCODE_INSTALL)/usr/bin/docsetutil|'$ORCHESTRA_DOTDIR'/support/docsetutil|' Makefile
       sed -i 's|XCODE_INSTALL="$(shell xcode-select -print-path)"||' Makefile
       sed -i 's|<string>doxygen</string>|<string>clang</string>|' Info.plist
+      sed -i 's|</dict>|<key>isJavaScriptEnabled</key><true/>\n</dict>|' Info.plist
       (@= make @)
       find clang.docset/Contents/Resources/Documents -iname "*.html" | xargs -n 10 sed -i -s 's/ inherit / /'
 
