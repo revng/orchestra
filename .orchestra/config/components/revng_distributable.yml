@@ -13,17 +13,35 @@ install: |
   rm -rf "${TMP_ROOT}${ORCHESTRA_ROOT}/revng/root"
   mkdir -p "${TMP_ROOT}${ORCHESTRA_ROOT}/revng/root"
   cd "$ORCHESTRA_ROOT"
-  index_files=""
-  echo share/orchestra/glibc.idx share/orchestra/cmake.idx share/orchestra/boost.idx share/orchestra/clang-release.idx share/orchestra/toolchain_*.idx | sed 's/ /\n/g' | grep -v host | while read index_file; do
-    if [ -e "$index_file" ]; then
-      cat "$index_file" | \
-        grep -v libgcc_s.so | \
-        grep -v 'libc++.so' | \
-        grep -v 'libc++abi.so' | \
-        grep -v 'llvm-link' | \
-        grep -v 'llc'
-    fi
-  done | sed 's!^!/!' | rsync \
+
+  # TODO: This should be derived from orchestra by whitelisting the transitive dependencies of revng-distributable
+  COMPONENTS_TO_EXCLUDE=(
+    glibc
+    boost
+    clang-release
+    cmake
+    llvm-documentation
+  )
+  # Select all installed toolchain components except toolchain/host/*
+  COMPONENTS_TO_EXCLUDE+=(
+    $(orc components --installed --json \
+      | jq -r '
+        .[].name
+        | select(. | test("^toolchain/.*"))
+        | select(. | test("^toolchain/host.*") | not)'
+    )
+  )
+
+  for COMPONENT in "${COMPONENTS_TO_EXCLUDE[@]}"; do
+    orc inspect component installed-files "$COMPONENT" \
+      | grep -v 'libgcc_s.so' \
+      | grep -v 'libc++.so' \
+      | grep -v 'libc++abi.so' \
+      | grep -v 'llvm-link' \
+      | grep -v 'llc'
+  done \
+  | sed 's!^!/!' \
+  | rsync \
     --archive \
     --verbose \
     --progress \
