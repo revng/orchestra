@@ -5,7 +5,7 @@
 #@ load("/lib/create_component.lib.yml", "single_build_component")
 #@ load("/lib/make.lib.yml", "make")
 
-#@ xcb_proto_source_url = "https://xorg.freedesktop.org/archive/individual/proto/xcb-proto-1.14.tar.gz"
+#@ xcb_proto_source_url = "https://xorg.freedesktop.org/archive/individual/proto/xcb-proto-1.14.1.tar.gz"
 #@ libxcb_source_url = "https://xorg.freedesktop.org/archive/individual/lib/libxcb-1.14.tar.gz"
 #@ libx11_source_url = "https://www.x.org/releases/individual/lib/libX11-1.6.12.tar.gz"
 #@ xtrans_source_url = "https://xorg.freedesktop.org/releases/individual/lib/xtrans-1.4.0.tar.bz2"
