@@ -1,6 +1,12 @@
 #@ load("@ytt:overlay", "overlay")
 #@ load("/lib/create_component.lib.yml", "single_build_component")
 
+#! Possible values for the cold_revng_test_method user option:
+#! - host-xvfb: run the tests on the host machine, using xvfb and fluxbox
+#! - host-x11: run the tests on the host machine, using the host running X11 and window manager
+#! - podman-xvbf: run the tests on all the distros using podman and xvfb
+#! - podman-forward-x11: run the tests on all the distros, forwarding the host X11 server
+
 #@yaml/text-templated-strings
 ---
 #@ def revng_distributable():
@@ -43,8 +49,6 @@ install: |
   | sed 's!^!/!' \
   | rsync \
     --archive \
-    --verbose \
-    --progress \
     --exclude "/revng/" \
     --exclude "/include/" \
     --exclude "/share/man/" \
@@ -132,6 +136,56 @@ install: |
   cd "${TMP_ROOT}${ORCHESTRA_ROOT}"
   find . -not -type d -not -path './revng/*' -delete
   find . -type d -empty -delete
+
+  if test "$RUN_TESTS" -eq 1; then
+    # CI can't run Docker-in-Docker (or Podman-in-Docker)
+    # We can only test by spawning a local Xvfb server
+    if [[ ! -z "${GITLAB_CI:-}" ]]; then
+      export USE_XVFB=1
+      cd "${TMP_ROOT}${ORCHESTRA_ROOT}/revng"
+      "$ORCHESTRA_DOTDIR/support/revng-distributable/test.sh"
+
+    elif [[ "$COLD_REVNG_TEST_METHOD" == host-* ]]; then
+      if [[ "$COLD_REVNG_TEST_METHOD" == "host-xvfb" ]]; then
+        export USE_XVFB=1
+      fi
+      cd "${TMP_ROOT}${ORCHESTRA_ROOT}/revng"
+
+      export COLD_REVNG_KILL_METHOD=wmctrl
+      "$ORCHESTRA_DOTDIR/support/revng-distributable/test.sh"
+
+    else
+      if [[ "$COLD_REVNG_TEST_METHOD" == "podman-forward-x11" ]]; then
+        # Remember: the host must allow access to the X11 socket! (xhost +)
+        PODMAN_OPTIONS="-v /tmp/.X11-unix:/tmp/.X11-unix"
+      else
+        PODMAN_OPTIONS="-e USE_XVFB=1"
+      fi
+
+      for DOCKERFILE in $ORCHESTRA_DOTDIR/support/revng-distributable/dockers/*.docker; do
+        DISTRO="$(basename "${DOCKERFILE%%.docker}")"
+        IMAGE_NAME="revng-test-image:$DISTRO"
+
+        echo "Testing revng-distributable in $DISTRO"
+        podman build --pull -t "$IMAGE_NAME" -f "$DOCKERFILE"
+        # TODO: fix the test environment so that we can properly close revng-ui without using kill
+        if ! podman run -t --rm $PODMAN_OPTIONS \
+          --security-opt=seccomp=unconfined \
+          -e "COLD_REVNG_KILL_METHOD=kill" \
+          -w "/orchestra/.orchestra/$(realpath --relative-to "$ORCHESTRA_DOTDIR" "$TMP_ROOT")/$ORCHESTRA_ROOT/revng" \
+          -v "$(readlink -f "$ORCHESTRA_DOTDIR/..")":/orchestra \
+          "$IMAGE_NAME" \
+          bash -c /orchestra/.orchestra/support/revng-distributable/test.sh;
+        then
+          echo "[!] $IMAGE_NAME test failed"
+          exit 1
+        else
+          echo "[+] $IMAGE_NAME test passed"
+        fi
+      done
+      echo "[+] revng-distributable tests passed"
+    fi
+  fi
 build_dependencies:
   - ui/cold-revng
 skip_post_install: true

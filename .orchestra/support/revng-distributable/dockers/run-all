@@ -2,8 +2,9 @@
 
 set -e
 
-FILES=$(find -name "*.docker")
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+FILES=$(find "$DIR" -name "*.docker")
 
 for FILE in $FILES; do
-    ./run $(basename "${FILE%.*}") "$@"
+    ./run "$(basename "${FILE%.*}")" "$@"
 done

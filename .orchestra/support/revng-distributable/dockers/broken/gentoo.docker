@@ -1,0 +1,12 @@
+FROM gentoo/stage3-amd64 AS base-gentoo
+
+COPY install-revng-dependencies /
+RUN echo 'FEATURES="$FEATURES -sandbox -usersandbox -ipc-sandbox -network-sandbox -pid-sandbox"' >> /etc/portage/make.conf
+RUN emerge-webrsync
+
+FROM base-gentoo
+RUN echo "sys-auth/elogind" >> "/etc/portage/package.mask"
+RUN /install-revng-dependencies --include-test-dependencies
+
+ENV DISPLAY=:0
+ENV QT_DEBUG_PLUGINS=1

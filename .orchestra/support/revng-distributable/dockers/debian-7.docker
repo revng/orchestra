@@ -3,7 +3,9 @@ FROM debian:7
 COPY install-revng-dependencies /
 RUN echo "deb http://archive.debian.org/debian/ wheezy contrib main non-free" > /etc/apt/sources.list && \
     echo "deb-src http://archive.debian.org/debian/ wheezy contrib main non-free" >> /etc/apt/sources.list && \
-    /install-revng-dependencies
+    echo "deb http://archive.debian.org/debian-security/ wheezy/updates contrib main non-free" >> /etc/apt/sources.list && \
+    echo "Acquire::Check-Valid-Until false;" >> /etc/apt/apt.conf && \
+    /install-revng-dependencies --include-test-dependencies
 
 ENV DISPLAY=:0
 ENV QT_DEBUG_PLUGINS=1
