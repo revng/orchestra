@@ -25,6 +25,7 @@ builds:
         -DCMAKE_BUILD_TYPE="Debug" \
         -DLLVM_BUILD_DOCS=ON \
         -DLLVM_ENABLE_DOXYGEN=ON \
+        -DLLVM_DOXYGEN_SVG=ON \
         -DLLVM_TARGETS_TO_BUILD="X86" \
         -DBUILD_SHARED_LIBS=ON \
         -DLLVM_ENABLE_PROJECTS="clang" \
@@ -39,6 +40,7 @@ builds:
       sed -i 's|$(XCODE_INSTALL)/usr/bin/docsetutil|'$ORCHESTRA_DOTDIR'/support/docsetutil|' Makefile
       sed -i 's|XCODE_INSTALL="$(shell xcode-select -print-path)"||' Makefile
       sed -i 's|<string>doxygen</string>|<string>llvm</string>|' Info.plist
+      sed -i 's|</dict>|<key>isJavaScriptEnabled</key><true/>\n</dict>|' Info.plist
       (@= make @)
       find llvm.docset/Contents/Resources/Documents -iname "*.html" | xargs -n 10 sed -i -s 's/ inherit / /'
 
@@ -52,6 +54,7 @@ builds:
       sed -i 's|$(XCODE_INSTALL)/usr/bin/docsetutil|'$ORCHESTRA_DOTDIR'/support/docsetutil|' Makefile
       sed -i 's|XCODE_INSTALL="$(shell xcode-select -print-path)"||' Makefile
       sed -i 's|<string>doxygen</string>|<string>clang</string>|' Info.plist
+      sed -i 's|</dict>|<key>isJavaScriptEnabled</key><true/>\n</dict>|' Info.plist
       (@= make @)
       find clang.docset/Contents/Resources/Documents -iname "*.html" | xargs -n 10 sed -i -s 's/ inherit / /'
 
@@ -66,10 +69,10 @@ builds:
       cp -farl "$BUILD_DIR/build/tools/clang/docs/doxygen/html/clang.docset" "${DESTDIR}${ORCHESTRA_ROOT}/share/doc/clang"
 
       cat <<EOF
-      To install the Zeal docset run do the following:
+      To install the Zeal docset run the following commands from command line:
       ZEAL_PATH="\${XDG_DATA_HOME:-\$HOME/.local/share}/Zeal/Zeal/docsets/"
       ln -s \$(realpath -m --relative-to "\$ZEAL_PATH" \$ORCHESTRA_ROOT/share/doc/llvm/llvm.docset) "\$ZEAL_PATH"
-      ln -s \$(realpath -m --relative-to "\$ZEAL_PATH" \$ORCHESTRA_ROOT/share/doc/llvm/clang.docset) "\$ZEAL_PATH"
+      ln -s \$(realpath -m --relative-to "\$ZEAL_PATH" \$ORCHESTRA_ROOT/share/doc/clang/clang.docset) "\$ZEAL_PATH"
       EOF
 #@ end
 
