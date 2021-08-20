@@ -26,6 +26,7 @@
     -DCMAKE_CXX_STANDARD=20 \
     -DLLVM_ENABLE_Z3_SOLVER=OFF \
     -DLLVM_INCLUDE_GO_TESTS=OFF \
+    -DLLVM_ENABLE_ZLIB=ON \
     (@= expand_args(additional_cmake_options) @) \
     -Wno-dev
 #@ end
