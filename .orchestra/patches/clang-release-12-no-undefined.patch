@@ -1,0 +1,61 @@
+commit aad50bda7e2105e849d7923d8a36fb3e7da866a7
+Author: Alessandro Di Federico <ale@rev.ng>
+Date:   Fri Aug 20 22:29:29 2021 +0200
+
+    Fixes for -Wl,--no-undefined build
+
+diff --git a/llvm/examples/Bye/CMakeLists.txt b/llvm/examples/Bye/CMakeLists.txt
+index bb96edb4b4bf..f9c924185e1c 100644
+--- a/llvm/examples/Bye/CMakeLists.txt
++++ b/llvm/examples/Bye/CMakeLists.txt
+@@ -6,7 +6,7 @@ endif()
+ # but expects them to exist in the process loading the plugin. This doesn't
+ # work with DLLs on Windows (where a shared library can't have undefined
+ # references), so just skip this example on Windows.
+-if (NOT WIN32)
++if (FALSE)
+   add_llvm_pass_plugin(Bye
+     Bye.cpp
+     DEPENDS
+diff --git a/llvm/lib/Transforms/Hello/CMakeLists.txt b/llvm/lib/Transforms/Hello/CMakeLists.txt
+index c4f10247c1a6..b80f2400e9a7 100644
+--- a/llvm/lib/Transforms/Hello/CMakeLists.txt
++++ b/llvm/lib/Transforms/Hello/CMakeLists.txt
+@@ -6,9 +6,7 @@ if( NOT LLVM_REQUIRES_RTTI )
+   endif()
+ endif()
+ 
+-if(WIN32 OR CYGWIN)
+-  set(LLVM_LINK_COMPONENTS Core Support)
+-endif()
++set(LLVM_LINK_COMPONENTS Core Support)
+ 
+ add_llvm_library( LLVMHello MODULE BUILDTREE_ONLY
+   Hello.cpp
+diff --git a/llvm/tools/bugpoint-passes/CMakeLists.txt b/llvm/tools/bugpoint-passes/CMakeLists.txt
+index eea3e239b808..10a078da63a7 100644
+--- a/llvm/tools/bugpoint-passes/CMakeLists.txt
++++ b/llvm/tools/bugpoint-passes/CMakeLists.txt
+@@ -10,9 +10,7 @@ if( NOT LLVM_REQUIRES_RTTI )
+   endif()
+ endif()
+ 
+-if(WIN32 OR CYGWIN)
+-  set(LLVM_LINK_COMPONENTS Core)
+-endif()
++set(LLVM_LINK_COMPONENTS Core Support)
+ 
+ add_llvm_library( BugpointPasses MODULE BUILDTREE_ONLY
+   TestPasses.cpp
+diff --git a/llvm/unittests/Passes/CMakeLists.txt b/llvm/unittests/Passes/CMakeLists.txt
+index 823bc56851fa..7c2434cc2b86 100644
+--- a/llvm/unittests/Passes/CMakeLists.txt
++++ b/llvm/unittests/Passes/CMakeLists.txt
+@@ -19,7 +19,6 @@ if (NOT WIN32)
+   export_executable_symbols_for_plugins(PluginsTests)
+   target_link_libraries(PluginsTests PRIVATE LLVMTestingSupport)
+ 
+-  set(LLVM_LINK_COMPONENTS)
+   add_llvm_library(TestPlugin MODULE BUILDTREE_ONLY
+     TestPlugin.cpp
+     )
