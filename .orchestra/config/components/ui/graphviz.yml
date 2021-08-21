@@ -37,6 +37,7 @@ configure: |
     --with-sfdp \
     --without-ming \
     --with-cgraph \
+    --with-webp=no \
     --without-glitz \
     --without-ipsepcola \
     --without-smyrna \
@@ -60,6 +61,7 @@ configure: |
     --disable-ltdl-install \
     --prefix="$ORCHESTRA_ROOT" \
     CC="clang" \
+    LIBS="-lm" \
     PS2PDF=/bin/true \
     GROFF=/bin/true
 post_install: |
