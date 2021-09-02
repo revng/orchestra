@@ -1,0 +1,75 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+#@ load("/lib/ninja.lib.yml", "ninja")
+
+#@yaml/text-templated-strings
+---
+#@ def clang_release_args():
+#@    source_url = "https://github.com/llvm/llvm-project/archive/llvmorg-" + data.values.clang_release_version + ".tar.gz"
+license: source/llvm/LICENSE.TXT
+configure: |
+  extract.sh --into "$BUILD_DIR/source" "(@= source_url @)"
+  cd "$BUILD_DIR"
+  sed -i 's|GIT_FOUND|FALSE|g' "source/llvm/cmake/modules/VersionFromVCS.cmake"
+  patch-if-exists "${ORCHESTRA_DOTDIR}/patches/libcxxabi-add-has-win32-thread-api.patch" "$BUILD_DIR/source"
+install: |
+  cd "$BUILD_DIR"
+  mkdir -p libcxxabi
+  cd libcxxabi
+  cmake "$BUILD_DIR/source/libcxxabi" \
+    -GNinja \
+    -DCMAKE_INSTALL_PREFIX=$ORCHESTRA_ROOT/x86_64-w64-mingw32 \
+    -DCMAKE_SYSTEM_NAME=Windows \
+    -DCMAKE_CROSSCOMPILING=TRUE \
+    -DCMAKE_C_COMPILER=x86_64-w64-mingw32-clang \
+    -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-clang++ \
+    -DCMAKE_CXX_FLAGS="-U_LIBCPP_BUILDING_LIBRARY -D_LIBCPP_BUILDING_LIBRARY= -U_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS -D_WIN32_WINNT=0x6000" \
+    -DLIBCXXABI_TARGET_TRIPLE=x86_64-w64-mingw32 \
+    -DLIBCXXABI_LIBCXX_INCLUDES="$BUILD_DIR/source/libcxx/include/" \
+    -DLIBCXXABI_ENABLE_SHARED=OFF \
+    -DLIBCXXABI_ENABLE_EXCEPTIONS=ON \
+    -DLIBCXXABI_HAS_WIN32_THREAD_API=ON \
+    -DLIBCXXABI_ENABLE_NEW_DELETE_DEFINITIONS=OFF \
+    -DLIBCXXABI_HAS_CXA_THREAD_ATEXIT_IMPL=ON
+  ninja
+
+  cd ..
+  mkdir -p libcxx
+  cd libcxx
+  cmake "$BUILD_DIR/source/libcxx" \
+    -GNinja \
+    -DCMAKE_INSTALL_PREFIX=$ORCHESTRA_ROOT/x86_64-w64-mingw32 \
+    -DCMAKE_SYSTEM_NAME=Windows \
+    -DCMAKE_CROSSCOMPILING=TRUE \
+    -DCMAKE_C_COMPILER=x86_64-w64-mingw32-clang \
+    -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-clang++ \
+    -DCMAKE_CXX_FLAGS="-D_LIBCXXABI_BUILDING_LIBRARY -Wno-unused-command-line-argument -Wl,--start-group -D_WIN32_WINNT=0x6000" \
+    -DLIBCXX_TARGET_TRIPLE=x86_64-w64-mingw32 \
+    -DLIBCXX_HAS_WIN32_THREAD_API=ON \
+    -DLIBCXX_ENABLE_FILESYSTEM=OFF \
+    -DLIBCXX_CXX_ABI_LIBRARY_PATH="$BUILD_DIR/libcxxabi/lib" \
+    -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=TRUE \
+    -DLIBCXX_CXX_ABI=libcxxabi \
+    -DLIBCXX_CXX_ABI_INCLUDE_PATHS="$BUILD_DIR/source/libcxxabi/include" \
+    -DLIBCXX_ENABLE_EXCEPTIONS=ON
+  ninja
+
+  # ninja install
+
+  mkdir -p "${DESTDIR}${ORCHESTRA_ROOT}/x86_64-w64-mingw32/bin/"
+  cp -a "lib/libc++.dll" "${DESTDIR}${ORCHESTRA_ROOT}/x86_64-w64-mingw32/bin/"
+
+  mkdir -p "${DESTDIR}${ORCHESTRA_ROOT}/x86_64-w64-mingw32/lib/"
+  cp -a "lib/libc++.dll" "lib/libc++.dll.a" "${DESTDIR}${ORCHESTRA_ROOT}/x86_64-w64-mingw32/lib/"
+build_dependencies:
+  - cmake
+dependencies:
+  - toolchain/win64/gcc
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  windows/libcxx: #@ single_build_component(**clang_release_args())

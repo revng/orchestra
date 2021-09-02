@@ -1,0 +1,78 @@
+From 05b3716ddbd536c130caa79cf8486f62548f05fc Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Markus=20B=C3=B6ck?= <markus.boeck02@gmail.com>
+Date: Fri, 5 Mar 2021 15:30:13 +0100
+Subject: [PATCH] [libcxxabi] Add LIBCXXABI_HAS_WIN32_THREAD_API build option
+
+A few files in libc++abi make use of libc++ headers and a few of those use threading primitives provided by libc++. Since libc++ has multiple threading APIs it may be necessary to override auto-detection.
+
+This patch adds the LIBCXXABI_HAS_WIN32_THREAD_API which does roughly the same as LIBCXXABI_HAS_PTHREAD_API and the similarly named LIBCXX_HAS_WIN32_THREAD_API from libc++. Instead of using autodetection it will force the use of win32 threads instead of pthreads in headers included from libc++.
+
+Without this patch, libc++abi may depend on pthreads if present on the users build environment, even if win32 threading was selected for libc++.
+
+Differential revision: https://reviews.llvm.org/D98021
+---
+ libcxxabi/CMakeLists.txt | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
+
+diff --git a/libcxxabi/CMakeLists.txt b/libcxxabi/CMakeLists.txt
+index b803347c2a8e3..8b0c88689df32 100644
+--- a/libcxxabi/CMakeLists.txt
++++ b/libcxxabi/CMakeLists.txt
+@@ -89,6 +89,7 @@ option(LIBCXXABI_ENABLE_STATIC_UNWINDER "Statically link the LLVM unwinder." OFF
+ option(LIBCXXABI_USE_COMPILER_RT "Use compiler-rt instead of libgcc" OFF)
+ option(LIBCXXABI_ENABLE_THREADS "Build with threads enabled" ON)
+ option(LIBCXXABI_HAS_PTHREAD_API "Ignore auto-detection and force use of pthread API" OFF)
++option(LIBCXXABI_HAS_WIN32_THREAD_API "Ignore auto-detection and force use of win32 thread API" OFF)
+ option(LIBCXXABI_HAS_EXTERNAL_THREAD_API
+   "Build libc++abi with an externalized threading API.
+   This option may only be set to ON when LIBCXXABI_ENABLE_THREADS=ON." OFF)
+@@ -374,6 +375,11 @@ if (NOT LIBCXXABI_ENABLE_THREADS)
+                         " be set to ON when LIBCXXABI_ENABLE_THREADS"
+                         " is also set to ON.")
+   endif()
++  if (LIBCXXABI_HAS_WIN32_THREAD_API)
++    message(FATAL_ERROR "LIBCXXABI_HAS_WIN32_THREAD_API can only"
++                        " be set to ON when LIBCXXABI_ENABLE_THREADS"
++                        " is also set to ON.")
++  endif()
+   if (LIBCXXABI_HAS_EXTERNAL_THREAD_API)
+     message(FATAL_ERROR "LIBCXXABI_HAS_EXTERNAL_THREAD_API can only"
+                         " be set to ON when LIBCXXABI_ENABLE_THREADS"
+@@ -394,6 +400,11 @@ if (LIBCXXABI_HAS_EXTERNAL_THREAD_API)
+                         " and LIBCXXABI_HAS_PTHREAD_API cannot be both"
+                         " set to ON at the same time.")
+   endif()
++  if (LIBCXXABI_HAS_WIN32_THREAD_API)
++    message(FATAL_ERROR "The options LIBCXXABI_HAS_EXTERNAL_THREAD_API"
++                        " and LIBCXXABI_HAS_WIN32_THREAD_API cannot be both"
++                        " set to ON at the same time.")
++  endif()
+   if (LIBCXXABI_BUILD_EXTERNAL_THREAD_LIBRARY)
+     message(FATAL_ERROR "The options LIBCXXABI_BUILD_EXTERNAL_THREAD_LIBRARY"
+                         " and LIBCXXABI_HAS_EXTERNAL_THREAD_API cannot be both"
+@@ -401,6 +412,14 @@ if (LIBCXXABI_HAS_EXTERNAL_THREAD_API)
+   endif()
+ endif()
+ 
++if (LIBCXXABI_HAS_PTHREAD_API)
++  if (LIBCXXABI_HAS_WIN32_THREAD_API)
++    message(FATAL_ERROR "The options LIBCXXABI_HAS_PTHREAD_API"
++            "and LIBCXXABI_HAS_WIN32_THREAD_API cannot be both"
++            "set to ON at the same time.")
++  endif()
++endif()
++
+ if (LLVM_ENABLE_MODULES)
+   # Ignore that the rest of the modules flags are now unused.
+   add_compile_flags_if_supported(-Wno-unused-command-line-argument)
+@@ -428,6 +447,10 @@ if (LIBCXXABI_HAS_PTHREAD_API)
+   add_definitions(-D_LIBCPP_HAS_THREAD_API_PTHREAD)
+ endif()
+ 
++if (LIBCXXABI_HAS_WIN32_THREAD_API)
++  add_definitions(-D_LIBCPP_HAS_THREAD_API_WIN32)
++endif()
++
+ if (LIBCXXABI_HAS_EXTERNAL_THREAD_API)
+   add_definitions(-D_LIBCPP_HAS_THREAD_API_EXTERNAL)
+ endif()
