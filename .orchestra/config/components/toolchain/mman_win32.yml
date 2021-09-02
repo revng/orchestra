@@ -1,0 +1,26 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+#@ load("/lib/ninja.lib.yml", "ninja")
+
+#@ source_url = "https://github.com/alitrack/mman-win32/archive/2d1c576e62b99e85d99407e1a88794c6e44c3310.tar.gz"
+
+#@yaml/text-templated-strings
+---
+#@ def mman_win32_args():
+license: README.md
+configure: |
+  extract.sh --into "$BUILD_DIR" (@= source_url @)
+  cd "$BUILD_DIR"
+  ./configure \
+    --prefix="$ORCHESTRA_ROOT/x86_64-w64-mingw32" \
+    --enable-shared \
+    --cross-prefix=x86_64-w64-mingw32-
+build_system: make
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  mman-win32: #@ single_build_component(**mman_win32_args())
