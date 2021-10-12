@@ -11,6 +11,7 @@
   cmake \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
     -DCMAKE_INSTALL_SO_NO_EXE=0 \
+    -DCMAKE_PREFIX_PATH="$ORCHESTRA_ROOT" \
     -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT"
 #@ end
 #@ cmake = _cmake()[0].rstrip()
