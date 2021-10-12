@@ -70,7 +70,8 @@ apt-get -qq install --no-install-recommends --yes \
   libxkbcommon-x11-dev \
   libxrender-dev
 
-pip3 -q install --user --upgrade setuptools wheel mako meson==0.56.2 pyelftools pygraphviz==1.6
+# the version of lit package should always match clang-release and llvm
+pip3 -q install --user --upgrade setuptools wheel mako meson==0.56.2 pyelftools pygraphviz==1.6 lit==12.0.0
 
 if ! which git-lfs &> /dev/null; then
   curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash
