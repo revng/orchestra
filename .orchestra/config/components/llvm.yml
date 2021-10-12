@@ -49,6 +49,8 @@ builds:
       dependencies:
         - host-libcxx
         - libunwind
+        - zlib
+        - ncurses
       #@ if/end ndebug == False:
       ndebug: false
   #@ end
