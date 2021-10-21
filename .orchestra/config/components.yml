@@ -14,7 +14,7 @@ environment:
   - PKG_CONFIG_PATH: $ORCHESTRA_ROOT/lib/pkgconfig:$ORCHESTRA_ROOT/share/pkgconfig${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
   - INSTALL_LINK_ONLY_PATH: $ORCHESTRA_ROOT/link-only
   - LIBGL_DRIVERS_PATH: $ORCHESTRA_ROOT/lib/dri${LIBGL_DRIVERS_PATH:+:${LIBGL_DRIVERS_PATH}}
-  - PYTHONPATH: $ORCHESTRA_ROOT/lib/python${PYTHONPATH:+:${PYTHONPATH}}
+  - PYTHONPATH: $ORCHESTRA_ROOT/python${PYTHONPATH:+:${PYTHONPATH}}
   - LIBRARY_PATH: /usr/lib/x86_64-linux-gnu
   - HARD_FLAGS_COMPILE: #@ str(datavalue("hard_flags_compile"))
   - HARD_FLAGS_CXX_CLANG: #@ str(datavalue("hard_flags_cxx_clang"))

@@ -10,7 +10,7 @@ builds:
     configure: |
       mkdir -p "$BUILD_DIR"
     install: |
-      export PYTHONPATH="$DESTDIR/lib/python"
+      export PYTHONPATH="$DESTDIR/python"
       mkdir -p "$PYTHONPATH"
       cd "$SOURCE_DIR"
       python3 setup.py build --build-base "$SOURCE_DIR"
