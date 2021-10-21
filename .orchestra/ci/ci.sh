@@ -88,6 +88,8 @@ log "Using configuration branch $ORCHESTRA_TARGET_BRANCH (commit $ORCHESTRA_CONF
 
 export COMPONENT_TARGET_BRANCH
 
+export REVNG_ENSURE_LATEST_SCHEMA=1
+
 # Run "true" CI script
 log "Starting ci-run with COMPONENT_TARGET_BRANCH=$COMPONENT_TARGET_BRANCH"
 "$DIR/ci-run.sh"

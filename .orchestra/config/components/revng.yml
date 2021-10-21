@@ -1,10 +1,13 @@
 #@ load("@ytt:overlay", "overlay")
+#@ load("@ytt:template", "template")
 #@ load("/lib/cmake.lib.yml", "cmake_boost_configuration", "typical_cmake_builds")
 
 ---
 #@ def build_args():
 test: true
-extra_cmake_args: #@ cmake_boost_configuration
+extra_cmake_args:
+  - #@ template.replace(cmake_boost_configuration)
+  - -DREVNG_ENSURE_LATEST_SCHEMA=${REVNG_ENSURE_LATEST_SCHEMA:-0}
 build_dependencies:
   - cmake
   - revng-qa
