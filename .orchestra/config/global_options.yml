@@ -27,7 +27,7 @@ hard_flags_compile: --sysroot $INSTALL_LINK_ONLY_PATH -idirafter /usr/local/incl
 hard_flags_cxx_clang: -stdlib=libc++
 hard_flags_clang: -gcc-toolchain $ORCHESTRA_ROOT
 hard_flags_link: -L$INSTALL_LINK_ONLY_PATH/lib -L$ORCHESTRA_ROOT/lib -lrt --sysroot=/ -Wl,-z,origin -Wl,--enable-new-dtags -Wl,--no-undefined -fuse-ld=gold
-hard_flags_link_late: -Wl,-rpath,$RPATH_PLACEHOLDER/lib
+hard_flags_link_late: -Wl,-rpath,$RPATH_PLACEHOLDER/lib -shared-libasan
 hard_flags_link_gold: -Wl,--gdb-index
 hard_flags_clangtidy: --extra-arg-before=-nostdinc++ --extra-arg-before=-nostdinc --extra-arg-before=-idirafter --extra-arg-before=$ORCHESTRA_ROOT/include/c++/v1 --extra-arg-before=-idirafter --extra-arg-before=$ORCHESTRA_ROOT/lib/clang/(@= clang_release_version @)/include --extra-arg-before=-idirafter --extra-arg-before=$ORCHESTRA_ROOT/link-only/include --extra-arg-before=-idirafter --extra-arg-before=/usr/include/x86_64-linux-gnu --extra-arg-before=-idirafter --extra-arg-before=/usr/include
 
