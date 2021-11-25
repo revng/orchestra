@@ -91,15 +91,16 @@
     (@ end -@)
 
     cmake --build "$BUILD_DIR" ${JOBS:+-j$JOBS}
-    cmake --install "$BUILD_DIR"
 
-    (@- if test: @)
+    (@ if test: @)
     if test "$RUN_TESTS" -eq 1; then
       cd "$BUILD_DIR"
       ctest --output-on-failure ${JOBS:+-j$JOBS}
       cd -
     fi
     (@ end -@)
+
+    cmake --install "$BUILD_DIR"
 
     (@- if post_install_script: @)
     (@= post_install_script @)
