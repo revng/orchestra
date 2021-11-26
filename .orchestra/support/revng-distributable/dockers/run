@@ -11,6 +11,6 @@ podman \
     -ti \
     --rm \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
-    -v $(readlink -f $PWD/../../../..):/orchestra \
+    -v "$(readlink -f "$DIR/../../../..")":/orchestra \
     revng-user:"$IMAGE" \
     bash -c "cd /orchestra; source root/revng/environment; $*"

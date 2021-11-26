@@ -24,6 +24,9 @@ configure: |
     "$BUILD_DIR" \
     "$BUILD_DIR/source"
 build_system: ninja
+post_install: |
+  # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=881789
+  ln -s libGLX_mesa.so.0 "${TMP_ROOT}${ORCHESTRA_ROOT}/lib64/libGLX_indirect.so.0"
 build_dependencies:
   - host-c-toolchain
   - glibc

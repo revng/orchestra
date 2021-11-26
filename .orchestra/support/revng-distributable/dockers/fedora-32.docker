@@ -1,7 +1,7 @@
 FROM fedora:32
 
 COPY install-revng-dependencies /
-RUN /install-revng-dependencies
+RUN /install-revng-dependencies --include-test-dependencies
 
 ENV DISPLAY=:0
 ENV QT_DEBUG_PLUGINS=1

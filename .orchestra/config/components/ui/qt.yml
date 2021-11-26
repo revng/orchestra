@@ -61,6 +61,7 @@
     -no-glib \
     -no-cups \
     -no-gtk \
+    -qt-libmd4c \
     -qt-harfbuzz \
     -fontconfig \
     -system-freetype \

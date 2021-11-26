@@ -36,3 +36,6 @@ branches:
   - develop
   - master
 nonredistributable_base_url: "https://dummydomain.com/nonredistributable/"
+
+#! see cold-revng component for the list of admissible test methods
+cold_revng_test_method: podman-xvfb

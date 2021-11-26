@@ -2,7 +2,7 @@ FROM centos:8
 
 COPY install-revng-dependencies /
 RUN echo '00000000000000000000000000000000' > /etc/machine-id && \
-    /install-revng-dependencies
+    /install-revng-dependencies --include-test-dependencies
 
 ENV DISPLAY=:0
 ENV QT_DEBUG_PLUGINS=1
