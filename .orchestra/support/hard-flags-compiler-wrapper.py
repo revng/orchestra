@@ -112,7 +112,7 @@ def main():
     sys.argv = replace_argv0(sys.argv)
 
     disable_wrapper = int(os.environ.get("HARD_FLAGS_IGNORE", "0")) != 0
-    if disable_wrapper or "-E" in sys.argv or "-S" in sys.argv:
+    if disable_wrapper:
         exec(other(sys.argv))
 
     prefix = "HARD_FLAGS_"
