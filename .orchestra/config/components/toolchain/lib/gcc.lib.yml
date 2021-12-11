@@ -138,7 +138,7 @@ configure: |
     (@= expand_args(build_specific_configure_options) @) \
     CFLAGS="-w -ggdb3 -O3 (@= data.values.hard_flags_compile @)" \
     CXXFLAGS="-w -ggdb3 -O3 (@= data.values.hard_flags_compile @)" \
-    LDFLAGS="(@= data.values.hard_flags_link @) (@= data.values.hard_flags_link_late @) -static-libgcc"
+    LDFLAGS="(@= data.values.hard_flags_link @) (@= data.values.hard_flags_link_late @) -static-libgcc -fuse-ld=gold"
 install: |
   cd "$BUILD_DIR"
   (@= make @) (@= extra_gcc_make_variables @)
