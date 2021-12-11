@@ -12,7 +12,7 @@ configure: |
   mkdir -p "$BUILD_DIR"
   extract.sh --into "$BUILD_DIR" (@= source_url @)
   cd "$BUILD_DIR"
-  export CC="cc -fcommon"
+  export CC="cc -fcommon -fuse-ld=gold"
   ./configure \
     --enable-cxx-exceptions \
     --disable-coredump \

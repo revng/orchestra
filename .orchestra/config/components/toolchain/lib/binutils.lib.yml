@@ -50,7 +50,8 @@ configure: |
     --without-stage1-ldflags \
     (@= expand_args(extra_binutils_configure_options) @) \
     CFLAGS="-w -ggdb3 -O3" \
-    CXXFLAGS="-w -ggdb3 -O3"
+    CXXFLAGS="-w -ggdb3 -O3" \
+    LDFLAGS="-fuse-ld=gold"
 build_system: make
 add_to_path:
   - ${ORCHESTRA_ROOT}/x86_64-pc-linux-gnu/(@= triple @)/binutils-bin/(@= binutils_version @)
