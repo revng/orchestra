@@ -13,7 +13,7 @@ configure: |
   cd "$BUILD_DIR" && ./bootstrap \
     --prefix="$ORCHESTRA_ROOT" \
     --parallel=16 \
-    LDFLAGS="-static-libstdc++ -static-libgcc" \
+    LDFLAGS="-static-libstdc++ -static-libgcc -fuse-ld=gold" \
     -- -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT" \
     -DCMAKE_SHARED_LINKER_FLAGS="-static-libstdc++ -static-libgcc -fuse-ld=gold" \
