@@ -26,19 +26,19 @@ configure: |
   patch -p1 < "${ORCHESTRA_DOTDIR}/patches/blt-blo.patch"
   patch -p1 < "${ORCHESTRA_DOTDIR}/patches/uclibc-0071-Fix-libgcc_s_resume-issue.patch"
   echo 'false' > extra/config/lxdialog/check-lxdialog.sh
-  (@= serial_make @) ARCH=(@= uclibc_arch_name @) defconfig
+  (@= serial_make @) ARCH=(@= uclibc_arch_name @) HOSTCC="gcc -fuse-ld=gold" defconfig
   cp "${ORCHESTRA_DOTDIR}/patches/uClibc.config" .config
   sed 's|$INSTALL_PATH|'"$ORCHESTRA_ROOT"'|g' .config -i
   sed 's|$FLAGS|(@= additional_cflags @)|g' .config -i
-  true | (@= serial_make @) oldconfig
+  true | (@= serial_make @) HOSTCC="gcc -fuse-ld=gold" oldconfig
   sed 's|^typedef __kernel_dev_t\s*__kernel_old_dev_t;$|\0\ntypedef long __kernel_long_t;\ntypedef unsigned long __kernel_ulong_t;|' libc/sysdeps/linux/arm/bits/kernel_types.h -i
 install: |
   export PATH="
       (@-= new_gcc_path(triple=triple, gcc_version=gcc_version) @):
       (@-= binutils_path(triple=triple, binutils_version=binutils_version) -@)
       :$PATH"
-  (@= serial_make @) -C "$BUILD_DIR"
-  (@= serial_make @) -C "$BUILD_DIR" install DESTDIR="${DESTDIR}${ORCHESTRA_ROOT}/(@= triple @)"
+  (@= serial_make @) -C "$BUILD_DIR" HOSTCC="gcc -fuse-ld=gold"
+  (@= serial_make @) -C "$BUILD_DIR" HOSTCC="gcc -fuse-ld=gold" install DESTDIR="${DESTDIR}${ORCHESTRA_ROOT}/(@= triple @)"
 build_dependencies:
   - toolchain/(@= toolchain_name @)/gcc~stage1
 #@ end
@@ -50,8 +50,8 @@ build_dependencies:
 #@    toolchain_name = kwargs["toolchain_name"]
 install: |
   cd "$BUILD_DIR"
-  (@= serial_make @) headers
-  (@= serial_make @) DESTDIR="${DESTDIR}${ORCHESTRA_ROOT}/(@= triple @)" install_headers
+  (@= serial_make @) HOSTCC="gcc -fuse-ld=gold" headers
+  (@= serial_make @) HOSTCC="gcc -fuse-ld=gold" DESTDIR="${DESTDIR}${ORCHESTRA_ROOT}/(@= triple @)" install_headers
 #@overlay/remove
 build_dependencies:
   - toolchain/(@= toolchain_name @)/gcc~stage1
