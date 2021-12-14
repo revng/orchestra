@@ -70,8 +70,11 @@ apt-get -qq install --no-install-recommends --yes \
   libxkbcommon-x11-dev \
   libxrender-dev
 
-# Note: lit version should always match clang-release and llvm version
-pip3 -q install --user --upgrade setuptools wheel mako meson==0.56.2 pyelftools pygraphviz==1.6 lit==12.0.0
+# Notes:
+# * lit version should always match clang-release and llvm version
+# * pydot is incompatible with recent versions of pyparsing:
+#   https://github.com/pydot/pydot/issues/277
+pip3 -q install --user --upgrade setuptools wheel mako meson==0.56.2 pyelftools lit==12.0.0 pyparsing==2.4.7 pydot
 
 if ! which git-lfs &> /dev/null; then
   curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash
