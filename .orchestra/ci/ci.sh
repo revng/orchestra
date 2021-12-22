@@ -83,6 +83,9 @@ fi
 ORCHESTRA_CONFIG_COMMIT="$(ogit rev-parse --short "$ORCHESTRA_TARGET_BRANCH")"
 log "Using configuration branch $ORCHESTRA_TARGET_BRANCH (commit $ORCHESTRA_CONFIG_COMMIT)"
 
+# Install missing dependencies
+.orchestra/ci/install-dependencies.sh
+
 export COMPONENT_TARGET_BRANCH
 
 # Run "true" CI script

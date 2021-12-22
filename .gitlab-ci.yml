@@ -7,5 +7,4 @@ create-binaries:
   stage: build
   script:
     - git checkout -B "$CI_COMMIT_REF_NAME" "$CI_COMMIT_SHA"
-    - .orchestra/ci/install-dependencies.sh
     - .orchestra/ci/ci.sh
