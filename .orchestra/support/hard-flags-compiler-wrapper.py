@@ -9,8 +9,11 @@ from itertools import chain
 from subprocess import Popen
 
 source_extensions = set([".c", ".cpp", ".cxx", ".cc", ".s", ".S", ".C", ".c++"])
-is_cxx = "++" in sys.argv[0]
-is_clang = "clang" in sys.argv[0]
+program_name = sys.argv[0]
+is_cxx = program_name.endswith("++")
+is_clang_tidy = program_name.endswith("clang-tidy")
+is_clang = (program_name.endswith("clang")
+            or program_name.endswith("clang++"))
 this_path = os.path.realpath(__file__)
 flags = []
 
@@ -83,6 +86,9 @@ def add_arguments_for(original, action):
 
     return arguments
 
+def clang_tidy(arguments):
+    return add_arguments_for(arguments, "clangtidy")
+
 def compile(arguments):
     return add_arguments_for(arguments, "compile")
 
@@ -153,7 +159,9 @@ def main():
     # Are we linking or compiling an individual translation unit?
     is_linking = has_inputs and "-c" not in sys.argv
 
-    if is_compiling and is_linking:
+    if is_clang_tidy:
+        exec(clang_tidy(sys.argv))
+    elif is_compiling and is_linking:
         # We need to compile each individual source file first, then link
         with tempfile.TemporaryDirectory() as output_directory:
             for source_argument in source_arguments:

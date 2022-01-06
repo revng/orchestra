@@ -43,8 +43,11 @@ install: |
   fi
 
   mkdir -p "${DESTDIR}${ORCHESTRA_ROOT}/link-only/bin"
-  cp "${ORCHESTRA_DOTDIR}/support/hard-flags-compiler-wrapper.py" "${DESTDIR}${ORCHESTRA_ROOT}/link-only/bin/clang"
-  cp "${ORCHESTRA_DOTDIR}/support/hard-flags-compiler-wrapper.py" "${DESTDIR}${ORCHESTRA_ROOT}/link-only/bin/clang++"
+  COMPILER_WRAPPER="${ORCHESTRA_DOTDIR}/support/hard-flags-compiler-wrapper.py"
+  cd "${DESTDIR}${ORCHESTRA_ROOT}/link-only/bin"
+  cp -a "$COMPILER_WRAPPER" clang
+  cp -a "$COMPILER_WRAPPER" clang++
+  cp -a "$COMPILER_WRAPPER" clang-tidy
 build_dependencies:
   - cmake
 dependencies:
