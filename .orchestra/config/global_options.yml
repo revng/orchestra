@@ -20,8 +20,8 @@
 clang_release_version: #@ clang_release_version
 gcc_host_version: #@ gcc_host_version
 
-regular_c_compiler: clang
-regular_cxx_compiler: clang++
+regular_c_compiler: $ORCHESTRA_ROOT/link-only/bin/clang
+regular_cxx_compiler: $ORCHESTRA_ROOT/link-only/bin/clang++
 sanitizers_libs_path: lib64/clang/(@= clang_release_version @)/lib/linux
 hard_flags_compile: --sysroot $INSTALL_LINK_ONLY_PATH -idirafter /usr/local/include -idirafter /usr/include/x86_64-linux-gnu -idirafter /usr/include
 hard_flags_cxx_clang: -stdlib=libc++
