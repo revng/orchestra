@@ -1,0 +1,28 @@
+diff --git a/libsanitizer/sanitizer_common/sanitizer_stoptheworld_linux_libcdep.cpp b/libsanitizer/sanitizer_common/sanitizer_stoptheworld_linux_libcdep.cpp
+index 0f1cadf..ba3d861 100644
+--- a/libsanitizer/sanitizer_common/sanitizer_stoptheworld_linux_libcdep.cpp
++++ b/libsanitizer/sanitizer_common/sanitizer_stoptheworld_linux_libcdep.cpp
+@@ -564,10 +564,7 @@ PtraceRegistersStatus SuspendedThreadsListLinux::GetRegistersAndSP(
+       uptr available_bytes = (buffer->size() - size_up) * uptr_sz;
+       regset_io.iov_base = buffer->data() + size_up;
+       regset_io.iov_len = available_bytes;
+-      bool fail =
+-          internal_iserror(internal_ptrace(PTRACE_GETREGSET, tid,
+-                                           (void *)regset, (void *)&regset_io),
+-                           &pterrno);
++      bool fail = true;
+       if (fail) {
+         VReport(1, "Could not get regset %p from thread %d (errno %d).\n",
+                 (void *)regset, tid, pterrno);
+diff --git a/libstdc++-v3/src/c++17/ryu/f2s_intrinsics.h b/libstdc++-v3/src/c++17/ryu/f2s_intrinsics.h
+index db751a4..63f9a93 100644
+--- a/libstdc++-v3/src/c++17/ryu/f2s_intrinsics.h
++++ b/libstdc++-v3/src/c++17/ryu/f2s_intrinsics.h
+@@ -89,7 +89,6 @@ static inline uint32_t mulShift32(const uint32_t m, const uint64_t factor, const
+ #else // RYU_32_BIT_PLATFORM
+   const uint64_t sum = (bits0 >> 32) + bits1;
+   const uint64_t shiftedSum = sum >> (shift - 32);
+-  assert(shiftedSum <= UINT32_MAX);
+   return (uint32_t) shiftedSum;
+ #endif // RYU_32_BIT_PLATFORM
+ }

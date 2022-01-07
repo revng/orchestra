@@ -85,6 +85,7 @@ configure: |
   extract.sh --into "$SOURCE_DIR" "(@= source_url @)"
   patch-if-exists "${ORCHESTRA_DOTDIR}/patches/gcc-(@= gcc_version @)-cfns-fix-mismatch-in-gnu_inline-attributes.patch" "$SOURCE_DIR"
   patch-if-exists "${ORCHESTRA_DOTDIR}/patches/gcc-(@= gcc_version @)-cpp-musl-support.patch" "$SOURCE_DIR"
+  patch-if-exists "${ORCHESTRA_DOTDIR}/patches/gcc-(@= gcc_version @)-fixes.patch" "$SOURCE_DIR"
   sed -i 's|gcc_gxx_include_dir="${gcc_gxx_without_sysroot}"|gcc_gxx_include_dir="/${gcc_gxx_without_sysroot#/}"|' "$SOURCE_DIR/gcc/configure"
   (@ if "host" in toolchain_name: @)
   sed -i "s|SHLIB_LINK = .(CC)|\0 -L$ORCHESTRA_ROOT/link-only/lib|" "$SOURCE_DIR/libgcc/config/t-slibgcc"
@@ -137,7 +138,7 @@ configure: |
     (@= expand_args(extra_gcc_configure_options) @) \
     (@= expand_args(build_specific_configure_options) @) \
     CFLAGS="-w -ggdb3 -O3 (@= data.values.hard_flags_compile @)" \
-    CXXFLAGS="-w -ggdb3 -O3 (@= data.values.hard_flags_compile @)" \
+    CXXFLAGS="-w -ggdb3 -O3 (@= data.values.hard_flags_compile @) -std=gnu++11" \
     LDFLAGS="(@= data.values.hard_flags_link @) (@= data.values.hard_flags_link_late @) -static-libgcc"
 install: |
   cd "$BUILD_DIR"
