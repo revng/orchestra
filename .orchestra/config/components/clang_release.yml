@@ -8,6 +8,9 @@
 #@ def cmake_opts():
 - -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;libcxxabi;libcxx;clang-tools-extra;lld"
 - -DBUILD_SHARED_LIBS=OFF
+- -DLLVM_ENABLE_LTO=ON
+- -DCMAKE_AR=$ORCHESTRA_ROOT/x86_64-pc-linux-gnu/x86_64-pc-linux-gnu/gcc-bin/(@= gcc_host_version @)/gcc-ar
+- -DCMAKE_RANLIB=$ORCHESTRA_ROOT/x86_64-pc-linux-gnu/x86_64-pc-linux-gnu/gcc-bin/(@= gcc_host_version @)/gcc-ranlib
 #@ end
 
 #@yaml/text-templated-strings
