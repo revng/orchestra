@@ -19,6 +19,8 @@ configure: |
   extract.sh --into "$BUILD_DIR/source" "(@= source_url @)"
   patch-if-exists "${ORCHESTRA_DOTDIR}/patches/clang-release-12.0.0-elf2yaml-wrong-comparisons.patch" "$BUILD_DIR/source"
   patch-if-exists "${ORCHESTRA_DOTDIR}/patches/clang-release-12.0.0-remove-cyclades.patch" "$BUILD_DIR/source"
+  patch-if-exists "${ORCHESTRA_DOTDIR}/patches/clang-release-12.0.0-fix-build-failure-with-gcc-11-in-c-20-mode.patch" "$BUILD_DIR/source"
+  patch-if-exists "${ORCHESTRA_DOTDIR}/patches/clang-release-12.0.0-fix-constructor-declarations-that-are-invalid-in-c-20.patch" "$BUILD_DIR/source"
   sed -i 's|GIT_FOUND|FALSE|g' "$BUILD_DIR/source/llvm/cmake/modules/VersionFromVCS.cmake"
   (@= configure_llvm(cmake_build_type="Release", cflags=" ", additional_cmake_options=cmake_opts(), source_dir="$BUILD_DIR/source") @)
 install: |
