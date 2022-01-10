@@ -12,7 +12,7 @@
 #! a large number of components
 
 #@ clang_release_version = "12.0.0"
-#@ gcc_host_version = "10.1.0"
+#@ gcc_host_version = "11.2.0"
 
 #@data/values
 #@yaml/text-templated-strings
@@ -29,7 +29,7 @@ hard_flags_clang: -gcc-toolchain $ORCHESTRA_ROOT/lib64/gcc/x86_64-pc-linux-gnu/(
 hard_flags_link: -L$INSTALL_LINK_ONLY_PATH/lib -L$ORCHESTRA_ROOT/lib -lrt --sysroot=/ -Wl,-z,origin -Wl,--enable-new-dtags -fuse-ld=gold
 hard_flags_link_late: -Wl,-rpath,$RPATH_PLACEHOLDER/lib
 hard_flags_link_gold: -Wl,--gdb-index
-hard_flags_clangtidy: --extra-arg-before=-nostdinc++ --extra-arg-before=-nostdinc --extra-arg-before=-idirafter --extra-arg-before=$ORCHESTRA_ROOT/include/c++/v1 --extra-arg-before=-idirafter --extra-arg-before=$ORCHESTRA_ROOT/lib/clang/(@= clang_release_version @)/include --extra-arg-before=-idirafter --extra-arg-before=$ORCHESTRA_ROOT/link-only/include --extra-arg-before=-idirafter --extra-arg-before=/usr/include
+hard_flags_clangtidy: --extra-arg-before=-nostdinc++ --extra-arg-before=-nostdinc --extra-arg-before=-idirafter --extra-arg-before=$ORCHESTRA_ROOT/include/c++/v1 --extra-arg-before=-idirafter --extra-arg-before=$ORCHESTRA_ROOT/lib/clang/(@= clang_release_version @)/include --extra-arg-before=-idirafter --extra-arg-before=$ORCHESTRA_ROOT/link-only/include --extra-arg-before=-idirafter --extra-arg-before=/usr/include/x86_64-linux-gnu --extra-arg-before=-idirafter --extra-arg-before=/usr/include
 
 parallelism: $(nproc)
 build_from_source: []
