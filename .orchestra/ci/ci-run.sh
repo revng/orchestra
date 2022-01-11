@@ -195,13 +195,23 @@ for BINARY_ARCHIVE_PATH in $(orc ls --binary-archives); do
     log "Commit for $BINARY_ARCHIVE_PATH: $(git -C "$BINARY_ARCHIVE_PATH" rev-parse HEAD)"
 done
 
+# Ensure we are doing a clean build
+orc clean --all
+
 #
 # Actually run the build
 #
 ERRORS=0
 for TARGET_COMPONENT in $TARGET_COMPONENTS; do
     log "Building target component $TARGET_COMPONENT"
-    if ! orc --quiet install --lfs-retries "$LFS_RETRIES" "$BUILD_MODE" --test --create-binary-archives "$TARGET_COMPONENT"; then
+    if ! orc --quiet install \
+        --discard-build-directories \
+        --lfs-retries "$LFS_RETRIES" \
+        "$BUILD_MODE" \
+        --test \
+        --create-binary-archives \
+        "$TARGET_COMPONENT";
+    then
         ERRORS=1
         break
     fi
