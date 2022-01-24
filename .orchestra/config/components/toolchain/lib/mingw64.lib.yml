@@ -28,7 +28,7 @@ configure: |
   export CC="${NEW_GCC}"
   export CPPFLAGS="-I${ORCHESTRA_ROOT}/(@= triple @)/usr/include"
   export CHOST="(@= triple @)"
-  (@ end -@)
+  (@ end @)
   "$BUILD_DIR/configure" \
     --disable-silent-rules \
     --target=(@= triple @) \

@@ -43,21 +43,21 @@ builds:
       (@- if pre_install: @)
       (@-= pre_install @)
       (@ end -@)
-      (@- if build_system == "make": @)
+      (@- if build_system == "make": -@)
       cd "$BUILD_DIR"
       (@= make @)
       (@= make @) install DESTDIR="$DESTDIR"
-      (@- elif build_system == "ninja": @)
+      (@- elif build_system == "ninja": -@)
       cd "$BUILD_DIR"
       (@= ninja @) install
       (@- elif install: @)
-      (@-= install -@)
+      (@-= install @)
       (@- else: @)
-      (@- fail("build_system must be either make or ninja or you must specify an install script") @)
-      (@- end -@)
+      (@ fail("build_system must be either make or ninja or you must specify an install script") @)
+      (@ end @)
       (@- if post_install: @)
-      (@= post_install -@)
-      (@- end -@)
+      (@= post_install @)
+      (@- end @)
 #@ if/end add_to_path:
 add_to_path: #@ add_to_path
 

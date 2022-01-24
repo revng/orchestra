@@ -65,7 +65,7 @@
 (@= flavor @):
   configure: |
     (@- if pre_configure_script: @)
-    (@= pre_configure_script @)
+    (@-= pre_configure_script @)
     (@ end -@)
 
     (@- if source_url: @)
@@ -78,13 +78,14 @@
     (@= cmake @) \
       "$SOURCE_DIR" \
       -G"(@= build_system @)" \
-      (@= expand_args(cmdline_cmake_base_configuration(cmake_build_type=opts["cmake_build_type"], extra_compiler_flags=opts["extra_compiler_flags"])) @) \
+      (@= expand_args(cmdline_cmake_base_configuration(cmake_build_type=opts["cmake_build_type"], extra_compiler_flags=opts["extra_compiler_flags"])) @)
+      (@- if extra_cmake_args: @) \
       (@= expand_args(extra_cmake_args) @)
+      (@- end @)
 
     (@- if post_configure_script: @)
     (@= post_configure_script @)
-    (@ end -@)
-
+    (@ end @)
   install: |
     (@- if pre_install_script: @)
     (@= pre_install_script @)
@@ -98,14 +99,13 @@
       ctest --output-on-failure ${JOBS:+-j$JOBS}
       cd -
     fi
-    (@ end -@)
+    (@- end @)
 
     cmake --install "$BUILD_DIR"
 
     (@- if post_install_script: @)
     (@= post_install_script @)
-    (@ end -@)
-
+    (@ end @)
   #@ if/end dependencies:
   dependencies: #@ dependencies
 
