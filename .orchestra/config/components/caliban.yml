@@ -1,3 +1,4 @@
+#@ load("@ytt:data", "data")
 #@ load("@ytt:overlay", "overlay")
 
 #@ load("/lib/cmake.lib.yml", "cmake_boost_configuration", "typical_cmake_builds")
@@ -29,5 +30,5 @@ components:
     repository: caliban
     license: LICENSE.md
     binary_archives: private
-    default_build: optimized
+    default_build: #@ data.values.revng_components_default_build
     builds: #@ typical_cmake_builds(**build_args())

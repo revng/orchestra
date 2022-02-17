@@ -1,3 +1,4 @@
+#@ load("@ytt:data", "data")
 #@ load("@ytt:overlay", "overlay")
 #@ load("/lib/cmake.lib.yml", "cmake_boost_configuration", "typical_cmake_builds")
 
@@ -24,6 +25,6 @@ components:
   revng-c:
     repository: revng-c
     license: LICENSE.md
-    default_build: optimized
+    default_build: #@ data.values.revng_components_default_build
     binary_archives: private
     builds: #@ typical_cmake_builds(**build_args())

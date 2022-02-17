@@ -1,6 +1,6 @@
 #@ load("@ytt:data", "data")
 #@ load("@ytt:overlay", "overlay")
-#@ load("/lib/make.lib.yml", "make")
+#@ load("/lib/make.lib.yml", "make", "serial_make")
 #@ load("/lib/shell.lib.yml", "expand_args")
 #@ load("/lib/optimization_flavors.lib.yml", "qt_optimization_flavors")
 
@@ -98,7 +98,7 @@
 ---
 #@ def qt_component():
 license: LICENSE.GPLv3
-default_build: optimized
+default_build: #@ data.values.revng_components_default_build
 builds:
   #@ for flavor, opts in qt_optimization_flavors.items():
   #@ extra_qmake_options = opts["extra_qmake_options"]
@@ -115,7 +115,7 @@ builds:
       cd "$BUILD_DIR"
 
       (@= make @)
-      (@= make @) install INSTALL_ROOT=$TMP_ROOT
+      (@= serial_make @) install INSTALL_ROOT=$TMP_ROOT
 
       rm "${TMP_ROOT}${ORCHESTRA_ROOT}/lib64/cmake/Qt5Gui/Qt5GuiConfigExtras.cmake"
       touch "${TMP_ROOT}${ORCHESTRA_ROOT}/lib64/cmake/Qt5Gui/Qt5GuiConfigExtras.cmake"
