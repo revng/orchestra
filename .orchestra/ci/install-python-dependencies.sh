@@ -17,6 +17,7 @@ PYTHON_DEPENDENCIES=(
   pydot
   grandiso
   Jinja2
+  datamodel-code-generator
 )
 
 pip3 -q install --user --upgrade "${PYTHON_DEPENDENCIES[@]}"
