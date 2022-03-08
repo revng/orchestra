@@ -44,7 +44,6 @@ builds:
         - host-c-toolchain
         - clang-release
         - glibc
-        - llvm
       dependencies:
         - zlib
         - glib
