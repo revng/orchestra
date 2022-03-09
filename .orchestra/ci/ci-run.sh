@@ -222,8 +222,10 @@ if [[ "$PROMOTE_BRANCHES" = 1 ]] || [[ "$PUSH_CHANGES" = 1 ]]; then
     # Promote `next-*` branches to `*`
     #
     if test "$ERRORS" -eq 0; then
-        # Clone all the components having branch next-*
-        for COMPONENT in $(orc components --json --branch 'next-*' | jq -r ".[].name"); do
+        # Clone all the components installed during this run that have a next-* branch
+        # We have to clone them explicitly because they might have been installed from binary archives and we need the
+        # repo to perform branch promotion
+        for COMPONENT in $(orc components --installed --json --branch 'next-*' | jq -r ".[].name"); do
             log "Cloning $COMPONENT"
             orc clone --no-force "$COMPONENT"
         done
