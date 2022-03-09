@@ -201,6 +201,11 @@ orc clean --all
 #
 # Actually run the build
 #
+ADDITIONAL_ORC_INSTALL_OPTIONS=()
+if [[ "$PUSH_BINARY_ARCHIVES" = 1 ]] || [[ "$PUSH_CHANGES" = 1 ]]; then
+    ADDITIONAL_ORC_INSTALL_OPTIONS+=(--create-binary-archives)
+fi
+
 ERRORS=0
 for TARGET_COMPONENT in $TARGET_COMPONENTS; do
     log "Building target component $TARGET_COMPONENT"
@@ -209,7 +214,7 @@ for TARGET_COMPONENT in $TARGET_COMPONENTS; do
         --lfs-retries "$LFS_RETRIES" \
         "$BUILD_MODE" \
         --test \
-        --create-binary-archives \
+        "${ADDITIONAL_ORC_INSTALL_OPTIONS[@]}" \
         "$TARGET_COMPONENT";
     then
         ERRORS=1
