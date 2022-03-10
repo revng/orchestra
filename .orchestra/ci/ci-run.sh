@@ -201,6 +201,11 @@ orc clean --all
 #
 # Actually run the build
 #
+ADDITIONAL_ORC_INSTALL_OPTIONS=()
+if [[ "$PUSH_BINARY_ARCHIVES" = 1 ]] || [[ "$PUSH_CHANGES" = 1 ]]; then
+    ADDITIONAL_ORC_INSTALL_OPTIONS+=(--create-binary-archives)
+fi
+
 ERRORS=0
 for TARGET_COMPONENT in $TARGET_COMPONENTS; do
     log "Building target component $TARGET_COMPONENT"
@@ -209,7 +214,7 @@ for TARGET_COMPONENT in $TARGET_COMPONENTS; do
         --lfs-retries "$LFS_RETRIES" \
         "$BUILD_MODE" \
         --test \
-        --create-binary-archives \
+        "${ADDITIONAL_ORC_INSTALL_OPTIONS[@]}" \
         "$TARGET_COMPONENT";
     then
         ERRORS=1
@@ -222,8 +227,10 @@ if [[ "$PROMOTE_BRANCHES" = 1 ]] || [[ "$PUSH_CHANGES" = 1 ]]; then
     # Promote `next-*` branches to `*`
     #
     if test "$ERRORS" -eq 0; then
-        # Clone all the components having branch next-*
-        for COMPONENT in $(orc components --json --branch 'next-*' | jq -r ".[].name"); do
+        # Clone all the components installed during this run that have a next-* branch
+        # We have to clone them explicitly because they might have been installed from binary archives and we need the
+        # repo to perform branch promotion
+        for COMPONENT in $(orc components --installed --json --branch 'next-*' | jq -r ".[].name"); do
             log "Cloning $COMPONENT"
             orc clone --no-force "$COMPONENT"
         done
