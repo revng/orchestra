@@ -28,6 +28,12 @@ install: |
 
   (@= ninja @) install
 
+  export HARD_FLAGS_C_CLANG="-w"
+  export HARD_FLAGS_CXX_CLANG="-w"
+  if test "$RUN_TESTS" -eq 1; then
+    (@= ninja @) check-all
+  fi
+
   rm "${DESTDIR}${ORCHESTRA_ROOT}/lib64/libc++.so" || true
   echo 'INPUT(libc++.so.1 -lc++abi -lpthread)' > "${DESTDIR}${ORCHESTRA_ROOT}/lib64/libc++.so"
 
