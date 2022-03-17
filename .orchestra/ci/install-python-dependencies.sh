@@ -4,6 +4,7 @@ set -e
 
 PYTHON_DEPENDENCIES=(
   "black"
+  "cmakelang"
   "datamodel-code-generator"
   "Jinja2"
   "grandiso"
