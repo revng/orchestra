@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
 COPY install-dependencies.sh /install-dependencies.sh
 COPY install-system-dependencies.sh /install-system-dependencies.sh
