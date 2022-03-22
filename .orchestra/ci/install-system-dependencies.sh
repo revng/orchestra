@@ -42,6 +42,7 @@ apt-get -qq install --no-install-recommends --yes \
   rsync \
   sed \
   ssh \
+  sudo \
   texinfo \
   valgrind \
   wget \
