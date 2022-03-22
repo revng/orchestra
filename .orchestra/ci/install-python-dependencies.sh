@@ -5,7 +5,6 @@ set -e
 PYTHON_DEPENDENCIES=(
   "black"
   "cmakelang"
-  "datamodel-code-generator"
   "Jinja2"
   "grandiso"
   "graphlib-backport"
@@ -15,7 +14,6 @@ PYTHON_DEPENDENCIES=(
   "mako"
   "meson==0.56.2"
   "networkx"
-  "pydantic"
   "pydot"
   "pyelftools"
   # pydot 3.0.2 introduced an incompatibility with pydot which is supposed to be resolved in a later version,
