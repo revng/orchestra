@@ -4,29 +4,171 @@
 #@ load("/lib/create_component.lib.yml", "single_build_component")
 #@ load("/lib/ninja.lib.yml", "ninja")
 
+#! This should always point to the `clang-release` tag
+#@ source_url = "https://github.com/revng/llvm-project/archive/0597b8e.tar.gz"
+
+#! Disable this to facilitate LLVM update
+#@ llvm_enable_pgo_lto = True
+
+#@ if llvm_enable_pgo_lto:
 ---
-#@ def cmake_opts():
+#@ def cmake_vanilla_opts():
+- -DLLVM_ENABLE_PROJECTS="clang;lld;compiler-rt"
+- -DBUILD_SHARED_LIBS=OFF
+- -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT/clang-vanilla"
+- -DLLVM_TARGETS_TO_BUILD="X86"
+#@ end
+
+#@yaml/text-templated-strings
+---
+#@ def clang_vanilla_args():
+license: source/llvm/LICENSE.TXT
+configure: |
+  extract.sh --into "$BUILD_DIR/source" "(@= source_url @)"
+  sed -i 's|GIT_FOUND|FALSE|g' "$BUILD_DIR/source/llvm/cmake/modules/VersionFromVCS.cmake"
+  (@= configure_llvm(cmake_build_type="Release", cflags="-w", additional_cmake_options=cmake_vanilla_opts(), source_dir="$BUILD_DIR/source") @)
+install: |
+  cd "$BUILD_DIR"
+
+  (@= ninja @) install
+
+  COMPILER_WRAPPER="${ORCHESTRA_DOTDIR}/support/hard-flags-compiler-wrapper.py"
+  mkdir -p "${DESTDIR}${ORCHESTRA_ROOT}/clang-vanilla/wrapped-bin"
+  cd "${DESTDIR}${ORCHESTRA_ROOT}/clang-vanilla/wrapped-bin"
+  cp -a "$COMPILER_WRAPPER" clang
+  cp -a "$COMPILER_WRAPPER" clang++
+  cp -a "$COMPILER_WRAPPER" clang-tidy
+build_dependencies:
+  - cmake
+dependencies:
+  - gcc-host-toolchain
+  - libunwind
+  - zlib
+  - ncurses
+#@ end
+
+---
+#@ def cmake_profiling_data_opts():
 - -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;libcxxabi;libcxx;clang-tools-extra;lld"
 - -DBUILD_SHARED_LIBS=OFF
+- -DLLVM_ENABLE_LTO=Thin
+- -DLLVM_USE_LINKER=lld
+- -DLLVM_BUILD_INSTRUMENTED=IR
+- -DLLVM_BUILD_RUNTIME=No
+- -DCMAKE_AR=$ORCHESTRA_ROOT/clang-vanilla/bin/llvm-ar
+- -DCMAKE_RANLIB=$ORCHESTRA_ROOT/clang-vanilla/bin/llvm-ranlib
+- -DCMAKE_C_COMPILER=$ORCHESTRA_ROOT/clang-vanilla/wrapped-bin/clang
+- -DCMAKE_CXX_COMPILER=$ORCHESTRA_ROOT/clang-vanilla/wrapped-bin/clang++
+- -DLIBCXXABI_HAS_CXA_THREAD_ATEXIT_IMPL=0
+- -DLLVM_TARGETS_TO_BUILD=X86
+#@ end
+
+#@yaml/text-templated-strings
+---
+#@ def clang_profiling_data_args():
+license: source/llvm/LICENSE.TXT
+configure: |
+  extract.sh --into "$BUILD_DIR/source" "(@= source_url @)"
+
+  SUPPORT_UNITTESTS="$BUILD_DIR/source/llvm/unittests/Support"
+  rm "$SUPPORT_UNITTESTS/JSONTest.cpp"
+  rm "$SUPPORT_UNITTESTS/DJBTest.cpp"
+  grep -vE 'JSONTest.cpp|DJBTest.cpp' "$SUPPORT_UNITTESTS/CMakeLists.txt" > "$SUPPORT_UNITTESTS/CMakeLists.txt.tmp"
+  mv "$SUPPORT_UNITTESTS/CMakeLists.txt.tmp" "$SUPPORT_UNITTESTS/CMakeLists.txt"
+
+  sed -i 's|GIT_FOUND|FALSE|g' "$BUILD_DIR/source/llvm/cmake/modules/VersionFromVCS.cmake"
+  export PATH="$ORCHESTRA_ROOT/clang-vanilla/wrapped-bin:$ORCHESTRA_ROOT/clang-vanilla/bin:$PATH"
+  export HARD_FLAGS_CXX_CLANG=""
+  (@= configure_llvm(cmake_build_type="Release", cflags="-w", additional_cmake_options=cmake_profiling_data_opts(), source_dir="$BUILD_DIR/source") @)
+install: |
+  export PATH="$ORCHESTRA_ROOT/clang-vanilla/wrapped-bin:$ORCHESTRA_ROOT/clang-vanilla/bin:$PATH"
+  export HARD_FLAGS_CXX_CLANG=""
+  cd "$BUILD_DIR"
+
+  (@= ninja @) clang
+  (@= ninja @) check-llvm || true
+  (@= ninja @) check-clang || true
+
+  rm -rf build-for-profiling
+  mkdir build-for-profiling
+  cd build-for-profiling
+  cmake \
+    "$BUILD_DIR/source/llvm" \
+    -GNinja \
+    -DCMAKE_C_COMPILER="$BUILD_DIR/bin/clang" \
+    -DCMAKE_CXX_COMPILER="$BUILD_DIR/bin/clang++" \
+    -DLLVM_ENABLE_TERMINFO=OFF \
+    -DCMAKE_CXX_STANDARD=20 \
+    -DLLVM_ENABLE_Z3_SOLVER=OFF \
+    -DLLVM_INCLUDE_GO_TESTS=OFF \
+    -DLLVM_TARGETS_TO_BUILD=X86 \
+    -DCMAKE_BUILD_TYPE=RelWithDebInfo
+  (@= ninja @)
+
+  PROFDATA_DIR="${DESTDIR}${ORCHESTRA_ROOT}/share/profdata"
+  mkdir -p "$PROFDATA_DIR"
+  llvm-profdata merge -output="$PROFDATA_DIR/clang-release.prof" $BUILD_DIR/profiles/*.profraw
+build_dependencies:
+  - cmake
+  - clang-vanilla
+dependencies:
+  - gcc-host-toolchain
+  - libunwind
+  - zlib
+  - ncurses
+#@ end
+
+#@ end
+
+---
+#@ def cmake_release_opts():
+- -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;libcxxabi;libcxx;clang-tools-extra;lld"
+- -DBUILD_SHARED_LIBS=OFF
+- -DLIBCXXABI_HAS_CXA_THREAD_ATEXIT_IMPL=0
+#@ if llvm_enable_pgo_lto:
+- -DLLVM_ENABLE_LTO=Thin
+- -DLLVM_USE_LINKER=lld
+- -DCMAKE_AR=$ORCHESTRA_ROOT/clang-vanilla/bin/llvm-ar
+- -DCMAKE_RANLIB=$ORCHESTRA_ROOT/clang-vanilla/bin/llvm-ranlib
+- -DCMAKE_C_COMPILER=$ORCHESTRA_ROOT/clang-vanilla/wrapped-bin/clang
+- -DCMAKE_CXX_COMPILER=$ORCHESTRA_ROOT/clang-vanilla/wrapped-bin/clang++
+- -DLLVM_PROFDATA_FILE="$ORCHESTRA_ROOT/share/profdata/clang-release.prof"
+#@ end
 #@ end
 
 #@yaml/text-templated-strings
 ---
 #@ def clang_release_args():
-#@    source_url = "https://github.com/llvm/llvm-project/archive/llvmorg-" + data.values.clang_release_version + ".tar.gz"
 license: source/llvm/LICENSE.TXT
 configure: |
   extract.sh --into "$BUILD_DIR/source" "(@= source_url @)"
-  patch-if-exists "${ORCHESTRA_DOTDIR}/patches/clang-release-12.0.0-elf2yaml-wrong-comparisons.patch" "$BUILD_DIR/source"
-  patch-if-exists "${ORCHESTRA_DOTDIR}/patches/clang-release-12.0.0-remove-cyclades.patch" "$BUILD_DIR/source"
-  patch-if-exists "${ORCHESTRA_DOTDIR}/patches/clang-release-12.0.0-fix-build-failure-with-gcc-11-in-c-20-mode.patch" "$BUILD_DIR/source"
-  patch-if-exists "${ORCHESTRA_DOTDIR}/patches/clang-release-12.0.0-fix-constructor-declarations-that-are-invalid-in-c-20.patch" "$BUILD_DIR/source"
+
+  # compiler-rt tests fail abundantly (in the CI only)
+  find "$BUILD_DIR/source/compiler-rt/test" -name "lit.*" -type f | while read FILE; do
+    echo > "$FILE"
+  done
+
   sed -i 's|GIT_FOUND|FALSE|g' "$BUILD_DIR/source/llvm/cmake/modules/VersionFromVCS.cmake"
-  (@= configure_llvm(cmake_build_type="Release", cflags=" ", additional_cmake_options=cmake_opts(), source_dir="$BUILD_DIR/source") @)
+  (@ if llvm_enable_pgo_lto: @)
+  export PATH="$ORCHESTRA_ROOT/clang-vanilla/wrapped-bin:$ORCHESTRA_ROOT/clang-vanilla/bin:$PATH"
+  (@ end @)
+  export HARD_FLAGS_CXX_CLANG=""
+  (@= configure_llvm(cmake_build_type="Release", cflags="-w", additional_cmake_options=cmake_release_opts(), source_dir="$BUILD_DIR/source") @)
 install: |
+  (@ if llvm_enable_pgo_lto: @)
+  export PATH="$ORCHESTRA_ROOT/clang-vanilla/wrapped-bin:$ORCHESTRA_ROOT/clang-vanilla/bin:$PATH"
+  (@ end @)
+  export HARD_FLAGS_CXX_CLANG=""
+
   cd "$BUILD_DIR"
 
   (@= ninja @) install
+
+  export HARD_FLAGS_C_CLANG="-w"
+  export HARD_FLAGS_CXX_CLANG="-w"
+  if test "$RUN_TESTS" -eq 1; then
+    (@= ninja @) check-all
+  fi
 
   rm "${DESTDIR}${ORCHESTRA_ROOT}/lib64/libc++.so" || true
   echo 'INPUT(libc++.so.1 -lc++abi -lpthread)' > "${DESTDIR}${ORCHESTRA_ROOT}/lib64/libc++.so"
@@ -50,8 +192,13 @@ install: |
   cp -a "$COMPILER_WRAPPER" clang
   cp -a "$COMPILER_WRAPPER" clang++
   cp -a "$COMPILER_WRAPPER" clang-tidy
+
 build_dependencies:
   - cmake
+#@ if llvm_enable_pgo_lto:
+  - clang-vanilla
+  - clang-profiling-data
+#@ end
 dependencies:
   - gcc-host-toolchain
   - libunwind
@@ -63,4 +210,8 @@ dependencies:
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
+#@ if llvm_enable_pgo_lto:
+  clang-vanilla: #@ single_build_component(**clang_vanilla_args())
+  clang-profiling-data: #@ single_build_component(**clang_profiling_data_args())
+#@ end
   clang-release: #@ single_build_component(**clang_release_args())
