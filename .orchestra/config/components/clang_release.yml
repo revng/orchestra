@@ -5,7 +5,7 @@
 #@ load("/lib/ninja.lib.yml", "ninja")
 
 #! This should always point to the `clang-release` tag
-#@ source_url = "https://github.com/revng/llvm-project/archive/0597b8e.tar.gz"
+#@ source_url = "https://github.com/revng/llvm-project/archive/8419a8a.tar.gz"
 
 #! Disable this to facilitate LLVM update
 #@ llvm_enable_pgo_lto = True
@@ -123,8 +123,10 @@ dependencies:
 ---
 #@ def cmake_release_opts():
 - -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;libcxxabi;libcxx;clang-tools-extra;lld"
-- -DBUILD_SHARED_LIBS=OFF
+- -DBUILD_SHARED_LIBS=ON
 - -DLIBCXXABI_HAS_CXA_THREAD_ATEXIT_IMPL=0
+- -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT/lib/llvm/clang-release"
+- -DCMAKE_INSTALL_RPATH="$RPATH_PLACEHOLDER/lib/llvm/clang-release/lib:$RPATH_PLACEHOLDER/lib"
 #@ if llvm_enable_pgo_lto:
 - -DLLVM_ENABLE_LTO=Thin
 - -DLLVM_USE_LINKER=lld
@@ -162,30 +164,49 @@ install: |
 
   cd "$BUILD_DIR"
 
+  # Build
   (@= ninja @) install
 
+  # Run tests
   export HARD_FLAGS_C_CLANG="-w"
   export HARD_FLAGS_CXX_CLANG="-w"
   if test "$RUN_TESTS" -eq 1; then
     (@= ninja @) check-all
   fi
 
-  rm "${DESTDIR}${ORCHESTRA_ROOT}/lib64/libc++.so" || true
-  echo 'INPUT(libc++.so.1 -lc++abi -lpthread)' > "${DESTDIR}${ORCHESTRA_ROOT}/lib64/libc++.so"
+  # Fix libc++
+  rm "${DESTDIR}${ORCHESTRA_ROOT}/lib/llvm/clang-release/lib/libc++.so" || true
+  echo 'INPUT(libc++.so.1 -lc++abi -lpthread)' > "${DESTDIR}${ORCHESTRA_ROOT}/lib/llvm/clang-release/lib/libc++.so"
 
-  if test -z "$DESTDIR"; then
-    echo "Installing clang-release which will clobber LLVM!"
-  else
-    find ${DESTDIR}${ORCHESTRA_ROOT}/lib* -maxdepth 1 -not -type d \( -name libLLVM* -or -name libclang* \) -delete;
-    rm ${DESTDIR}${ORCHESTRA_ROOT}/bin/opt || true
-    rm ${DESTDIR}${ORCHESTRA_ROOT}/bin/llvm-config || true
-    rm -rf ${DESTDIR}${ORCHESTRA_ROOT}/lib*/cmake/ || true
-    rm -rf ${DESTDIR}${ORCHESTRA_ROOT}/include/clang/ || true
-    rm -rf ${DESTDIR}${ORCHESTRA_ROOT}/include/clang-c/ || true
-    rm -rf ${DESTDIR}${ORCHESTRA_ROOT}/include/llvm/ || true
-    rm -rf ${DESTDIR}${ORCHESTRA_ROOT}/include/llvm-c/ || true
-  fi
+  # Symlink to /lib/llvm/clang-release/bin/* to /bin
+  for EXECUTABLE in "${DESTDIR}${ORCHESTRA_ROOT}/lib/llvm/clang-release/bin/"*; do
+    ln \
+      -s $(
+        realpath \
+          --no-symlinks \
+          --relative-to="${DESTDIR}${ORCHESTRA_ROOT}/bin" \
+          "${EXECUTABLE}"
+      ) \
+      "${DESTDIR}${ORCHESTRA_ROOT}/bin"
+  done
 
+  # Symlink to /lib/llvm/clang-release/lib/libc++*.so* to /lib
+  for LIBRARY in "${DESTDIR}${ORCHESTRA_ROOT}/lib/llvm/clang-release/lib/"libc++*.so*; do
+    ln \
+      -s $(
+        realpath \
+          --no-symlinks \
+          --relative-to="${DESTDIR}${ORCHESTRA_ROOT}/lib" \
+          "${LIBRARY}"
+      ) \
+      "${DESTDIR}${ORCHESTRA_ROOT}/lib"
+  done
+
+  # Leave `opt` and `llvm-config` to the `llvm` component
+  rm -f "${DESTDIR}${ORCHESTRA_ROOT}/bin/opt"*
+  rm -f "${DESTDIR}${ORCHESTRA_ROOT}/bin/llvm-config"*
+
+  # Create wrappers
   mkdir -p "${DESTDIR}${ORCHESTRA_ROOT}/link-only/bin"
   COMPILER_WRAPPER="${ORCHESTRA_DOTDIR}/support/hard-flags-compiler-wrapper.py"
   cd "${DESTDIR}${ORCHESTRA_ROOT}/link-only/bin"

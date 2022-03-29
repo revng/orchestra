@@ -32,16 +32,24 @@ builds:
         cd "$BUILD_DIR"
         (@= ninja @) install
 
-        CLANG_RELEASE_IDX="$ORCHESTRA_ROOT/share/orchestra/clang-release.idx"
-        if [ -e "$CLANG_RELEASE_IDX" ]; then
-          cat "$CLANG_RELEASE_IDX" | while read f; do
-            rm "${TMP_ROOT}${ORCHESTRA_ROOT}/$f" || true
-          done
-        fi
-
         if test "$RUN_TESTS" -eq 1; then
           (@= ninja @) check-all
         fi
+
+        # Keep only `opt` and `llvm-config` from `/bin`
+        mkdir "${DESTDIR}${ORCHESTRA_ROOT}/bin-tmp"
+
+        for EXECUTABLE in opt llvm-config; do
+          mv \
+            "${DESTDIR}${ORCHESTRA_ROOT}/bin/$EXECUTABLE"* \
+            "${DESTDIR}${ORCHESTRA_ROOT}/bin-tmp"
+        done
+    
+        rm -rf "${DESTDIR}${ORCHESTRA_ROOT}/bin"
+    
+        mv \
+          "${DESTDIR}${ORCHESTRA_ROOT}/bin-tmp" \
+          "${DESTDIR}${ORCHESTRA_ROOT}/bin"
 
       build_dependencies:
         - cmake
