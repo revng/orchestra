@@ -12,21 +12,23 @@ o3: -ggdb3 -Wl,--gc-sections -ffunction-sections -O3
 
 #@ libc_optimization_flavors = dict(_libc_optimization_flavors())
 
+#@ common_flags = "-ggdb3"
+
 #@yaml/text-templated-strings
 ---
 #@ def _typical_project_flavors(use_asan=False):
 #@   asan="-fsanitize=address" if use_asan else ""
 optimized:
   cmake_build_type: Debug
-  extra_compiler_flags: -ggdb3 -O2 -fno-omit-frame-pointer (@= asan @)
+  extra_compiler_flags: (@= common_flags @) -O2 -fno-omit-frame-pointer (@= asan @)
   ndebug: false
 debug:
   cmake_build_type: Debug
-  extra_compiler_flags: -ggdb3 -O0 (@= asan @)
+  extra_compiler_flags: (@= common_flags @) -O0 (@= asan @)
   ndebug: false
 release:
   cmake_build_type: Release
-  extra_compiler_flags: -ggdb3 -O2 (@= asan @)
+  extra_compiler_flags: (@= common_flags @) -O2 (@= asan @)
   ndebug: true
 #@ end
 
@@ -41,15 +43,15 @@ release:
 #@   asan="-fsanitize=address" if use_asan else ""
 optimized:
   cmake_build_type: Debug
-  extra_compiler_flags: -ggdb3 -O2 -fno-omit-frame-pointer (@= asan @)
+  extra_compiler_flags: (@= common_flags @) -O2 -fno-omit-frame-pointer (@= asan @)
   ndebug: false
 debug:
   cmake_build_type: Debug
-  extra_compiler_flags: -ggdb3 -O0 (@= asan @)
+  extra_compiler_flags: (@= common_flags @) -O0 (@= asan @)
   ndebug: false
 release:
   cmake_build_type: Release
-  extra_compiler_flags: -ggdb3 -O2 (@= asan @)
+  extra_compiler_flags: (@= common_flags @) -O2 (@= asan @)
   ndebug: true
 #@ end
 
@@ -80,21 +82,21 @@ debug:
   extra_qmake_args:
     - CONFIG+=debug
     - CONFIG-=release
-    - QMAKE_CXXFLAGS_DEBUG+="-ggdb3 -O0 -fno-omit-frame-pointer"
-    - QMAKE_LFLAGS+="-ggdb3 -O0"
+    - QMAKE_CXXFLAGS_DEBUG+="(@= common_flags @) -O0 -fno-omit-frame-pointer"
+    - QMAKE_LFLAGS+="(@= common_flags @) -O0"
   ndebug: false
 optimized:
   extra_qmake_args:
     - CONFIG+=debug
     - CONFIG-=release
-    - QMAKE_CXXFLAGS_DEBUG+="-ggdb3 -O2 -fno-omit-frame-pointer"
-    - QMAKE_LFLAGS+="-ggdb3 -O2"
+    - QMAKE_CXXFLAGS_DEBUG+="(@= common_flags @) -O2 -fno-omit-frame-pointer"
+    - QMAKE_LFLAGS+="(@= common_flags @) -O2"
   ndebug: false
 release:
   extra_qmake_args:
     - CONFIG+=release
-    - QMAKE_CXXFLAGS_RELEASE+="-ggdb3 -O2"
-    - QMAKE_LFLAGS+="-ggdb3 -O2"
+    - QMAKE_CXXFLAGS_RELEASE+="(@= common_flags @) -O2"
+    - QMAKE_LFLAGS+="(@= common_flags @) -O2"
   ndebug: true
 #@ end
 
