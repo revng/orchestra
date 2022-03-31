@@ -1,10 +1,12 @@
 #@ load("@ytt:overlay", "overlay")
+#@ load("@ytt:data", "data")
 #@ load("/lib/cmake.lib.yml", "cmake_boost_configuration", "typical_cmake_builds")
 
 ---
 #@ def build_args():
 test: true
 extra_cmake_args: #@ cmake_boost_configuration
+extra_compiler_flags: #@ data.values.revng_extra_compiler_flags
 build_dependencies:
   - cmake
   - glibc

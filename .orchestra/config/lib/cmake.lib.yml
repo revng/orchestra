@@ -49,6 +49,7 @@
 ---
 #@ def typical_cmake_builds(
 #@        extra_cmake_args=[],
+#@        extra_compiler_flags="",
 #@        build_system="Ninja",
 #@        dependencies=[],
 #@        build_dependencies=[],
@@ -62,6 +63,7 @@
 #@ ):
 
 #@ for flavor, opts in typical_cmake_flavors(use_asan=use_asan).items():
+#@ flavor_extra_compiler_flags = opts["extra_compiler_flags"] + " " + extra_compiler_flags
 (@= flavor @):
   configure: |
     (@- if pre_configure_script: @)
@@ -78,7 +80,7 @@
     (@= cmake @) \
       "$SOURCE_DIR" \
       -G"(@= build_system @)" \
-      (@= expand_args(cmdline_cmake_base_configuration(cmake_build_type=opts["cmake_build_type"], extra_compiler_flags=opts["extra_compiler_flags"])) @)
+      (@= expand_args(cmdline_cmake_base_configuration(cmake_build_type=opts["cmake_build_type"], extra_compiler_flags=flavor_extra_compiler_flags)) @)
       (@- if extra_cmake_args: @) \
       (@= expand_args(extra_cmake_args) @)
       (@- end @)
