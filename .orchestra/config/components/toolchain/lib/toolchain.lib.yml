@@ -1,7 +1,5 @@
 #@ load("@ytt:template", "template")
 
-#@ load("/lib/fn_args.lib.yml", "mandatory")
-
 #@ load("/components/toolchain/lib/linux_headers.lib.yml", "create_linux_headers_component")
 #@ load("/components/toolchain/lib/binutils.lib.yml", "create_binutils_component")
 #@ load("/components/toolchain/lib/gdb.lib.yml", "create_gdb_component")
@@ -15,8 +13,9 @@
 #@yaml/text-templated-strings
 ---
 #@ def create_toolchain_components(
-#@    toolchain_name=mandatory,
-#@    triple=mandatory,
+#@    *,
+#@    toolchain_name,
+#@    triple,
 #@    linux_arch_name=None,
 #@    linux_version=None,
 #@    binutils_version=None,
@@ -33,7 +32,7 @@
 #@    extra_binutils_configure_options=None,
 #@    extra_gcc_make_variables="",
 #@    dynamic=None,
-#@    spec=False,
+#@    spec=False
 #@ ):
 
 #@ if/end binutils_version:
@@ -55,7 +54,7 @@
 (@= "toolchain/" + toolchain_name + "/musl" @): #@ create_musl_component(triple=triple, musl_version=musl_version, toolchain_name=toolchain_name, gcc_version=gcc_version)
 
 #@ if/end coreutils_version:
-(@= "toolchain/" + toolchain_name + "/coreutils" @): #@ create_coreutils_component(triple=triple, coreutils_version=coreutils_version)
+(@= "toolchain/" + toolchain_name + "/coreutils" @): #@ create_coreutils_component(triple=triple, toolchain_name=toolchain_name, coreutils_version=coreutils_version, mingw64_version=mingw64_version, musl_version=musl_version, uclibc_version=uclibc_version)
 
 #@ if/end uclibc_version:
 (@= "toolchain/" + toolchain_name + "/uclibc" @): #@ create_uclibc_component(triple=triple, toolchain_name=toolchain_name, uclibc_version=uclibc_version, uclibc_arch_name=uclibc_arch_name, gcc_version=gcc_version, binutils_version=binutils_version)

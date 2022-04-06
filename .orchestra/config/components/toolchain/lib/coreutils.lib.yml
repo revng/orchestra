@@ -1,13 +1,43 @@
-#@ load("/lib/fn_args.lib.yml", "mandatory")
-#@ load("/lib/make.lib.yml", "make")
+#@ load("@ytt:template", "template")
 
+#@ load("/lib/make.lib.yml", "make")
 #@ load("/lib/optimization_flavors.lib.yml", "libc_optimization_flavors")
 
 #@yaml/text-templated-strings
 ---
-#@ def coreutils_build(triple=mandatory, coreutils_version=mandatory, additional_cflags="", additional_ldflags=""):
+#@ def libc_dependencies(
+#@     *,
+#@     toolchain_name,
+#@     mingw64_version,
+#@     musl_version,
+#@     uclibc_version
+#@   ):
 
-#@   source_url = "https://ftp.gnu.org/gnu/coreutils/coreutils-" + coreutils_version + ".tar.xz"
+#@ if/end mingw64_version:
+- toolchain/(@= toolchain_name @)/mingw64
+
+#@ if/end musl_version:
+- toolchain/(@= toolchain_name @)/musl
+
+#@ if/end uclibc_version:
+- toolchain/(@= toolchain_name @)/uclibc
+
+#@ end
+
+#@yaml/text-templated-strings
+---
+#@ def coreutils_build(
+#@     *,
+#@     triple,
+#@     toolchain_name,
+#@     coreutils_version,
+#@     mingw64_version,
+#@     musl_version,
+#@     uclibc_version,
+#@     additional_cflags="",
+#@     additional_ldflags=""
+#@   ):
+#@ source_url = "https://ftp.gnu.org/gnu/coreutils/coreutils-" + coreutils_version + ".tar.xz"
 configure: |
   mkdir -p "$BUILD_DIR"
 
@@ -34,16 +64,26 @@ install: |
   cd "$BUILD_DIR"
   (@= make @)
   (@= make @) install
+dependencies:
+  - #@ template.replace(libc_dependencies(toolchain_name=toolchain_name, mingw64_version=mingw64_version, musl_version=musl_version, uclibc_version=uclibc_version))
 #@ end
 
 #@yaml/text-templated-strings
 ---
-#@ def create_coreutils_component(triple=mandatory, coreutils_version=mandatory):
+#@ def create_coreutils_component(
+#@     *,
+#@     triple,
+#@     toolchain_name,
+#@     coreutils_version,
+#@     mingw64_version,
+#@     musl_version,
+#@     uclibc_version
+#@   ):
 license: COPYING
 default_build: default_static
 builds:
   #@ for flavor, flags in libc_optimization_flavors.items():
-  (@= flavor @)_static: #@ coreutils_build(triple=triple, coreutils_version=coreutils_version, additional_cflags=flags, additional_ldflags="-static")
-  (@= flavor @): #@ coreutils_build(triple=triple, coreutils_version=coreutils_version, additional_cflags=flags)
+  (@= flavor @)_static: #@ coreutils_build(triple=triple, toolchain_name=toolchain_name, coreutils_version=coreutils_version, mingw64_version=mingw64_version, musl_version=musl_version, uclibc_version=uclibc_version, additional_cflags=flags, additional_ldflags="-static")
+  (@= flavor @): #@ coreutils_build(triple=triple, toolchain_name=toolchain_name, coreutils_version=coreutils_version, mingw64_version=mingw64_version, musl_version=musl_version, uclibc_version=uclibc_version, additional_cflags=flags)
   #@ end
 #@ end
