@@ -41,6 +41,7 @@ apt-get -qq install --no-install-recommends --yes \
   python3-setuptools \
   rsync \
   sed \
+  shellcheck \
   ssh \
   sudo \
   texinfo \
