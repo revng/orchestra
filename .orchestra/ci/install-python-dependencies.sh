@@ -5,14 +5,17 @@ set -e
 PYTHON_DEPENDENCIES=(
   "black"
   "cmakelang"
+  "flake8"
   "Jinja2"
   "grandiso"
   "graphlib-backport"
+  "isort"
   "jsonschema"
   # lit version should always match clang-release and llvm version
   "lit==12.0.0"
   "mako"
   "meson==0.56.2"
+  "mypy"
   "networkx"
   "pydot"
   "pyelftools"
@@ -22,6 +25,10 @@ PYTHON_DEPENDENCIES=(
   "pyparsing==2.4.7"
   "pyyaml"
   "setuptools"
+  "types-backports"
+  "types-PyYAML"
+  "types-requests"
+  "types-urllib3"
   "wheel"
 )
 
