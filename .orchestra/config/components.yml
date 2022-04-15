@@ -15,6 +15,7 @@ environment:
   - INSTALL_LINK_ONLY_PATH: $ORCHESTRA_ROOT/link-only
   - LIBGL_DRIVERS_PATH: $ORCHESTRA_ROOT/lib/dri${LIBGL_DRIVERS_PATH:+:${LIBGL_DRIVERS_PATH}}
   - PYTHONPATH: $ORCHESTRA_ROOT/lib/python${PYTHONPATH:+:${PYTHONPATH}}
+  - YARN_RC_FILENAME: $ORCHESTRA_ROOT/share/yarnrc
   - LIBRARY_PATH: /usr/lib/x86_64-linux-gnu
   - HARD_FLAGS_COMPILE: #@ str(datavalue("hard_flags_compile"))
   - HARD_FLAGS_CXX_CLANG: #@ str(datavalue("hard_flags_cxx_clang"))

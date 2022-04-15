@@ -12,6 +12,7 @@ build_dependencies:
   - revng-qa
   - glibc
   - host-cxx-toolchain
+  - revng-js-prerequisites
 dependencies:
   - host-libcxx
   - llvm
