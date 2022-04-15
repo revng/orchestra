@@ -4,6 +4,15 @@ This repository contains the orchestra configuration for rev.ng.
 
 ## Bootstrap
 
+* Clone orchestra
+  ```sh
+  git clone https://github.com/revng/orchestra
+  cd orchestra
+  ```
+* Install dependencies (currently Ubuntu-only):
+  ```sh
+  ./.orchestra/ci/install-dependencies.sh
+  ```
 * Install orchestra script
   ```sh
   pip3 cache remove orchestra
@@ -13,18 +22,9 @@ This repository contains the orchestra configuration for rev.ng.
   ```sh
   export PATH="$HOME/.local/bin:$PATH"
   ```
-* Clone orchestra
-  ```sh
-  git clone https://github.com/revng/orchestra
-  cd orchestra
-  ```
 * Initialize default configuration (and list components)
   ```sh
   orc components
-  ```
-* Install dependencies (currently Ubuntu-only):
-  ```sh
-  ./.orchestra/ci/install-dependencies.sh
   ```
 
 ## Configuration for the public
