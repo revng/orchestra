@@ -4,6 +4,17 @@ set -e
 
 export DEBIAN_FRONTEND=noninteractive
 
+source /etc/os-release
+
+apt-get -qq update
+apt-get -qq install --no-install-recommends --yes ca-certificates curl gpg
+
+curl -fsSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | gpg --dearmor > /usr/share/keyrings/nodesource.gpg
+curl -fsSL https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor > /usr/share/keyrings/yarnkey.gpg
+echo "deb [signed-by=/usr/share/keyrings/nodesource.gpg] https://deb.nodesource.com/node_14.x $VERSION_CODENAME main" \
+  > /etc/apt/sources.list.d/nodesource.list
+echo "deb [signed-by=/usr/share/keyrings/yarnkey.gpg] https://dl.yarnpkg.com/debian stable main" \
+  > /etc/apt/sources.list.d/yarn.list
 apt-get -qq update
 
 apt-get -qq install --no-install-recommends --yes \
@@ -12,9 +23,7 @@ apt-get -qq install --no-install-recommends --yes \
   automake \
   bison \
   build-essential \
-  ca-certificates \
   cmake \
-  curl \
   doxygen \
   flex \
   g++-multilib \
@@ -32,6 +41,7 @@ apt-get -qq install --no-install-recommends --yes \
   libtool \
   m4 \
   ninja-build \
+  nodejs \
   pkg-config \
   python \
   python3 \
@@ -46,6 +56,7 @@ apt-get -qq install --no-install-recommends --yes \
   sudo \
   texinfo \
   valgrind \
+  yarn \
   wget \
   zlib1g-dev
 
