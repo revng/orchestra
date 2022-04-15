@@ -32,6 +32,7 @@ apt-get -qq install --no-install-recommends --yes \
   libtool \
   m4 \
   ninja-build \
+  nodejs \
   pkg-config \
   python \
   python3 \
@@ -46,6 +47,7 @@ apt-get -qq install --no-install-recommends --yes \
   sudo \
   texinfo \
   valgrind \
+  yarnpkg \
   wget \
   zlib1g-dev
 
