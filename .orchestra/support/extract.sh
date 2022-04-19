@@ -1,4 +1,7 @@
 #!/bin/bash
+set -euo pipefail
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 INTO="${SOURCE_DIR}"
 SRC_ARCHIVE_DIR="${SOURCE_ARCHIVES}"
@@ -36,22 +39,11 @@ URL="${POSITIONAL[0]}"
 
 echo "Extracting $URL into $INTO"
 
-if [ -z "${ARCHIVE_FILENAME}" ]; then
+if [ -z "${ARCHIVE_FILENAME:-}" ]; then
   ARCHIVE_FILENAME="$(basename "$URL")"
 fi
 
-TMP_ARCHIVE_FILENAME="${ARCHIVE_FILENAME}.tmp"
-TMP_ARCHIVE_PATH="${SRC_ARCHIVE_DIR}/${TMP_ARCHIVE_FILENAME}"
-trap 'if [ -e "$TMP_ARCHIVE_PATH" ]; then rm "$TMP_ARCHIVE_PATH"; fi' INT QUIT TERM EXIT
-
-if [ ! -e "${SRC_ARCHIVE_DIR}/${ARCHIVE_FILENAME}" ]; then
-    echo "Downloading source archive to ${SRC_ARCHIVE_DIR}/${ARCHIVE_FILENAME}"
-    mkdir -p "$SRC_ARCHIVE_DIR"
-    wget -O "${SRC_ARCHIVE_DIR}/${TMP_ARCHIVE_FILENAME}" "$URL"
-    mv "${SRC_ARCHIVE_DIR}/${TMP_ARCHIVE_FILENAME}" "${SRC_ARCHIVE_DIR}/${ARCHIVE_FILENAME}"
-else
-    echo "$URL already downloaded in ${SRC_ARCHIVE_DIR}/${ARCHIVE_FILENAME}"
-fi
+"$DIR"/fetch.sh --src-archive-dir "$SRC_ARCHIVE_DIR" --save-as "$ARCHIVE_FILENAME" --no-copy $URL
 
 mkdir -p "$INTO"
 pushd "$INTO" > /dev/null
