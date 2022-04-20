@@ -25,7 +25,12 @@ setuptools
 wheel
 
 # Applications/Script dependencies
+aiodataloader
+ariadne
+cffi
+Flask[async]
 Jinja2
+gql
 grandiso
 graphlib-backport
 jsonschema
@@ -40,4 +45,10 @@ pyelftools
 # but still causes problems to us (for instance, monotone framework headers generation fails), so we request v2.4.7.
 # See https://github.com/pydot/pydot/issues/277
 pyparsing==2.4.7
+pytest
+pytest-parallel
+requests
+requests-toolbelt
 pyyaml
+Werkzeug
+xdg
