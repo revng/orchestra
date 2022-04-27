@@ -28,7 +28,7 @@ In order to update, simply run:
 
 # Lifting for decompilation
 
-In order to be able to open in the UI, and in general to decompile, a program you need to lift it first and the process it:
+To lift an exectutable and pre-process it:
 
 ```sh
 ./revng \
@@ -48,13 +48,7 @@ In order to be able to open in the UI, and in general to decompile, a program yo
   -o /tmp/calc.for-decompilation.ll
 ```
 
-In future releases we will provide a wizard from the UI and handier command line tools.
-
-The final output, an LLVM module in text form, can be opened in the UI:
-
-```sh
-./revng ui /tmp/calc.for-decompilation.ll
-```
+In future releases we will provide handier command line tools.
 
 # Translating for re-execution
 
