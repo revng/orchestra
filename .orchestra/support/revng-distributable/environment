@@ -1,0 +1,26 @@
+# shellcheck shell=sh disable=SC2034
+
+if [ -n "$BASH" ]; then
+    # shellcheck disable=all
+    SCRIPT="${BASH_SOURCE[0]}"
+elif [ -n "$TMOUT" ]; then
+    # shellcheck disable=all
+    SCRIPT=${.sh.file}
+elif [ -n "$ZSH_NAME" ]; then
+    # shellcheck disable=all
+    SCRIPT=${(%):-%x}
+elif [ "${0##*/}" = dash ]; then
+    x=$(lsof -p $$ -Fn 2>/dev/null | grep environment | tail -1)
+    SCRIPT=${x#n}
+    unset x
+else
+    echo "Unsupported shell"
+    exit 1
+fi
+
+ORCHESTRA_ROOT="$(realpath -s "$(dirname "$SCRIPT")")/root"
+ORCHESTRA_DOTDIR="/nonexistent_directory_ignore_this"
+
+unset SCRIPT
+
+export PS1="[orchestra] ${PS1:-}"
