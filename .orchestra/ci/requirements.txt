@@ -26,13 +26,13 @@ wheel
 
 # Applications/Script dependencies
 aiodataloader
-ariadne
+ariadne[asgi-file-uploads]
 cffi
-Flask[async]
 Jinja2
 gql
 grandiso
 graphlib-backport
+hypercorn
 jsonschema
 # lit version should always match clang-release and llvm version
 lit==12.0.0
