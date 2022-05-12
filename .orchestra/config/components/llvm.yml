@@ -13,6 +13,7 @@
 - -DLLVM_ENABLE_PROJECTS="clang"
 - -DCMAKE_C_COMPILER="(@= data.values.regular_c_compiler @)"
 - -DCMAKE_CXX_COMPILER="(@= data.values.regular_cxx_compiler @)"
+- -DLLVM_ENABLE_OCAMLDOC=OFF
 #@ end
 
 #@yaml/text-templated-strings
