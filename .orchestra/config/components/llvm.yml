@@ -10,7 +10,7 @@
 #@ def cmake_opts():
 - -DBUILD_SHARED_LIBS=ON
 - -DLLVM_ENABLE_ZLIB=ON
-- -DLLVM_ENABLE_PROJECTS="clang"
+- -DLLVM_ENABLE_PROJECTS="clang;mlir"
 - -DCMAKE_C_COMPILER="(@= data.values.regular_c_compiler @)"
 - -DCMAKE_CXX_COMPILER="(@= data.values.regular_cxx_compiler @)"
 - -DLLVM_ENABLE_OCAMLDOC=OFF
@@ -37,17 +37,18 @@ builds:
           (@= ninja @) check-all
         fi
 
-        # Keep only `opt` and `llvm-config` from `/bin`
+        # Keep only `opt`, `llvm-config` and mlir executables from `/bin`
         mkdir "${DESTDIR}${ORCHESTRA_ROOT}/bin-tmp"
 
-        for EXECUTABLE in opt llvm-config; do
+        for EXECUTABLE in opt llvm-config \
+                          mlir-tblgen mlir-linalg-ods-gen mlir-cpu-runner mlir-opt mlir-reduce mlir-translate; do
           mv \
             "${DESTDIR}${ORCHESTRA_ROOT}/bin/$EXECUTABLE"* \
             "${DESTDIR}${ORCHESTRA_ROOT}/bin-tmp"
         done
-    
+
         rm -rf "${DESTDIR}${ORCHESTRA_ROOT}/bin"
-    
+
         mv \
           "${DESTDIR}${ORCHESTRA_ROOT}/bin-tmp" \
           "${DESTDIR}${ORCHESTRA_ROOT}/bin"
