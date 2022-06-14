@@ -1,0 +1,225 @@
+#@ load("@ytt:template", "template")
+#@ load("@ytt:overlay", "overlay")
+
+#@ def vc12_params():
+#! cl.exe version 12.00.8168
+#! link.exe version 6.00.8168
+#! Visual C++ from Visual Studio 6 (1998)
+#! SDK version 5.0.1636.1
+name: win32-vc12
+triple: x86_64-winsdk-vc12
+debug_info: true
+extract: |
+  fetch.sh \
+    --no-copy \
+    "https://archive.org/download/vsp600enu/VSP600ENU1.iso" \
+    --save-as visual-studio-6-disc-1-english.iso
+
+  7z \
+    x \
+    "${SOURCE_ARCHIVES}/visual-studio-6-disc-1-english.iso" \
+    VC98/ \
+    COMMON/MSDEV98/BIN/MSPDB60.DLL
+
+  mv COMMON/MSDEV98/BIN/MSPDB60.DLL VC98/BIN/
+bin: VC98/BIN/
+include:
+- VC98/INCLUDE
+lib:
+- VC98/LIB
+#@ end
+
+#@ def vc13_params():
+#! cl.exe version 13.10.3077
+#! link.exe version 7.10.3077
+#! Visual C++ from Visual Studio 7.1 (.NET 2003)
+#! Unknown SDK version, probably around 5.1 or 5.2
+name: win32-vc13
+triple: x86_64-winsdk-vc13
+debug_info: false
+extract: |
+  fetch.sh \
+    --no-copy \
+    'https://archive.org/download/microsoft-visual-studio-.-net-2003-professional-disc-1/Microsoft%20Visual%20Studio%20.NET%202003%20Professional%20-%20Disc%201.iso' \
+    --save-as visual-studio-71-disc-1-english.iso
+
+  7z \
+    x \
+    "${SOURCE_ARCHIVES}/visual-studio-71-disc-1-english.iso" \
+    'Program Files/Microsoft Visual Studio .NET 2003/Vc7' \
+    'Program Files/Microsoft Visual Studio .NET 2003/Common7/IDE/mspdb71.dll'
+
+  cp \
+    'Program Files/Microsoft Visual Studio .NET 2003/Common7/IDE/mspdb71.dll' \
+    'Program Files/Microsoft Visual Studio .NET 2003/Vc7/bin/'
+
+  mv \
+    'Program Files/Microsoft Visual Studio .NET 2003/Vc7' \
+    .
+
+  rm -rf 'Program Files'
+bin: Vc7/bin/
+include:
+- Vc7/include
+lib:
+- Vc7/lib
+#@ end
+
+#@ def vc16_params():
+#! cl.exe version 16.00.30319.01
+#! link.exe version 10.00.30319.01
+#! Visual C++ from Visual Studio 10.0 (2010)
+#! SDK version 6.1.7600.16385 (7.0a)
+name: win32-vc16
+triple: x86_64-winsdk-vc16
+debug_info: true
+extract: |
+  fetch.sh \
+    --no-copy \
+    'https://archive.org/download/vs2010_202102/vs2010.zip' \
+    --save-as visual-studio-10-english.zip
+
+  mkdir extract
+  cd extract
+  unzip "${SOURCE_ARCHIVES}/visual-studio-10-english.zip"
+
+  7z x VCExpress/Ixpvc.exe
+
+  msiinfo export vs_setup.msi Directory | sed 's/\t/,/g' > dirs.csv
+  msiinfo export vs_setup.msi File | sed 's/\t/,/g' > file.csv
+  msiinfo export vs_setup.msi Component | sed 's/\t/,/g' > component.csv
+
+  mkdir extract-vs-setup
+  cd extract-vs-setup
+  7z x ../vs_setup.cab
+  cd ..
+
+  rm -rf SourceDir/
+  "$ORCHESTRA_DOTDIR"/support/vs10-create-directories.py --create-directories dirs.csv file.csv component.csv | while IFS=, read -r TARGET_NAME TARGET_PATH; do
+      if ! test -e "extract-vs-setup/$TARGET_NAME"; then
+          echo "Warning: $TARGET_NAME not found" > /dev/stderr
+          continue
+      fi
+
+      mv "extract-vs-setup/$TARGET_NAME" "./$TARGET_PATH"
+  done
+
+  rm -rf extract-vs-setup
+
+  cd 'SourceDir/Program Files/Microsoft Visual Studio 10.0/Common7/IDE/'
+  find . -maxdepth 1 -type f -exec cp -a {} ../../VC/bin/ \;
+  cd -
+
+  mv \
+    'SourceDir/Program Files/Microsoft Visual Studio 10.0/VC' \
+    ../VC
+
+  mv \
+    'SourceDir/Program Files/Microsoft SDKs/Windows/v7.0A' \
+    ../sdk-70a
+
+  cd ..
+
+  rm -rf extract
+bin: VC/bin/
+include:
+- VC/include
+- sdk-70a/Include
+lib:
+- VC/lib
+- sdk-70a/Lib
+#@ end
+
+
+#@yaml/text-templated-strings
+---
+#@ def create_vc_component(
+#@     name=None,
+#@     triple=None,
+#@     extract=None,
+#@     bin=None,
+#@     include=None,
+#@     lib=None,
+#@     debug_info=None,
+#@ ):
+toolchain/(@= name @)/vc:
+  binary_archives: private
+  builds:
+    default:
+      configure: |
+        INSTALL_PATH="lib/vc/(@= triple @)"
+        mkdir -p "$BUILD_DIR"
+        cd "$BUILD_DIR"
+        mkdir lib64
+        ln -s lib64 lib
+        mkdir -p "$BUILD_DIR/$INSTALL_PATH"
+        cd "$BUILD_DIR/$INSTALL_PATH"
+
+        (@= extract @)
+
+        cat > cl.exe <<'EOF'
+        #!/bin/bash
+        set -x
+
+
+        SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}"; )" &> /dev/null && pwd 2> /dev/null; )";
+
+        # Genius
+        shopt -s nocaseglob
+        export INCLUDE="(@= ";".join(["$SCRIPT_DIR/" + path for path in include]) @)"
+        export LIB="(@= ";".join(["$SCRIPT_DIR/" + path for path in lib]) @)"
+
+        export WINEDEBUG=-all
+        exec wine "$SCRIPT_DIR"/(@= bin @)/cl.ex*e "$@"
+        EOF
+
+        chmod +x cl.exe
+
+        cd "$BUILD_DIR"
+        mkdir bin
+
+        cat > bin/(@= triple @)-cl <<'EOF'
+        #!/bin/bash
+
+        SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}"; )" &> /dev/null && pwd 2> /dev/null; )";
+
+        PROGRAM_NAME="$(basename $0)"
+        TRIPLE="${PROGRAM_NAME%-cl}"
+
+        exec "$SCRIPT_DIR/../lib/vc/$TRIPLE/cl.exe" "$@"
+        EOF
+        chmod +x bin/(@= triple @)-cl
+
+      install: |
+        cd "$BUILD_DIR"
+        if test "$RUN_TESTS" -eq 1; then
+          cat > test.c <<'EOF'
+        #include <stdio.h>
+
+        int main() {
+          puts("Hello world!");
+          return 0;
+        }
+        EOF
+
+          (@ if debug_info: @)
+          ./bin/(@= triple @)-cl test.c /DEBUG:FASTLINK /Zi
+          (@ else: @)
+          ./bin/(@= triple @)-cl test.c
+          (@ end @)
+          export WINEDEBUG=-all
+          wine test.exe
+
+          rm test.*
+        fi
+
+        cp -farl "$BUILD_DIR/"* "${DESTDIR}${ORCHESTRA_ROOT}/"
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  _: #@ template.replace(create_vc_component(**vc12_params()))
+  _: #@ template.replace(create_vc_component(**vc13_params()))
+  _: #@ template.replace(create_vc_component(**vc16_params()))
