@@ -6,6 +6,8 @@ export DEBIAN_FRONTEND=noninteractive
 
 source /etc/os-release
 
+dpkg --add-architecture i386
+
 apt-get -qq update
 apt-get -qq install --no-install-recommends --yes ca-certificates curl gpg
 
@@ -40,14 +42,16 @@ apt-get -qq install --no-install-recommends --yes \
   libreadline-dev \
   libtool \
   m4 \
+  msitools \
   ninja-build \
   nodejs \
+  p7zip-full \
   pkg-config \
   python \
   python3 \
-  python3-pip \
-  python3-dev \
   python3-cffi \
+  python3-dev \
+  python3-pip \
   python3-setuptools \
   rsync \
   sed \
@@ -55,9 +59,12 @@ apt-get -qq install --no-install-recommends --yes \
   ssh \
   sudo \
   texinfo \
+  unzip \
   valgrind \
-  yarn \
   wget \
+  yarn \
+  wine \
+  wine32 \
   zlib1g-dev
 
 # Dependencies for Qt
