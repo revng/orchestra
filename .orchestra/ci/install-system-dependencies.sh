@@ -95,3 +95,6 @@ if ! which git-lfs &> /dev/null; then
   curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash
   apt-get -qq install --no-install-recommends --yes git-lfs
 fi
+
+yarn global add prettier
+
