@@ -10,3 +10,4 @@ else
     sudo "$SCRIPT_DIR/install-system-dependencies.sh"
 fi
 "$SCRIPT_DIR/install-python-dependencies.sh"
+"$SCRIPT_DIR/install-node-dependencies.sh"
