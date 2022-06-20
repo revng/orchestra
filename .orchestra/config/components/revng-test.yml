@@ -1,0 +1,69 @@
+#@ load("/lib/fn_args.lib.yml", "mandatory")
+#@ load("@ytt:overlay", "overlay")
+
+#@ architectures = ["arm", "x86-64", "i386", "s390x", "aarch64", "mips", "mipsel", "native"]
+
+#@yaml/text-templated-strings
+---
+#@ def revng_test_component(options=mandatory):
+builds:
+  default:
+    configure: |
+      mkdir -p "$BUILD_DIR"
+    install: |
+      cd "$BUILD_DIR"
+      rm -rf *
+      revng \
+        test-configure \
+        "$ORCHESTRA_ROOT/share/revng/test/configuration"/**/*.yml \
+        --install-path "$ORCHESTRA_ROOT/share/revng/test" \
+        --destination . \
+        (@= options["configure_args"] @)
+      ninja run-all
+      ninja install
+    build_dependencies: #@ options["build_dependencies"]
+#@ end
+
+#@ def compile(architecture=mandatory):
+configure_args: --target-type 'revng-qa\..*' --filter '(@= architecture @)'
+build_dependencies:
+  - revng-qa
+  - toolchain/(@= architecture if architecture != "native" else "host" @)/gcc
+#@ end
+
+#@ def revng_test():
+configure_args: --target-type 'revng\..*'
+build_dependencies:
+  - revng-qa
+  - revng-qa/compile-all
+  - revng
+#@ end
+
+#@ def revng_c_test():
+configure_args: --target-type 'revng-c\..*'
+build_dependencies:
+  - revng-qa
+  - revng-qa/compile-all
+  - revng-qa/revng
+  - revng-c
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+#@yaml/text-templated-strings
+components:
+  #@ for architecture in architectures:
+  revng-qa/compile-(@= architecture @): #@ revng_test_component(compile(architecture))
+  #@ end
+  revng-qa/compile-all:
+    builds:
+      default:
+        configure: mkdir -p "$BUILD_DIR"
+        install: ""
+        build_dependencies:
+          #@ for architecture in architectures:
+          - revng-qa/compile-(@= architecture @)
+          #@ end
+  revng-qa/revng: #@ revng_test_component(revng_test())
+  revng-qa/revng-c: #@ revng_test_component(revng_c_test())
