@@ -27,6 +27,7 @@ builds:
 #@ def compile(architecture=mandatory):
 configure_args: --target-type 'revng-qa\..*' --filter '(@= architecture @)'
 build_dependencies:
+  - ninja
   - revng-qa
   - toolchain/(@= architecture if architecture != "native" else "host" @)/gcc
 #@ end
@@ -34,6 +35,7 @@ build_dependencies:
 #@ def revng_test():
 configure_args: --target-type 'revng\..*'
 build_dependencies:
+  - ninja
   - revng-qa
   - revng-qa/compile-all
   - revng
@@ -42,6 +44,7 @@ build_dependencies:
 #@ def revng_c_test():
 configure_args: --target-type 'revng-c\..*'
 build_dependencies:
+  - ninja
   - revng-qa
   - revng-qa/compile-all
   - revng-qa/revng
