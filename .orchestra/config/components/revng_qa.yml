@@ -22,6 +22,7 @@ configure: |
 build_system: make
 build_dependencies:
   - cmake
+  - ninja
   - host-cxx-toolchain
   - glibc
   - qemu

@@ -28,6 +28,7 @@ wheel
 aiodataloader
 ariadne[asgi-file-uploads]
 cffi
+expandvars
 Jinja2
 gql
 grandiso
