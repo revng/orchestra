@@ -39,6 +39,7 @@ lit==12.0.0
 mako
 meson==0.56.2
 networkx
+pefile
 pydot
 pyelftools
 # pydot 3.0.2 introduced an incompatibility with pydot which is supposed to be resolved in a later version,
@@ -50,5 +51,6 @@ pytest-parallel
 requests
 requests-toolbelt
 pyyaml
+wget
 Werkzeug
 xdg
