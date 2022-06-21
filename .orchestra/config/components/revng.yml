@@ -30,4 +30,6 @@ components:
     repository: revng
     license: LICENSE.md
     default_build: optimized
+    test_triggers:
+      - revng-qa/revng
     builds: #@ typical_cmake_builds(**build_args())
