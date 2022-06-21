@@ -64,7 +64,7 @@ components:
       default:
         configure: mkdir -p "$BUILD_DIR"
         install: ""
-        build_dependencies:
+        dependencies:
           #@ for architecture in architectures:
           - revng-qa/compile-(@= architecture @)
           #@ end
