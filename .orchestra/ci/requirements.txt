@@ -40,6 +40,7 @@ lit==12.0.0
 mako
 meson==0.56.2
 networkx
+pefile
 psutil
 pydot
 pyelftools
