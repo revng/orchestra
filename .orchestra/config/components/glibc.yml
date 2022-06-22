@@ -9,6 +9,7 @@
 #@ def glibc_args():
 license: source/COPYING
 configure: |
+  # Rebuild all
   mkdir -p "$BUILD_DIR/source"
   extract.sh --into "$BUILD_DIR/source" (@= source_url @)
 
