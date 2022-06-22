@@ -9,30 +9,13 @@ repository: revng-qa
 license: LICENSE
 configure: |
   mkdir -p "$BUILD_DIR"
-  cd "$BUILD_DIR"; \
-  (@= cmake @) \
-    "$SOURCE_DIR" \
-    -DTRIPLE_x86_64="x86_64-gentoo-linux-musl" \
-    -DTRIPLE_mips="mips-unknown-linux-musl" \
-    -DTRIPLE_mipsel="mipsel-unknown-linux-musl" \
-    -DTRIPLE_i386="i386-gentoo-linux-musl" \
-    -DTRIPLE_arm="armv7a-hardfloat-linux-uclibceabi" \
-    -DTRIPLE_aarch64="aarch64-unknown-linux-musl" \
-    -DTRIPLE_s390x="s390x-ibm-linux-musl"
+  cd "$BUILD_DIR"
+  (@= cmake @) "$SOURCE_DIR"
 build_system: make
 build_dependencies:
   - cmake
   - ninja
   - host-cxx-toolchain
-  - glibc
-  - qemu
-  - toolchain/x86-64/gcc
-  - toolchain/i386/gcc
-  - toolchain/arm/gcc
-  - toolchain/aarch64/gcc
-  - toolchain/s390x/gcc
-  - toolchain/mips/gcc
-  - toolchain/mipsel/gcc
 #@ end
 
 #@overlay/match by=overlay.all, expects=1
