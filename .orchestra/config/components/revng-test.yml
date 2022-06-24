@@ -24,31 +24,33 @@ builds:
     build_dependencies: #@ options["build_dependencies"]
 #@ end
 
-#@ def compile(architecture=mandatory):
-configure_args: --target-type 'revng-qa\..*' --filter '(@= architecture @)'
+#@ def revng_qa_test():
+configure_args: --target-type 'revng-qa\..*'
 build_dependencies:
   - ninja
   - revng-qa
+  #@ for architecture in architectures:
   - toolchain/(@= architecture if architecture != "native" else "host" @)/gcc
+  #@ end
 #@ end
 
 #@ def revng_test():
 configure_args: --target-type 'revng\..*'
 build_dependencies:
   - ninja
-  - revng-qa
-  - revng-qa/compile-all
   - revng
+  - revng-qa
+  - test/revng-qa
 #@ end
 
 #@ def revng_c_test():
 configure_args: --target-type 'revng-c\..*'
 build_dependencies:
   - ninja
-  - revng-qa
-  - revng-qa/compile-all
-  - revng-qa/revng
   - revng-c
+  - revng-qa
+  - test/revng
+  - test/revng-qa
 #@ end
 
 #@overlay/match by=overlay.all, expects=1
@@ -56,17 +58,6 @@ build_dependencies:
 ---
 #@yaml/text-templated-strings
 components:
-  #@ for architecture in architectures:
-  revng-qa/compile-(@= architecture @): #@ revng_test_component(compile(architecture))
-  #@ end
-  revng-qa/compile-all:
-    builds:
-      default:
-        configure: mkdir -p "$BUILD_DIR"
-        install: ""
-        dependencies:
-          #@ for architecture in architectures:
-          - revng-qa/compile-(@= architecture @)
-          #@ end
-  revng-qa/revng: #@ revng_test_component(revng_test())
-  revng-qa/revng-c: #@ revng_test_component(revng_c_test())
+  test/revng-qa: #@ revng_test_component(revng_qa_test())
+  test/revng: #@ revng_test_component(revng_test())
+  test/revng-c: #@ revng_test_component(revng_c_test())

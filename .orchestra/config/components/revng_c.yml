@@ -29,5 +29,5 @@ components:
     default_build: optimized
     binary_archives: private
     test_triggers:
-      - revng-qa/revng-c
+      - test/revng-c
     builds: #@ typical_cmake_builds(**build_args())
