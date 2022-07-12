@@ -27,6 +27,33 @@ This repository contains the orchestra configuration for rev.ng.
   orc components
   ```
 
+### Virtualenvs
+
+We also support installing orchestra inside a virtualenv.
+
+* Create and activate a virtualenv
+  ```sh
+  python3 -m venv venv
+  source venv/bin/activate
+  ```
+* Install and upgrade wheel inside the virtualenv
+  ```sh
+  pip install --upgrade pip wheel
+  ```
+* Install orchestra 
+  ```sh
+  pip cache remove orchestra
+  pip install --force-reinstall https://github.com/revng/revng-orchestra/archive/master.zip
+  ```
+* Install dependencies (Ubuntu only)
+  ```sh
+  ./.orchestra/ci/install-dependencies.sh
+  ```
+* Install Python-only dependencies (all distributions)
+  ```sh
+  ./.orchestra/ci/install-python-dependencies.sh
+  ```
+
 ## Configuration for the public
 
 The default configuration gives you read-only access to the rev.ng open source components.
