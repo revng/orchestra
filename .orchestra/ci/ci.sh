@@ -45,14 +45,15 @@ set -e
 # If this ref is a branch, it will be used as the first default branch to try
 # for all components and for orchestra configuration
 
-COMPONENT_TARGET_BRANCH="$PUSHED_REF"
+COMPONENT_TARGET_BRANCH=""
 
 if [[ -n "$PUSHED_REF" ]]; then
     log "PUSHED_REF=$PUSHED_REF"
     if [[ "$PUSHED_REF" = refs/heads/* ]]; then
         COMPONENT_TARGET_BRANCH="${PUSHED_REF#refs/heads/}"
-    elif [[ "$PUSHED_REF" = refs/* ]]; then
-        COMPONENT_TARGET_BRANCH="${PUSHED_REF#refs/}"
+    else
+        log_err "PUSHED_REF ($PUSHED_REF) is not a branch, bailing out"
+        exit 0
     fi
 fi
 
@@ -61,7 +62,7 @@ ogit fetch
 # If the target branch is not part of the default list and it does not already
 # exist, create it
 if [[ ! "$COMPONENT_TARGET_BRANCH" =~ ^(next-)?(develop|master)$ ]] && \
-    ! git rev-parse --quiet --verify --end-of-options "$COMPONENT_TARGET_BRANCH" >/dev/null ; then
+    ! git rev-parse --quiet --verify "$COMPONENT_TARGET_BRANCH" >/dev/null ; then
     log "Creating branch $COMPONENT_TARGET_BRANCH for orchestra configuration from master"
     ogit checkout "$COMPONENT_TARGET_BRANCH" || ogit checkout -b "$COMPONENT_TARGET_BRANCH" master
 fi

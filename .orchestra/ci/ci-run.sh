@@ -20,7 +20,7 @@
 #   user_options.yml is initialized to this value.
 #   %GITLAB_ROOT% is replaced with the base URL of the Gitlab instance.
 # COMPONENT_TARGET_BRANCH:
-#   reference to try first when checking out component sources
+#   branch name to try first when checking out component sources
 # PUSH_BINARY_ARCHIVES: if == 1, push binary archives
 # PROMOTE_BRANCHES: if == 1, promote next-* branches
 # PUSH_CHANGES:
