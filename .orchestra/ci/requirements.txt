@@ -51,6 +51,7 @@ pytest
 pytest-parallel
 requests
 requests-toolbelt
+rich
 pyyaml
 Werkzeug
 xdg
