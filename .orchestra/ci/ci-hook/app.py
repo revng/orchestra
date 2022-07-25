@@ -174,51 +174,58 @@ def trigger_ci(username, repo_url, base_repo_url, ref, status_update_metadata: O
     admin_gl = gitlab.Gitlab(GITLAB_URL, private_token=ADMIN_TOKEN)
     admin_gl.auth()
 
-    with impersonate(admin_gl, username) as token:
-        user_gl = gitlab.Gitlab(GITLAB_URL, private_token=token)
-        user_gl.auth()
-        project = user_gl.projects.get(PROJECT_ID)
+    try:
+        with impersonate(admin_gl, username) as token:
+            user_gl = gitlab.Gitlab(GITLAB_URL, private_token=token)
+            user_gl.auth()
+            project = user_gl.projects.get(PROJECT_ID)
 
-        variables = {
-            "TARGET_COMPONENTS_URL": repo_url,
-            "PUSHED_REF": ref,
-            "ORCHESTRA_CONFIG_REPO_HTTP_URL": ORCHESTRA_CONFIG_REPO_HTTP_URL,
-            "ORCHESTRA_CONFIG_REPO_SSH_URL": ORCHESTRA_CONFIG_REPO_SSH_URL,
-        }
-
-        if status_update_metadata is not None:
-            variables["REVNG_CI_STATUS_UPDATE_METADATA"] = json.dumps(status_update_metadata)
-
-        if username in allowed_to_push and base_repo_url == repo_url:
-            variables["BASE_USER_OPTIONS_YML"] = pusher_user_options
-            variables["SSH_PRIVATE_KEY"] = revng_push_ci_private_key
-            variables["PUSH_CHANGES"] = "1"
-        else:
-            tpl_params = {
-                "clone_namespace": "/".join(repo_url.split("/")[:-1]),
-                "private_sources": "",
-                "private_bin_archives": ""
+            variables = {
+                "TARGET_COMPONENTS_URL": repo_url,
+                "PUSHED_REF": ref,
+                "ORCHESTRA_CONFIG_REPO_HTTP_URL": ORCHESTRA_CONFIG_REPO_HTTP_URL,
+                "ORCHESTRA_CONFIG_REPO_SSH_URL": ORCHESTRA_CONFIG_REPO_SSH_URL,
             }
-            is_anonymous = username == default_user
-            if not is_anonymous:
-                # Placeholders are replaced in the shell script since we don't want to intentionally introduce shell
-                # injection vulnerabilities.
-                tpl_params.update({
-                    "private_sources": "- private: %PRIVATE_SOURCES_PLACEHOLDER%",
-                    "private_bin_archives": "- private: %PRIVATE_BIN_ARCHIVES_PLACEHOLDER%"
-                })
 
-            variables["BASE_USER_OPTIONS_YML"] = \
-                string.Template(pull_request_user_options).substitute(tpl_params)
+            if status_update_metadata is not None:
+                variables["REVNG_CI_STATUS_UPDATE_METADATA"] = json.dumps(status_update_metadata)
 
-        parameters = {
-            "ref": BRANCH,
-            "variables": [{"key": key, "value": value}
-                          for key, value
-                          in variables.items()]
-        }
-        print(json.dumps(parameters, indent=2))
-        pipeline = project.pipelines.create(parameters)
+            if username in allowed_to_push and base_repo_url == repo_url:
+                variables["BASE_USER_OPTIONS_YML"] = pusher_user_options
+                variables["SSH_PRIVATE_KEY"] = revng_push_ci_private_key
+                variables["PUSH_CHANGES"] = "1"
+            else:
+                tpl_params = {
+                    "clone_namespace": "/".join(repo_url.split("/")[:-1]),
+                    "private_sources": "",
+                    "private_bin_archives": ""
+                }
+                is_anonymous = username == default_user
+                if not is_anonymous:
+                    # Placeholders are replaced in the shell script since we don't want to intentionally introduce shell
+                    # injection vulnerabilities.
+                    tpl_params.update({
+                        "private_sources": "- private: %PRIVATE_SOURCES_PLACEHOLDER%",
+                        "private_bin_archives": "- private: %PRIVATE_BIN_ARCHIVES_PLACEHOLDER%"
+                    })
+
+                variables["BASE_USER_OPTIONS_YML"] = \
+                    string.Template(pull_request_user_options).substitute(tpl_params)
+
+            parameters = {
+                "ref": BRANCH,
+                "variables": [{"key": key, "value": value}
+                              for key, value
+                              in variables.items()]
+            }
+            print(json.dumps(parameters, indent=2))
+            pipeline = project.pipelines.create(parameters)
+
+    except gitlab.exceptions.GitlabCreateError:
+        # If the user didn't have the permissions to create a new pipeline, use the default unprivileged user instead
+        if username != default_user:
+            return trigger_ci(default_user, repo_url, base_repo_url, ref, status_update_metadata)
+        raise
 
 
 LAB_TO_HUB_STATUS_MAP = {
