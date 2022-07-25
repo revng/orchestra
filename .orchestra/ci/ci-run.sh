@@ -143,29 +143,6 @@ USER_OPTIONS_YML="${USER_OPTIONS_YML//\%PRIVATE_BIN_ARCHIVES_PLACEHOLDER\%/$PRIV
 
 echo "${USER_OPTIONS_YML//\%GITLAB_ROOT\%/$GITLAB_ROOT}" > "$USER_OPTIONS"
 
-# Register target components
-# shellcheck disable=SC2153
-if test -n "$TARGET_COMPONENTS_URL"; then
-    # Add components by repository URL
-    for TARGET_COMPONENT_URL in $TARGET_COMPONENTS_URL; do
-        NEW_COMPONENT="$(orc components --repository-url "$TARGET_COMPONENT_URL" \
-                         | grep '^Component' \
-                         | cut -d' ' -f2)"
-        if test -z "$NEW_COMPONENT"; then
-            log "Warning: ignoring URL $TARGET_COMPONENT_URL since it doesn't match any component"
-        else
-            TARGET_COMPONENTS="$NEW_COMPONENT $TARGET_COMPONENTS"
-        fi
-    done
-fi
-
-log "Target components: $TARGET_COMPONENTS"
-
-if test -z "$TARGET_COMPONENTS"; then
-    log "Nothing to do!"
-    exit 1
-fi
-
 # Build branches list
 cat >> "$USER_OPTIONS" <<EOF
 #@overlay/replace
@@ -193,6 +170,29 @@ log "User options:"
 cat "$USER_OPTIONS"
 
 orc update --no-config
+
+# Register target components
+# shellcheck disable=SC2153
+if test -n "$TARGET_COMPONENTS_URL"; then
+    # Add components by repository URL
+    for TARGET_COMPONENT_URL in $TARGET_COMPONENTS_URL; do
+        NEW_COMPONENT="$(orc components --repository-url "$TARGET_COMPONENT_URL" \
+                         | grep '^Component' \
+                         | cut -d' ' -f2)"
+        if test -z "$NEW_COMPONENT"; then
+            log "Warning: ignoring URL $TARGET_COMPONENT_URL since it doesn't match any component"
+        else
+            TARGET_COMPONENTS="$NEW_COMPONENT $TARGET_COMPONENTS"
+        fi
+    done
+fi
+
+log "Target components: $TARGET_COMPONENTS"
+
+if test -z "$TARGET_COMPONENTS"; then
+    log "Nothing to do!"
+    exit 1
+fi
 
 # Print debugging information
 log "Complete dependency graph"
