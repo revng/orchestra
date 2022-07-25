@@ -58,6 +58,21 @@ function log_err() {
     echo -e "${RESET}" > /dev/stderr
 }
 
+# Replace placeholders in provided user_options.yml with actual values:
+# - %GITLAB_ROOT% -> $GITLAB_ROOT
+# - %PRIVATE_SOURCES_PLACEHOLDER% - Private sources namespace with internal HTTP clone token
+# - %PRIVATE_BIN_ARCHIVES_PLACEHOLDER% - Private binary archives repo with internal HTTP clone token
+function format_user_options() {
+    local GITLAB_ROOT="$1"
+    local PRIVATE_SOURCES_CLONE_URL="$2"
+    local PRIVATE_BIN_ARCHIVES_CLONE_URL="$3"
+
+    local USER_OPTIONS_YML="${BASE_USER_OPTIONS_YML//\%GITLAB_ROOT\%/$GITLAB_ROOT}"
+    local USER_OPTIONS_YML="${USER_OPTIONS_YML//\%PRIVATE_SOURCES_PLACEHOLDER\%/$PRIVATE_SOURCES_CLONE_URL}"
+    local USER_OPTIONS_YML="${USER_OPTIONS_YML//\%PRIVATE_BIN_ARCHIVES_PLACEHOLDER\%/$PRIVATE_BIN_ARCHIVES_CLONE_URL}"
+    echo "$USER_OPTIONS_YML"
+}
+
 PUSH_BINARY_ARCHIVE_EMAIL="${PUSH_BINARY_ARCHIVE_EMAIL:-sysadmin@rev.ng}"
 PUSH_BINARY_ARCHIVE_NAME="${PUSH_BINARY_ARCHIVE_NAME:-rev.ng CI}"
 
@@ -133,15 +148,7 @@ fi
 REMOTE="$(git remote get-url origin | sed 's|^\([^:]*:\)\([^/]\)|\1/\2|')"
 GITLAB_ROOT="$(dirname "$(dirname "$REMOTE")")"
 
-# Replace placeholders in provided user_options.yml with actual values:
-# - %GITLAB_ROOT% -> $GITLAB_ROOT
-# - %PRIVATE_SOURCES_PLACEHOLDER% - Private sources namespace with internal HTTP clone token
-# - %PRIVATE_BIN_ARCHIVES_PLACEHOLDER% - Private binary archives repo with internal HTTP clone token
-USER_OPTIONS_YML="${BASE_USER_OPTIONS_YML//\%GITLAB_ROOT\%/$GITLAB_ROOT}"
-USER_OPTIONS_YML="${USER_OPTIONS_YML//\%PRIVATE_SOURCES_PLACEHOLDER\%/$PRIVATE_SOURCES_CLONE_URL}"
-USER_OPTIONS_YML="${USER_OPTIONS_YML//\%PRIVATE_BIN_ARCHIVES_PLACEHOLDER\%/$PRIVATE_BIN_ARCHIVES_CLONE_URL}"
-
-echo "${USER_OPTIONS_YML//\%GITLAB_ROOT\%/$GITLAB_ROOT}" > "$USER_OPTIONS"
+format_user_options "$GITLAB_ROOT" "$PRIVATE_SOURCES_CLONE_URL" "$PRIVATE_BIN_ARCHIVES_CLONE_URL" >"$USER_OPTIONS"
 
 # Build branches list
 cat >> "$USER_OPTIONS" <<EOF

@@ -57,6 +57,8 @@ ci_user = config["ci_user"]
 github_app_id = config["github_app_id"]
 ci_job_url = config["ci_job_url"]
 github_installation_id = config["github_installation_id"]
+default_user_target_components = config["default_user_target_components"]
+target_components = config["target_components"]
 
 _installation_token_info = None
 
