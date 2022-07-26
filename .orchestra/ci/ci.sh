@@ -36,6 +36,13 @@ function log_err() {
     echo -e "${RESET}" > /dev/stderr
 }
 
+function log2() {
+    echo -en "${BOLD}" > /dev/stderr
+    echo -n '[+]' "${1}" > /dev/stderr
+    echo -en "${RESET} " > /dev/stderr
+    echo "${2}"
+}
+
 set -e
 
 # Determine target branch
@@ -48,7 +55,6 @@ set -e
 COMPONENT_TARGET_BRANCH=""
 
 if [[ -n "$PUSHED_REF" ]]; then
-    log "PUSHED_REF=$PUSHED_REF"
     if [[ "$PUSHED_REF" = refs/heads/* ]]; then
         COMPONENT_TARGET_BRANCH="${PUSHED_REF#refs/heads/}"
     else
@@ -81,7 +87,50 @@ if [[ -z "$ORCHESTRA_TARGET_BRANCH" ]]; then
 fi
 
 ORCHESTRA_CONFIG_COMMIT="$(ogit rev-parse --short "$ORCHESTRA_TARGET_BRANCH")"
-log "Using configuration branch $ORCHESTRA_TARGET_BRANCH (commit $ORCHESTRA_CONFIG_COMMIT)"
+
+echo
+echo -en "$BOLD"
+echo "################################################################################"
+echo "#                              BUILD INFORMATION                               #"
+echo "################################################################################"
+echo -e "$RESET"
+
+log2 "Using orchestra config:" "${ORCHESTRA_TARGET_BRANCH} @ ${ORCHESTRA_CONFIG_COMMIT}"
+log2 "Component:             " "${TARGET_COMPONENTS_URL:-[not set]}"
+log2 "Branch:                " "${PUSHED_REF:-[not set]}"
+
+if [[ "$PUSH_CHANGES" == 1 ]]; then
+    BRANCH_PROMOTION="yes"
+else
+    BRANCH_PROMOTION="no"
+fi
+
+log2 "Promote branch:        " "$BRANCH_PROMOTION"
+
+if test -n "${REVNG_CI_STATUS_UPDATE_METADATA:-}"; then
+    PLATFORM="$(echo "$REVNG_CI_STATUS_UPDATE_METADATA" | jq -r '.platform')"
+    if [[ "$PLATFORM" == "github" ]]; then
+        REPO="$(echo "$REVNG_CI_STATUS_UPDATE_METADATA" | jq -r '.github_repository_name')"
+        CHECK_RUN="$(echo "$REVNG_CI_STATUS_UPDATE_METADATA" | jq -r '.github_check_run_id')"
+        USER="$(echo "$REVNG_CI_STATUS_UPDATE_METADATA" | jq -r '.triggering_user')"
+
+        log2 "Source platform:       " "GitHub"
+        log2 "Check run:             " "https://github.com/${REPO}/runs/${CHECK_RUN}"
+        log2 "Triggered by:          " "$USER"
+    else
+        MR="$(echo "$REVNG_CI_STATUS_UPDATE_METADATA" | jq -r '.gitlab_mr_web_url')"
+        SHA="$(echo "$REVNG_CI_STATUS_UPDATE_METADATA" | jq -r '.head_sha')"
+
+        log2 "Source platform:       " "GitLab"
+        log2 "Merge request:         " "$MR"
+        log2 "HEAD commit:           " "$SHA"
+    fi
+fi
+
+echo -e "$BOLD"
+echo "################################################################################"
+echo -e "$RESET"
+
 
 # Install missing dependencies
 .orchestra/ci/install-dependencies.sh
