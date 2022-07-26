@@ -2,7 +2,7 @@ root
 build
 sources
 .orchestra/tmproot
-.orchestra/binary-archives/*
+.orchestra/binary-archives
 .orchestra/source_archives
 .orchestra/cache
 .orchestra/config/user_*.yml
