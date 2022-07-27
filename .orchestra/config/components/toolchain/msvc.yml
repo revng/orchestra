@@ -159,7 +159,6 @@ toolchain/(@= name @)/vc:
 
         cat > cl.exe <<'EOF'
         #!/bin/bash
-        set -x
 
 
         SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}"; )" &> /dev/null && pwd 2> /dev/null; )";
@@ -169,8 +168,16 @@ toolchain/(@= name @)/vc:
         export INCLUDE="(@= ";".join(["$SCRIPT_DIR/" + path for path in include]) @)"
         export LIB="(@= ";".join(["$SCRIPT_DIR/" + path for path in lib]) @)"
 
+        OUTPUT="$(mktemp)";
+        trap 'rm -f -- "$OUTPUT"' EXIT;
+
         export WINEDEBUG=-all
-        exec wine "$SCRIPT_DIR"/(@= bin @)/cl.ex*e "$@"
+        if ! wine "$SCRIPT_DIR"/(@= bin @)/cl.ex*e "$@" >& "$OUTPUT"; then
+          RESULT="$?"
+          cat "$OUTPUT"
+          exit "$RESULT"
+        fi
+
         EOF
 
         chmod +x cl.exe
