@@ -20,6 +20,13 @@ echo "deb [signed-by=/usr/share/keyrings/yarnkey.gpg] https://dl.yarnpkg.com/deb
   > /etc/apt/sources.list.d/yarn.list
 apt-get -qq update
 
+# Notes about installed packages:
+#
+# * winbind: `mspdb100.dll` tries to make some kind of connection that requires
+#   this package. Without it, the following command will fail:
+#
+#       orc install --test toolchain/win32-vc16/vc
+
 apt-get -qq install --no-install-recommends --yes \
   aufs-tools \
   autoconf \
@@ -65,6 +72,7 @@ apt-get -qq install --no-install-recommends --yes \
   wget \
   yarn \
   wine \
+  winbind \
   wine32 \
   zlib1g-dev
 
