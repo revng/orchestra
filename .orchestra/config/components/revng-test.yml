@@ -29,6 +29,7 @@ configure_args: --target-type 'revng-qa\..*'
 build_dependencies:
   - ninja
   - revng-qa
+  - toolchain/win32-vc16/vc
   #@ for architecture in architectures:
   - toolchain/(@= architecture if architecture != "native" else "host" @)/gcc
   #@ end
