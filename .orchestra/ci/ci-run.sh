@@ -39,6 +39,9 @@ ORCHESTRA_ROOT="$(realpath "$DIR/../..")"
 ORCHESTRA_DOTDIR="$ORCHESTRA_ROOT/.orchestra"
 USER_OPTIONS="$ORCHESTRA_DOTDIR/config/user_options.yml"
 
+PRIVATE_SOURCES_CLONE_URL="https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/revng-private"
+PRIVATE_BIN_ARCHIVES_CLONE_URL="https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/revng-private/binary-archives.git"
+
 BOLD="\e[1m"
 RED="\e[31m"
 RESET="\e[0m"
@@ -129,9 +132,19 @@ fi
 
 REMOTE="$(git remote get-url origin | sed 's|^\([^:]*:\)\([^/]\)|\1/\2|')"
 GITLAB_ROOT="$(dirname "$(dirname "$REMOTE")")"
-echo "${BASE_USER_OPTIONS_YML//\%GITLAB_ROOT\%/$GITLAB_ROOT}" > "$USER_OPTIONS"
+
+# Replace placeholders in provided user_options.yml with actual values:
+# - %GITLAB_ROOT% -> $GITLAB_ROOT
+# - %PRIVATE_SOURCES_PLACEHOLDER% - Private sources namespace with internal HTTP clone token
+# - %PRIVATE_BIN_ARCHIVES_PLACEHOLDER% - Private binary archives repo with internal HTTP clone token
+USER_OPTIONS_YML="${BASE_USER_OPTIONS_YML//\%GITLAB_ROOT\%/$GITLAB_ROOT}"
+USER_OPTIONS_YML="${USER_OPTIONS_YML//\%PRIVATE_SOURCES_PLACEHOLDER\%/$PRIVATE_SOURCES_CLONE_URL}"
+USER_OPTIONS_YML="${USER_OPTIONS_YML//\%PRIVATE_BIN_ARCHIVES_PLACEHOLDER\%/$PRIVATE_BIN_ARCHIVES_CLONE_URL}"
+
+echo "${USER_OPTIONS_YML//\%GITLAB_ROOT\%/$GITLAB_ROOT}" > "$USER_OPTIONS"
 
 # Register target components
+# shellcheck disable=SC2153
 if test -n "$TARGET_COMPONENTS_URL"; then
     # Add components by repository URL
     for TARGET_COMPONENT_URL in $TARGET_COMPONENTS_URL; do

@@ -1,3 +1,7 @@
 gunicorn
 flask
 python-gitlab
+pyjwt
+cryptography
+python-dateutil
+pytz
