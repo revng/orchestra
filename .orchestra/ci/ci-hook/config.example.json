@@ -9,5 +9,10 @@
     "project_id": 123,
     "branch": "master",
     "orchestra_config_repo_http_url": "https://github.com/revng/orchestra",
-    "orchestra_config_repo_ssh_url": "git@github.com:revng/orchestra"
+    "orchestra_config_repo_ssh_url": "git@github.com:revng/orchestra",
+    "github_app_id": 1234,
+    "github_installation_id": 4567,
+    "ci_job_url": "https://rev.ng/gitlab/revng/orchestra/-/jobs/",
+    "default_user_target_components": ["component_A"],
+    "target_components": ["component_B"]
 }
