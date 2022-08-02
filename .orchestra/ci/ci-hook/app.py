@@ -58,6 +58,7 @@ ci_job_url = config["ci_job_url"]
 github_installation_id = config["github_installation_id"]
 default_user_target_components = config["default_user_target_components"]
 target_components = config["target_components"]
+revng_orchestra_repo_url = config["revng_orchestra_repo_url"]
 
 _installation_token_info = None
 
@@ -190,6 +191,11 @@ def trigger_ci(username, repo_url, base_repo_url, ref, status_update_metadata: O
             "ORCHESTRA_CONFIG_REPO_HTTP_URL": ORCHESTRA_CONFIG_REPO_HTTP_URL,
             "ORCHESTRA_CONFIG_REPO_SSH_URL": ORCHESTRA_CONFIG_REPO_SSH_URL,
         }
+
+        if base_repo_url == ORCHESTRA_CONFIG_REPO_HTTP_URL and repo_url != base_repo_url:
+            variables["ORCHESTRA_CONFIG_REPO_HTTP_URL"] = repo_url
+        elif base_repo_url == revng_orchestra_repo_url and repo_url != base_repo_url:
+            variables["REVNG_ORCHESTRA_URL"] = repo_url
 
         if status_update_metadata is not None:
             variables["REVNG_CI_STATUS_UPDATE_METADATA"] = json.dumps(status_update_metadata)
