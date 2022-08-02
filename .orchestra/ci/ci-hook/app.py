@@ -56,6 +56,8 @@ ci_user = config["ci_user"]
 github_app_id = config["github_app_id"]
 ci_job_url = config["ci_job_url"]
 github_installation_id = config["github_installation_id"]
+default_user_target_components = config["default_user_target_components"]
+target_components = config["target_components"]
 
 _installation_token_info = None
 
@@ -71,7 +73,7 @@ def installation_token() -> str:
     if not should_refresh:
         expires = dateutil.parser.isoparse(_installation_token_info["expires_at"])
         now = datetime.now(expires.tzinfo)
-        should_refresh = expires - timedelta(minutes=10) > now
+        should_refresh = (expires - timedelta(minutes=10)) < now
 
     if should_refresh:
         token = jwt.encode(
@@ -179,8 +181,11 @@ def trigger_ci(username, repo_url, base_repo_url, ref, status_update_metadata: O
         user_gl.auth()
         project = user_gl.projects.get(PROJECT_ID)
 
+        is_anonymous = username == default_user
+
         variables = {
             "TARGET_COMPONENTS_URL": repo_url,
+            "TARGET_COMPONENTS": " ".join(is_anonymous and default_user_target_components or target_components),
             "PUSHED_REF": ref,
             "ORCHESTRA_CONFIG_REPO_HTTP_URL": ORCHESTRA_CONFIG_REPO_HTTP_URL,
             "ORCHESTRA_CONFIG_REPO_SSH_URL": ORCHESTRA_CONFIG_REPO_SSH_URL,
@@ -199,7 +204,6 @@ def trigger_ci(username, repo_url, base_repo_url, ref, status_update_metadata: O
                 "private_sources": "",
                 "private_bin_archives": ""
             }
-            is_anonymous = username == default_user
             if not is_anonymous:
                 # Placeholders are replaced in the shell script since we don't want to intentionally introduce shell
                 # injection vulnerabilities.
@@ -218,7 +222,7 @@ def trigger_ci(username, repo_url, base_repo_url, ref, status_update_metadata: O
                           in variables.items()]
         }
         print(json.dumps(parameters, indent=2))
-        pipeline = project.pipelines.create(parameters)
+        project.pipelines.create(parameters)
 
 
 LAB_TO_HUB_STATUS_MAP = {
@@ -413,7 +417,7 @@ def github_hook():
     elif event in ("check_suite", "check_run") and data.get("action", "") in ('requested', 'rerequested'):
         check_suite = data["check_suite"] if event == "check_suite" else data["check_run"]["check_suite"]
 
-        username = data["sender"]["login"],
+        username = data["sender"]["login"]
         branch = check_suite["head_branch"]
         head_sha = check_suite["head_sha"]
         clone_url = data["repository"]["clone_url"]
