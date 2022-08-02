@@ -1,8 +1,11 @@
 FROM ubuntu:20.04
 
-COPY install-dependencies.sh /install-dependencies.sh
-COPY install-system-dependencies.sh /install-system-dependencies.sh
-COPY install-python-dependencies.sh /install-python-dependencies.sh
+COPY install-dependencies.sh \
+     install-system-dependencies.sh \
+     install-python-dependencies.sh \
+     install-node-dependencies.sh \
+     requirements.txt \
+     /
 
 RUN /install-dependencies.sh \
     && apt-get autoremove --yes --no-install-recommends \
