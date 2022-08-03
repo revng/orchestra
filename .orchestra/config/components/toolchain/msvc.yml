@@ -171,7 +171,18 @@ toolchain/(@= name @)/vc:
         OUTPUT="$(mktemp)";
         trap 'rm -f -- "$OUTPUT"' EXIT;
 
+        # Suppress wine debug information
         export WINEDEBUG=-all
+
+        # Run one dedicated mspdbsrv.exe per instance of cl.exe
+        export _MSPDBSRV_ENDPOINT_="$(python -c 'import uuid; print(str(uuid.uuid4()))')"
+        wine "$SCRIPT_DIR"/(@= bin @)/mspdbsrv.ex*e -start -spawn &
+
+        # Record mspdbsrv.exe to be killed
+        MSPDBSRV_PID="$!"
+        trap 'kill "$MSPDBSRV_PID"' EXIT;
+
+        # Run cl.exe, suppress its output in case of success
         if ! wine "$SCRIPT_DIR"/(@= bin @)/cl.ex*e "$@" >& "$OUTPUT"; then
           RESULT="$?"
           cat "$OUTPUT"
