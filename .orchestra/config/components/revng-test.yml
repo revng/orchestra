@@ -13,8 +13,7 @@ builds:
     install: |
       cd "$BUILD_DIR"
       rm -rf *
-      revng \
-        test-configure \
+      "$ORCHESTRA_ROOT/libexec/revng/revng-test-configure" \
         "$ORCHESTRA_ROOT/share/revng/test/configuration"/**/*.yml \
         --install-path "$ORCHESTRA_ROOT/share/revng/test" \
         --destination . \
