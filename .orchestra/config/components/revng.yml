@@ -32,4 +32,7 @@ components:
     default_build: optimized
     test_triggers:
       - test/revng
+    check_branch:
+      - ./libexec/revng/revng-check-conventions --force-format --HEAD
+      - orc install revng
     builds: #@ typical_cmake_builds(**build_args())
