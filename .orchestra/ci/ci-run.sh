@@ -194,19 +194,21 @@ if test -z "$TARGET_COMPONENTS"; then
     exit 1
 fi
 
-# Print debugging information
-log "Complete dependency graph"
-orc graph "$BUILD_MODE"
-for TARGET_COMPONENT in $TARGET_COMPONENTS; do
-    log "Solved dependency graph for the target component $TARGET_COMPONENT"
-    orc graph --solved "$BUILD_MODE" "$TARGET_COMPONENT"
-done
-log "Information about the components"
-orc components --hashes
-log "Binary archives commit"
-for BINARY_ARCHIVE_PATH in $(orc ls --binary-archives); do
-    log "Commit for $BINARY_ARCHIVE_PATH: $(git -C "$BINARY_ARCHIVE_PATH" rev-parse HEAD)"
-done
+if [[ "$ORCHESTRA_DEBUG" == 1 ]]; then
+    # Print debugging information
+    log "Complete dependency graph"
+    orc graph "$BUILD_MODE"
+    for TARGET_COMPONENT in $TARGET_COMPONENTS; do
+        log "Solved dependency graph for the target component $TARGET_COMPONENT"
+        orc graph --solved "$BUILD_MODE" "$TARGET_COMPONENT"
+    done
+    log "Information about the components"
+    orc components --hashes
+    log "Binary archives commit"
+    for BINARY_ARCHIVE_PATH in $(orc ls --binary-archives); do
+        log "Commit for $BINARY_ARCHIVE_PATH: $(git -C "$BINARY_ARCHIVE_PATH" rev-parse HEAD)"
+    done
+fi
 
 # Ensure we are doing a clean build
 orc clean --all
