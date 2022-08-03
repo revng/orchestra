@@ -20,11 +20,15 @@
 #@      post_install=None,
 #@      skip_post_install=False,
 #@      binary_archives=None,
+#@      test_triggers=None,
 #@  ):
 
 #@ if/end repository:
 repository: #@ repository
 license: #@ license
+
+#@ if/end test_triggers:
+test_triggers: #@ test_triggers
 
 #@ if/end binary_archives:
 binary_archives: #@ binary_archives
