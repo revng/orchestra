@@ -16,6 +16,8 @@ build_dependencies:
   - cmake
   - ninja
   - host-cxx-toolchain
+test_triggers:
+  - test/revng-qa
 #@ end
 
 #@overlay/match by=overlay.all, expects=1
