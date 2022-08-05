@@ -6,12 +6,15 @@ export DEBIAN_FRONTEND=noninteractive
 
 source /etc/os-release
 
-# Required for wine32
-dpkg --add-architecture i386
-
 apt-get -qq update
 apt-get -qq install --no-install-recommends --yes ca-certificates curl gpg
 
+# Wine
+dpkg --add-architecture i386
+curl -fsSL https://dl.winehq.org/wine-builds/winehq.key | gpg --dearmor > /usr/share/keyrings/winehq-archive.key
+curl -fsSL https://dl.winehq.org/wine-builds/ubuntu/dists/focal/winehq-focal.sources > /etc/apt/sources.list.d/winehq-focal.sources
+
+# Node
 curl -fsSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | gpg --dearmor > /usr/share/keyrings/nodesource.gpg
 curl -fsSL https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor > /usr/share/keyrings/yarnkey.gpg
 echo "deb [signed-by=/usr/share/keyrings/nodesource.gpg] https://deb.nodesource.com/node_14.x $VERSION_CODENAME main" \
@@ -70,10 +73,9 @@ apt-get -qq install --no-install-recommends --yes \
   unzip \
   valgrind \
   wget \
-  yarn \
-  wine \
   winbind \
-  wine32 \
+  winehq-stable \
+  yarn \
   zlib1g-dev
 
 # Dependencies for Qt
