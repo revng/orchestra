@@ -34,5 +34,5 @@ components:
       - test/revng
     check_branch:
       - ./libexec/revng/revng-check-conventions --force-format --HEAD
-      - orc install revng
+      - orc shell -c revng cmake . && orc install revng
     builds: #@ typical_cmake_builds(**build_args())
