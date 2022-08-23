@@ -1,0 +1,34 @@
+#!/bin/bash
+
+#
+# This file is distributed under the MIT License. See LICENSE.md for details.
+#
+
+set -euo pipefail
+
+PORT_FILE=$(mktemp)
+CACHE_FOLDER=$(mktemp -d)
+REPO_PID=0
+SCRIPT_FOLDER="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
+
+cleanup() {
+    trap - SIGINT SIGTERM ERR EXIT
+    if [ $REPO_PID -gt 0 ]; then kill $REPO_PID; fi
+    rm -rf -- "$PORT_FILE" "$CACHE_FOLDER"
+}
+trap cleanup SIGINT SIGTERM ERR EXIT
+
+"$SCRIPT_FOLDER/../libexec/static-npm-registry" "$NODE_CACHE" "$PORT_FILE" &
+REPO_PID=$!
+
+NEW_PATH=""
+
+while read -r COMPONENT; do
+    if [[ -n "$COMPONENT" && "$COMPONENT" != "$SCRIPT_FOLDER" ]]; then
+        NEW_PATH="$COMPONENT:$NEW_PATH"
+    fi
+done < <(echo "$PATH" | tr ':' '\n')
+
+while [ -z "$(cat "$PORT_FILE")" ]; do sleep 0.1s; done
+PORT=$(cat "$PORT_FILE")
+PATH="$NEW_PATH" npm --registry="http://127.0.0.1:$PORT" --cache="$CACHE_FOLDER" "$@"
