@@ -1,7 +1,7 @@
 #@ load("@ytt:overlay", "overlay")
 #@ load("/lib/create_component.lib.yml", "single_build_component")
 
-#@ package_json_sha = "170f9c4509efc5065364e99ac32823bf8a37fcbf1a05dd7cf85a530e4173d851"
+#@ package_json_sha = "afab0111cc6ba0132edf3f93aa49aef4a953dc584fc14b4e197ffe94fe236c80"
 
 #@yaml/text-templated-strings
 ---
@@ -10,36 +10,42 @@ configure: |
   JS_DIR="$ORCHESTRA_DOTDIR/support/js-prerequisites"
   mkdir -p "$BUILD_DIR"
   cd "$BUILD_DIR"
-  cp -a "$JS_DIR/package.json" "$JS_DIR/yarn.lock" .
+  cp -a "$JS_DIR/package.json" .
 
   #! check that package.json has the right hash, this is to trigger a rebuild in orchestra
   #! whenever we change the file
   echo '(@= package_json_sha @) package.json' | sha256sum -c -
 
-  #! from the yarn.lock read the urls of the tars we have to download
-  PACKAGE_URLS=$(grep 'resolved' yarn.lock | awk '{print $2}' | tr -d '"')
+  #! Generate package lock
+  npm install --package-lock-only --silent
+
+  #! from the package-lock.json read the urls of the tars we have to download
+  jq -r '.dependencies[].resolved' package-lock.json | \
   while IFS= read -r URL; do
     fetch.sh "$URL"
-  done <<< "$PACKAGE_URLS"
+  done
 
-  #! each url is in the form https://<url>/<file>#<sha1>, the sed is to have `<sha1> <file>` to
-  #! feed to sha1sum
-  echo $PACKAGE_URLS | sed 's|.*/\(.*\)#\(\w*\)|\2 \1|g' | sha1sum -c -
+  #! parse the integrity field in all depenendencies to check that the downloaded files match
+  #! the hash stored in package-lock.json
+  PACKAGE_NAMES=$(jq -r '.dependencies[].resolved' package-lock.json | sed 's;.*/\([^/]*\)$;\1;g')
+  PACKAGE_HASH=$(jq -r '.dependencies[].integrity' package-lock.json | sed 's;^sha512-;;' | while read -r HASH; do echo "$HASH" | base64 -d | xxd -p -c128; done)
+  paste -d' ' <(echo "$PACKAGE_HASH") <(echo "$PACKAGE_NAMES") | sha512sum -c -
 install: |
+  JS_DIR="$ORCHESTRA_DOTDIR/support/js-prerequisites"
+
   cd "$BUILD_DIR"
   mkdir "${DESTDIR}${ORCHESTRA_ROOT}/share/node_cache"
 
   #! copy all download packages to node_cache
   cp -a *.tgz "${DESTDIR}${ORCHESTRA_ROOT}/share/node_cache"
 
-  #! Create a yarnrc file, this is to specify the needed settings to make `yarn install` work
-  #! completely offline
-  YARNRC="${DESTDIR}${ORCHESTRA_ROOT}/share/yarnrc"
-  touch "$YARNRC"
-  yarn -s config --use-yarnrc "$YARNRC" set disable-self-update-check true
-  yarn -s config --use-yarnrc "$YARNRC" set nodedir "${ORCHESTRA_ROOT}/share/node_cache"
-  echo '--install.offline' >> "$YARNRC"
-  echo '--add.offline' >> "YARNRC"
+  #! copy the npm_static_repository tool
+  cp -a "$JS_DIR/static-npm-registry" "${DESTDIR}${ORCHESTRA_ROOT}/libexec"
+  cp -a "$JS_DIR/npm" "${DESTDIR}${ORCHESTRA_ROOT}/bin"
+
+  #! Create npmrc
+  cat - > "${DESTDIR}${ORCHESTRA_ROOT}/share/npmrc" << EOF
+  EOF
 #@ end
 
 #@overlay/match by=overlay.all, expects=1

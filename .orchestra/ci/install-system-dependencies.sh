@@ -12,15 +12,13 @@ apt-get -qq install --no-install-recommends --yes ca-certificates curl gpg
 # Wine
 dpkg --add-architecture i386
 curl -fsSL https://dl.winehq.org/wine-builds/winehq.key | gpg --dearmor > /usr/share/keyrings/winehq-archive.key
-curl -fsSL https://dl.winehq.org/wine-builds/ubuntu/dists/focal/winehq-focal.sources > /etc/apt/sources.list.d/winehq-focal.sources
+curl -fsSL "https://dl.winehq.org/wine-builds/ubuntu/dists/$VERSION_CODENAME/winehq-$VERSION_CODENAME.sources" \
+  > "/etc/apt/sources.list.d/winehq-$VERSION_CODENAME.sources"
 
 # Node
 curl -fsSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | gpg --dearmor > /usr/share/keyrings/nodesource.gpg
-curl -fsSL https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor > /usr/share/keyrings/yarnkey.gpg
-echo "deb [signed-by=/usr/share/keyrings/nodesource.gpg] https://deb.nodesource.com/node_14.x $VERSION_CODENAME main" \
+echo "deb [signed-by=/usr/share/keyrings/nodesource.gpg] https://deb.nodesource.com/node_18.x $VERSION_CODENAME main" \
   > /etc/apt/sources.list.d/nodesource.list
-echo "deb [signed-by=/usr/share/keyrings/yarnkey.gpg] https://dl.yarnpkg.com/debian stable main" \
-  > /etc/apt/sources.list.d/yarn.list
 apt-get -qq update
 
 # Notes about installed packages:
@@ -75,7 +73,7 @@ apt-get -qq install --no-install-recommends --yes \
   wget \
   winbind \
   winehq-stable \
-  yarn \
+  xxd \
   zlib1g-dev
 
 # Dependencies for Qt
