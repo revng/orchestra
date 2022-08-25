@@ -11,9 +11,6 @@ apt-get -qq install --no-install-recommends --yes ca-certificates curl gpg
 
 # Wine
 dpkg --add-architecture i386
-curl -fsSL https://dl.winehq.org/wine-builds/winehq.key | gpg --dearmor > /usr/share/keyrings/winehq-archive.key
-curl -fsSL "https://dl.winehq.org/wine-builds/ubuntu/dists/$VERSION_CODENAME/winehq-$VERSION_CODENAME.sources" \
-  > "/etc/apt/sources.list.d/winehq-$VERSION_CODENAME.sources"
 
 # Node
 curl -fsSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | gpg --dearmor > /usr/share/keyrings/nodesource.gpg
@@ -81,7 +78,7 @@ PACKAGES+=(python3-cffi)
 PACKAGES+=(doxygen)
 PACKAGES+=(shellcheck)
 PACKAGES+=(nodejs)
-PACKAGES+=(winehq-stable)
+PACKAGES+=(wine32)
 PACKAGES+=(xxd)
 
 #
@@ -101,7 +98,7 @@ PACKAGES+=(p7zip-full)
 #     orc install --test toolchain/win32-vc16/vc
 #
 PACKAGES+=(winbind)
-PACKAGES+=(winehq-stable)
+PACKAGES+=(wine32)
 
 apt-get -qq install --no-install-recommends --yes "${PACKAGES[@]}"
 
