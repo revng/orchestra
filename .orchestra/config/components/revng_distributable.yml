@@ -114,7 +114,7 @@ install: |
   find . -not -type d -not -path './revng/*' -delete
   find . -type d -empty -delete
 build_dependencies:
-  - ui/cold-revng
+  - revng-c
 skip_post_install: true
 #@ end
 
