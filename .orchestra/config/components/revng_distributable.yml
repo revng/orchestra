@@ -89,7 +89,7 @@ install: |
   cd root
 
   echo "Stripping components"
-  find "share/orchestra" -name "*.idx" -type f | grep -vE 'revng|caliban'| xargs cat | while read EXECUTABLE; do
+  find "share/orchestra" -name "*.idx" -type f | grep -v 'revng'| xargs cat | while read EXECUTABLE; do
     if test -e "$EXECUTABLE" && head -c 4 "$EXECUTABLE" | grep '^.ELF' > /dev/null && file "$EXECUTABLE" | grep x86-64 | grep -E '(shared|dynamic)' > /dev/null; then
       echo strip "$EXECUTABLE"
       strip "$EXECUTABLE"
