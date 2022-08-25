@@ -37,7 +37,6 @@ install: |
     --exclude "/share/revng/qa/tests/analysis/" \
     --exclude "/share/revng/qa/tests/runtime/**.ll" \
     --exclude "/lib64/libclang-cpp.so*" \
-    --exclude "libQt*.a" \
     --exclude-from=- \
     "$ORCHESTRA_ROOT/." \
     "${TMP_ROOT}${ORCHESTRA_ROOT}/revng/root/."
@@ -60,7 +59,7 @@ install: |
 
   cat >> environment <<EOF
   $(orchestra environment |
-    grep -E "^export (PATH|LIBGL_DRIVERS_PATH|PKG_CONFIG_PATH|QML2_IMPORT_PATH|QT_PLUGIN_PATH|PYTHONPATH|LIBRARY_PATH)")
+    grep -E "^export (PATH|LIBGL_DRIVERS_PATH|PKG_CONFIG_PATH|PYTHONPATH|LIBRARY_PATH)")
   unset ORCHESTRA_DOTDIR
   unset ORCHESTRA_ROOT
   EOF
