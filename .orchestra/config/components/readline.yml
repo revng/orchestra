@@ -1,0 +1,42 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+#@ load("/lib/make.lib.yml", "make")
+
+#@ readline_ver = "8.1.2"
+#@ source_url = "https://ftp.gnu.org/gnu/readline/readline-" + readline_ver + ".tar.gz"
+
+#@yaml/text-templated-strings
+---
+#@ def readline_args():
+license: COPYING
+configure: |
+  mkdir -p "$BUILD_DIR"
+  extract.sh --into "$BUILD_DIR" (@= source_url @)
+  
+  cd "$BUILD_DIR"
+  ./configure \
+    --prefix="$ORCHESTRA_ROOT" \
+    --enable-multibyte \
+    --disable-static \
+    --disable-install-examples \
+    --with-curses
+
+install: |
+  cd "$BUILD_DIR"
+  (@= make @) SHLIB_LIBS=-lncurses
+  (@= make @) install DESTDIR="$DESTDIR"
+
+dependencies:
+  - ncurses
+
+build_dependencies:
+  - host-c-toolchain
+  - glibc
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  readline: #@ single_build_component(**readline_args())
