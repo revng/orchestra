@@ -1,0 +1,60 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/make.lib.yml", "make")
+
+#@yaml/text-templated-strings
+---
+#@ def python_component():
+#@ source_url = "https://www.python.org/ftp/python/3.10.6/Python-3.10.6.tar.xz"
+license: LICENSE
+builds:
+  default:
+    configure: |
+      mkdir -p "$BUILD_DIR"
+      extract.sh --into "$BUILD_DIR" (@= source_url @)
+      cd "$BUILD_DIR"
+      
+      # orchestra's libc has a buggy getaddrinfo; we expect users to have a newer libc
+      ac_cv_buggy_getaddrinfo=no ./configure \
+        --prefix="$ORCHESTRA_ROOT" \
+        --libdir="${ORCHESTRA_ROOT}/lib64" \
+        --enable-optimizations \
+        --enable-shared \
+        --enable-ipv6 \
+        --disable-test-modules \
+        --with-ensurepip=install \
+        --with-lto \
+        --with-readline \
+        --with-system-ffi \
+        --with-system-expat \
+        --without-static-libpython
+
+      grep -v HAVE_SYS_AUXV_H pyconfig.h > pyconfig.h.tmp
+      mv pyconfig.h.tmp pyconfig.h
+    install: |
+      cd "$BUILD_DIR"
+      (@= make @)
+      (@= make @) install DESTDIR="$DESTDIR"
+
+      INSTALLDIR="${DESTDIR}${ORCHESTRA_ROOT}"
+      ln -s python3 "${INSTALLDIR}"/bin/python
+      ln -s python3-config "${INSTALLDIR}"/bin/python-config
+      ln -s idle3 "${INSTALLDIR}"/bin/idle
+      ln -s pydoc3 "${INSTALLDIR}"/bin/pydoc
+    build_dependencies:
+      - host-c-toolchain
+      - glibc
+    dependencies:
+      - bzip2
+      - expat
+      - libffi
+      - libxcrypt
+      - openssl
+      - readline
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  python: #@ python_component()
