@@ -1,0 +1,22 @@
+#@ load("@ytt:overlay", "overlay")
+#@ load("@ytt:data", "data")
+#@ load("/lib/cmake.lib.yml", "typical_cmake_builds")
+
+---
+#@ def build_args():
+test: false
+source_url: "https://github.com/libexpat/libexpat/releases/download/R_2_4_8/expat-2.4.8.tar.gz"
+use_asan: false
+build_dependencies:
+  - cmake
+  - host-c-toolchain
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  expat:
+    license: COPYING
+    default_build: optimized
+    builds: #@ typical_cmake_builds(**build_args())
