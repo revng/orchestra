@@ -14,3 +14,14 @@
 #@     return getattr(data.values, attrname)
 #@   end
 #@ end
+
+#@ def seq_join(seq, sep):
+#@   result = ""
+#@   for i in seq:
+#@     result += str(i) + sep
+#@   end
+#@   if len(result) > 0:
+#@     return result[:-1]
+#@   end
+#@   return result
+#@ end
