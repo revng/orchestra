@@ -1,5 +1,6 @@
 #@ load("@ytt:data", "data")
 #@ load("/lib/create_component.lib.yml", "single_build_component")
+#@ load("/lib/make.lib.yml", "make")
 
 #@yaml/text-templated-strings
 
@@ -17,48 +18,97 @@
 #@   version = kwargs["gdb_version"]
 
 #@   source_url = gdb_source_url(version)
+
+#@ # --with-python and --with-system-gdbinit:
+#@ # GDB's ./configure automatically determines whether the provided paths are
+#@ # relative to $PREFIX and, if so, it compiles them in as relative paths.
+#@ # You can verify that this is the case by running `gdb --configuration`, it
+#@ # should state "(relocatable)".
+
 license: COPYING
 configure: |
   extract.sh --into "$SOURCE_DIR" (@= source_url @)
   mkdir -p "$BUILD_DIR"
+
   cd "$BUILD_DIR" && "$SOURCE_DIR/configure" \
     --build=x86_64-pc-linux-gnu \
     --host=x86_64-pc-linux-gnu \
     --target=(@= triple @) \
     --with-sysroot=$ORCHESTRA_ROOT/(@= triple @) \
     --prefix=$ORCHESTRA_ROOT \
-    --datadir=$ORCHESTRA_ROOT/share/binutils-data/(@= triple @)/(@= version @) \
-    --infodir=$ORCHESTRA_ROOT/share/binutils-data/(@= triple @)/(@= version @)/info \
-    --mandir=$ORCHESTRA_ROOT/share/binutils-data/(@= triple @)/(@= version @)/man \
     --bindir=$ORCHESTRA_ROOT/x86_64-pc-linux-gnu/(@= triple @)/binutils-bin/(@= version @) \
+    --datadir=$ORCHESTRA_ROOT/share/binutils-data/(@= triple @)/(@= version @) \
+    --disable-binutils \
+    --includedir=$ORCHESTRA_ROOT/lib64/gdb/(@= triple @)/(@= version @)/include \
+    --infodir=$ORCHESTRA_ROOT/share/binutils-data/(@= triple @)/(@= version @)/info \
     --libdir=$ORCHESTRA_ROOT/lib64/binutils/(@= triple @)/(@= version @) \
     --libexecdir=$ORCHESTRA_ROOT/lib64/binutils/(@= triple @)/(@= version @) \
-    --includedir=$ORCHESTRA_ROOT/lib64/gdb/(@= triple @)/(@= version @)/include \
-    --disable-werror \
-    --disable-binutils \
+    --mandir=$ORCHESTRA_ROOT/share/binutils-data/(@= triple @)/(@= version @)/man \
     --disable-etc \
-    --disable-isl \
     --disable-gas \
     --disable-gold \
     --disable-gprof \
-    --disable-ld \
-    --disable-gdbserver \
-    --enable-64-bit-bfd \
     --disable-install-libbfd \
     --disable-install-libiberty \
-    --without-guile \
-    --with-system-readline \
-    --enable-nls \
-    --enable-tui=no \
-    --with-mpfr="$ORCHESTRA_ROOT" \
-    --without-included-gettext \
+    --disable-isl \
+    --disable-ld \
     --disable-shared \
+    --disable-werror \
+    --enable-64-bit-bfd \
+    --enable-gdbserver \
+    --enable-lto \
+    --enable-nls \
     --enable-obsolete \
+    --enable-plugins \
+    --enable-source-highlight \
+    --enable-tui \
+    --with-curses \
+    --with-expat=yes \
+    --with-libexpat-prefix="$ORCHESTRA_ROOT" \
+    --with-mpfr=yes \
+    --with-libmpfr-prefix="$ORCHESTRA_ROOT" \
+    --with-gmp=yes \
+    --with-libgmp-prefix="$ORCHESTRA_ROOT" \
+    --with-debuginfod=no \
+    --with-python="$ORCHESTRA_ROOT/bin/python3" \
+    --with-system-gdbinit="$ORCHESTRA_ROOT/(@= triple @)/etc/gdb/gdbinit" \
+    --with-system-readline \
+    --without-guile \
+    --without-included-gettext \
     --without-stage1-ldflags \
+    CC=clang \
+    CXX=clang++ \
     CFLAGS="-w -ggdb3 -O3" \
-    CXXFLAGS="-w -ggdb3 -O3"
-build_system: make
+    CXXFLAGS="-w -ggdb3 -O3 -stdlib=libc++"
+install: |
+  cd "$BUILD_DIR"
+  (@= make @)
+  (@= make @) install DESTDIR="$DESTDIR"
+
+  GDBINIT="$DESTDIR$ORCHESTRA_ROOT/(@= triple @)/etc/gdb/gdbinit"
+  mkdir -p "$(dirname "$GDBINIT")"
+
+  cat >"$GDBINIT" <<'EOF'
+  set pagination off
+  EOF
+
+  (@- if triple.startswith("x86_64"): @)
+  echo "set disassembly-flavor intel" >> "$GDBINIT"
+  (@ end @)
+add_to_path:
+  - $ORCHESTRA_ROOT/x86_64-pc-linux-gnu/(@= triple @)/binutils-bin/(@= version @)
+dependencies:
+  - expat
+  - gmp
+  - host-libcxx
+  - icu
+  - mpfr
+  - ncurses
+  - python
+  - readline
+  - source-highlight
 build_dependencies:
+  - host-cxx-toolchain
   - glibc
   - zlib
 #@ end
