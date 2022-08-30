@@ -86,6 +86,7 @@ configure: |
   patch-if-exists "${ORCHESTRA_DOTDIR}/patches/gcc-(@= gcc_version @)-cfns-fix-mismatch-in-gnu_inline-attributes.patch" "$SOURCE_DIR"
   patch-if-exists "${ORCHESTRA_DOTDIR}/patches/gcc-(@= gcc_version @)-cpp-musl-support.patch" "$SOURCE_DIR"
   patch-if-exists "${ORCHESTRA_DOTDIR}/patches/gcc-(@= gcc_version @)-fixes.patch" "$SOURCE_DIR"
+  patch-if-exists "${ORCHESTRA_DOTDIR}/patches/gcc-(@= gcc_version @)-remove-dependency-on-libc_single_threaded.patch" "$SOURCE_DIR"
   sed -i 's|gcc_gxx_include_dir="${gcc_gxx_without_sysroot}"|gcc_gxx_include_dir="/${gcc_gxx_without_sysroot#/}"|' "$SOURCE_DIR/gcc/configure"
   (@ if "host" in toolchain_name: @)
   sed -i "s|SHLIB_LINK = .(CC)|\0 -L$ORCHESTRA_ROOT/link-only/lib|" "$SOURCE_DIR/libgcc/config/t-slibgcc"
@@ -93,7 +94,11 @@ configure: |
   (@ end @)
 
   mkdir -p "$BUILD_DIR"
-  cd "$BUILD_DIR" && "$SOURCE_DIR/configure" \
+  cd "$BUILD_DIR"
+
+  gcc -c -fPIC -x c <(echo 'char __libc_single_threaded __attribute__ ((weak));') -o "$BUILD_DIR/fake-libc-single-threaded.o"
+
+  "$SOURCE_DIR/configure" \
     --host=x86_64-pc-linux-gnu \
     --build=x86_64-pc-linux-gnu \
     --target=(@= triple @) \
@@ -139,7 +144,7 @@ configure: |
     (@= expand_args(build_specific_configure_options) @) \
     CFLAGS="-w -ggdb3 -O3 (@= data.values.hard_flags_compile @)" \
     CXXFLAGS="-w -ggdb3 -O3 (@= data.values.hard_flags_compile @) -std=gnu++11" \
-    LDFLAGS="(@= data.values.hard_flags_link @) (@= data.values.hard_flags_link_late @) -static-libgcc"
+    LDFLAGS="(@= data.values.hard_flags_link @) (@= data.values.hard_flags_link_late @) -static-libgcc -static-libstdc++ $BUILD_DIR/fake-libc-single-threaded.o"
 install: |
   cd "$BUILD_DIR"
   (@= make @) (@= extra_gcc_make_variables @)
