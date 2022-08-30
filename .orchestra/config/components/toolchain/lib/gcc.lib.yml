@@ -86,6 +86,7 @@ configure: |
   patch-if-exists "${ORCHESTRA_DOTDIR}/patches/gcc-(@= gcc_version @)-cfns-fix-mismatch-in-gnu_inline-attributes.patch" "$SOURCE_DIR"
   patch-if-exists "${ORCHESTRA_DOTDIR}/patches/gcc-(@= gcc_version @)-cpp-musl-support.patch" "$SOURCE_DIR"
   patch-if-exists "${ORCHESTRA_DOTDIR}/patches/gcc-(@= gcc_version @)-fixes.patch" "$SOURCE_DIR"
+  patch-if-exists "${ORCHESTRA_DOTDIR}/patches/gcc-(@= gcc_version @)-remove-dependency-on-libc_single_threaded.patch" "$SOURCE_DIR"
   sed -i 's|gcc_gxx_include_dir="${gcc_gxx_without_sysroot}"|gcc_gxx_include_dir="/${gcc_gxx_without_sysroot#/}"|' "$SOURCE_DIR/gcc/configure"
   (@ if "host" in toolchain_name: @)
   sed -i "s|SHLIB_LINK = .(CC)|\0 -L$ORCHESTRA_ROOT/link-only/lib|" "$SOURCE_DIR/libgcc/config/t-slibgcc"
