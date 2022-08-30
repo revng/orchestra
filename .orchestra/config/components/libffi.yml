@@ -2,7 +2,7 @@
 #@ load("@ytt:overlay", "overlay")
 #@ load("/lib/create_component.lib.yml", "single_build_component")
 
-#@ source_url = "https://github.com/libffi/libffi/releases/download/v3.3/libffi-3.3.tar.gz"
+#@ source_url = "https://github.com/libffi/libffi/releases/download/v3.4.2/libffi-3.4.2.tar.gz"
 
 #@yaml/text-templated-strings
 ---
