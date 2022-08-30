@@ -2,7 +2,7 @@
 #@ load("@ytt:overlay", "overlay")
 #@ load("/lib/create_component.lib.yml", "single_build_component")
 
-#@ source_url = "https://ftp.gnu.org/pub/gnu/ncurses/ncurses-6.2.tar.gz"
+#@ source_url = "https://ftp.gnu.org/pub/gnu/ncurses/ncurses-6.3.tar.gz"
 
 #@yaml/text-templated-strings
 ---
