@@ -1,0 +1,35 @@
+From a1b78403b112bc091d82bf3519d45f0051ff69af Mon Sep 17 00:00:00 2001
+From: Davide Depau <davide@rev.ng>
+Date: Tue, 30 Aug 2022 15:35:59 +0200
+Subject: [PATCH] Remove dependency on __libc_single_threaded
+
+---
+ libstdc++-v3/include/ext/atomicity.h | 5 -----
+ 1 file changed, 5 deletions(-)
+
+diff --git a/libstdc++-v3/include/ext/atomicity.h b/libstdc++-v3/include/ext/atomicity.h
+index 1dbf6c340..4d5343d6a 100644
+--- a/libstdc++-v3/include/ext/atomicity.h
++++ b/libstdc++-v3/include/ext/atomicity.h
+@@ -34,9 +34,6 @@
+ #include <bits/c++config.h>
+ #include <bits/gthr.h>
+ #include <bits/atomic_word.h>
+-#if __has_include(<sys/single_threaded.h>)
+-# include <sys/single_threaded.h>
+-#endif
+
+ namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+ {
+@@ -48,8 +45,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
+   {
+ #ifndef __GTHREADS
+     return true;
+-#elif __has_include(<sys/single_threaded.h>)
+-    return ::__libc_single_threaded;
+ #else
+     return !__gthread_active_p();
+ #endif
+--
+2.37.2
+
