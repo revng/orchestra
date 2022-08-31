@@ -21,7 +21,11 @@ configure: |
   patch-if-exists "${ORCHESTRA_DOTDIR}/patches/boost-1.63.0-icl-disable-LessThanComparableConcept.patch" "$BUILD_DIR"
   cd "$BUILD_DIR"
 
-  ./bootstrap.sh --prefix="$ORCHESTRA_ROOT" --with-libraries=(@= seq_join(boost_libs(), ",") @)
+  ./bootstrap.sh \
+    --prefix="$ORCHESTRA_ROOT" \
+    --with-libraries=(@= seq_join(boost_libs(), ",") @) \
+    --without-icu
+
 install: |
   cd "$BUILD_DIR"
 
