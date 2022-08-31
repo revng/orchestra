@@ -178,7 +178,7 @@ toolchain/(@= name @)/vc:
         export WINEDLLOVERRIDES="mscoree,mshtml="
 
         # Run one dedicated mspdbsrv.exe per instance of cl.exe
-        export _MSPDBSRV_ENDPOINT_="$(python -c 'import uuid; print(str(uuid.uuid4()))')"
+        export _MSPDBSRV_ENDPOINT_="$(python3 -c 'import uuid; print(uuid.uuid4())')"
         wine "$SCRIPT_DIR"/(@= bin @)/mspdbsrv.ex*e -start -spawn &
 
         # Record mspdbsrv.exe to be killed
