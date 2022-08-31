@@ -172,7 +172,10 @@ toolchain/(@= name @)/vc:
         trap 'rm -f -- "$OUTPUT"' EXIT;
 
         # Suppress wine debug information
-        export WINEDEBUG=-all
+        export WINEDEBUG="-all"
+
+        # Disable .Net and mshtml
+        export WINEDLLOVERRIDES="mscoree,mshtml="
 
         # Run one dedicated mspdbsrv.exe per instance of cl.exe
         export _MSPDBSRV_ENDPOINT_="$(python -c 'import uuid; print(str(uuid.uuid4()))')"
