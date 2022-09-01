@@ -180,10 +180,16 @@ toolchain/(@= name @)/vc:
         # Run one dedicated mspdbsrv.exe per instance of cl.exe
         export _MSPDBSRV_ENDPOINT_="$(python3 -c 'import uuid; print(uuid.uuid4())')"
         wine "$SCRIPT_DIR"/(@= bin @)/mspdbsrv.ex*e -start -spawn &
-
-        # Record mspdbsrv.exe to be killed
         MSPDBSRV_PID="$!"
-        trap 'kill "$MSPDBSRV_PID"' EXIT;
+
+        # Stop mspdbsrv.exe upon exit
+        trap 'wine "$SCRIPT_DIR"/(@= bin @)/mspdbsrv.ex*e -stop' EXIT;
+
+        # Wait for mspdbsrv.exe to be up and running
+        while ! [[ "$(readlink -f "/proc/$MSPDBSRV_PID/exe")" == *"wine"* ]]; do
+            sleep 0.2
+        done
+        sleep 0.2
 
         # Run cl.exe, suppress its output in case of success
         if ! wine "$SCRIPT_DIR"/(@= bin @)/cl.ex*e "$@" >& "$OUTPUT"; then
