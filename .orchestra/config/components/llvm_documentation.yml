@@ -15,7 +15,7 @@ builds:
     configure: |
       rm -rf "$BUILD_DIR"
       mkdir -p $(dirname "$BUILD_DIR")
-      cp -farl "$SOURCE_DIR" "$BUILD_DIR"
+      cp -far --reflink=auto "$SOURCE_DIR" "$BUILD_DIR"
       mkdir -p "$BUILD_DIR/build"
 
       sed 's|FILE_PATTERNS|#FILE_PATTERNS|' -i "$BUILD_DIR"/*/docs/doxygen.cfg.in
@@ -56,9 +56,9 @@ builds:
       make_docset $BUILD_DIR/build/tools/mlir/docs/doxygen/html/ mlir
 
       mkdir -p "${DESTDIR}${ORCHESTRA_ROOT}/share/doc/"{llvm,clang,mlir}
-      cp -farl "$BUILD_DIR/build/docs/doxygen/html/llvm.docset" "${DESTDIR}${ORCHESTRA_ROOT}/share/doc/llvm"
-      cp -farl "$BUILD_DIR/build/tools/clang/docs/doxygen/html/clang.docset" "${DESTDIR}${ORCHESTRA_ROOT}/share/doc/clang"
-      cp -farl "$BUILD_DIR/build/tools/mlir/docs/doxygen/html/mlir.docset" "${DESTDIR}${ORCHESTRA_ROOT}/share/doc/mlir"
+      cp -far --reflink=auto "$BUILD_DIR/build/docs/doxygen/html/llvm.docset" "${DESTDIR}${ORCHESTRA_ROOT}/share/doc/llvm"
+      cp -far --reflink=auto "$BUILD_DIR/build/tools/clang/docs/doxygen/html/clang.docset" "${DESTDIR}${ORCHESTRA_ROOT}/share/doc/clang"
+      cp -far --reflink=auto "$BUILD_DIR/build/tools/mlir/docs/doxygen/html/mlir.docset" "${DESTDIR}${ORCHESTRA_ROOT}/share/doc/mlir"
 
       cat <<EOF
       To install the Zeal docset run the following commands from command line:

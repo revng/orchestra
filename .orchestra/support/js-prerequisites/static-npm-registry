@@ -1,0 +1,131 @@
+#!/usr/bin/env python3
+#
+# This file is distributed under the MIT License. See LICENSE.md for details.
+#
+
+import json
+import os
+import re
+import sys
+import tarfile
+from base64 import b64encode
+from collections import defaultdict
+from hashlib import sha512
+from http.server import BaseHTTPRequestHandler
+from shutil import copyfileobj
+from socketserver import ThreadingTCPServer
+from typing import Dict, Tuple
+from urllib.parse import unquote
+
+
+def parse_tgz(path: str) -> Tuple[Dict, str]:
+    def get_file(tar, name):
+        if name in tar.getnames():
+            return tar.extractfile(name)
+        return None
+
+    with tarfile.open(path, "r:*") as tar:
+        if (
+            (file := get_file(tar, "package.json"))
+            or (file := get_file(tar, "node/package.json"))
+            or (file := get_file(tar, "package/package.json"))
+        ):
+            return json.load(file), path
+        else:
+            raise ValueError()
+
+
+def find_last_package_version(packages):
+    if len(packages) == 1:
+        return packages[0]["version"]
+    sorted_packages = sorted(packages, key=lambda p: [int(v) for v in p["version"].split(".")])
+    return sorted_packages[-1]["version"]
+
+
+def compute_integrity(path):
+    file_hash = sha512()
+    with open(path, "rb") as file:
+        file_hash.update(file.read())
+    return f"sha512-{b64encode(file_hash.digest()).decode('utf-8')}"
+
+
+def fix_package_jsons(grouped_packages):
+    result = {"npm": {}}
+    for name, info in grouped_packages.items():
+        fixed_packages = [
+            {
+                **package_json,
+                "_id": f"{package_json['name']}@{package_json['version']}",
+                "dist": {
+                    # npm will replace the host with the one provided by --registry
+                    "tarball": f"https://registry.npmjs.org/tarball/{os.path.basename(path)}",
+                    "integrity": compute_integrity(path),
+                },
+            }
+            for package_json, path in info
+        ]
+        result[name] = {
+            "_id": name,
+            "name": name,
+            "dist-tags": {"latest": find_last_package_version(fixed_packages)},
+            "versions": {p["version"]: p for p in fixed_packages},
+        }
+    return result
+
+
+def parse_packages(directory: str):
+    with os.scandir(directory) as scan:
+        packages = [parse_tgz(entry.path) for entry in scan if entry.is_file()]
+    grouped_pkgs = defaultdict(list)
+    for package in packages:
+        grouped_pkgs[package[0]["name"]].append(package)
+    return fix_package_jsons(grouped_pkgs)
+
+
+PACKAGES = parse_packages(sys.argv[1])
+
+
+class Handler(BaseHTTPRequestHandler):
+    def do_GET(self):  # noqa: N802
+        if match := re.match(r"\/(?P<package>[^/]*)$", self.path):
+            package_name = unquote(match["package"])
+            if package_name in PACKAGES:
+                self.send_json(PACKAGES[package_name])
+            else:
+                self.send_response(404)
+        elif match := re.match(r"/tarball/(?P<filename>.*)", self.path):
+            self.send_response(200)
+            self.send_header("Content-type", "application/octet-stream")
+            self.end_headers()
+            with open(f"{sys.argv[1]}/{match['filename']}", "rb") as f:
+                copyfileobj(f, self.wfile)
+        else:
+            self.send_error(404)
+
+    def do_POST(self):  # noqa: N802
+        self.send_json({})
+
+    def send_json(self, obj):
+        payload = json.dumps(obj)
+        self.send_response(200)
+        self.send_header("Content-type", "application/json")
+        self.end_headers()
+        self.wfile.write(payload.encode("utf-8"))
+
+    def log_message(self, *args):
+        pass
+
+
+def main():
+    if len(sys.argv) != 3:
+        print(f"Usage: {sys.argv[0]} <tar folder> <port file>")
+        sys.exit(1)
+
+    with ThreadingTCPServer(("", 0), Handler) as httpd:
+        with open(sys.argv[2], "w") as port_file:
+            port_file.write(f"{httpd.server_address[1]}")
+        httpd.serve_forever()
+
+
+if __name__ == "__main__":
+    main()

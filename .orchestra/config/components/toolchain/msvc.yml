@@ -231,7 +231,7 @@ toolchain/(@= name @)/vc:
           rm test.*
         fi
 
-        cp -farl "$BUILD_DIR/"* "${DESTDIR}${ORCHESTRA_ROOT}/"
+        cp -far --reflink=auto "$BUILD_DIR/"* "${DESTDIR}${ORCHESTRA_ROOT}/"
 #@ end
 
 #@overlay/match by=overlay.all, expects=1
