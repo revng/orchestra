@@ -101,37 +101,7 @@ components:
 
 `typical_cmake_builds` will define builds for various optimization levels.
 
-See `caliban` as an example:
-```yaml
-#@ load("@ytt:overlay", "overlay")
-
-#@ load("/lib/optimization_flavors.lib.yml", "typical_project_flavors")
-#@ load("/lib/cmake.lib.yml", "cmake_boost_configuration", "typical_cmake_builds")
-
-#@ load("/global_options.lib.yml", "options")
-
----
-#@ def build_args():
-extra_cmake_args: #@ cmake_boost_configuration
-build_dependencies:
-  - cmake
-dependencies:
-  - clang-release
-  #! rest of the dependencies...
-use_asan: false
-#@ end
-
-#@overlay/match by=overlay.all, expects=1
-#@overlay/match-child-defaults missing_ok=True
----
-components:
-  caliban:
-    repository: caliban
-    builds: #@ typical_cmake_builds(**build_args())
-```
-
 ### Common optimization levels
 
-`.orchestra/config/lib/optimization_flavors.lib.yml` 
+`.orchestra/config/lib/optimization_flavors.lib.yml`
 contains some common options useful for defining various builds.
-

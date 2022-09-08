@@ -37,7 +37,6 @@ install: |
     --exclude "/share/revng/qa/tests/analysis/" \
     --exclude "/share/revng/qa/tests/runtime/**.ll" \
     --exclude "/lib64/libclang-cpp.so*" \
-    --exclude "libQt*.a" \
     --exclude-from=- \
     "$ORCHESTRA_ROOT/." \
     "${TMP_ROOT}${ORCHESTRA_ROOT}/revng/root/."
@@ -60,7 +59,7 @@ install: |
 
   cat >> environment <<EOF
   $(orchestra environment |
-    grep -E "^export (PATH|LIBGL_DRIVERS_PATH|PKG_CONFIG_PATH|QML2_IMPORT_PATH|QT_PLUGIN_PATH|PYTHONPATH|LIBRARY_PATH)")
+    grep -E "^export (PATH|LIBGL_DRIVERS_PATH|PKG_CONFIG_PATH|PYTHONPATH|LIBRARY_PATH)")
   unset ORCHESTRA_DOTDIR
   unset ORCHESTRA_ROOT
   EOF
@@ -90,7 +89,7 @@ install: |
   cd root
 
   echo "Stripping components"
-  find "share/orchestra" -name "*.idx" -type f | grep -vE 'revng|caliban'| xargs cat | while read EXECUTABLE; do
+  find "share/orchestra" -name "*.idx" -type f | grep -v 'revng'| xargs cat | while read EXECUTABLE; do
     if test -e "$EXECUTABLE" && head -c 4 "$EXECUTABLE" | grep '^.ELF' > /dev/null && file "$EXECUTABLE" | grep x86-64 | grep -E '(shared|dynamic)' > /dev/null; then
       echo strip "$EXECUTABLE"
       strip "$EXECUTABLE"
@@ -115,7 +114,7 @@ install: |
   find . -not -type d -not -path './revng/*' -delete
   find . -type d -empty -delete
 build_dependencies:
-  - ui/cold-revng
+  - revng-c
 skip_post_install: true
 #@ end
 

@@ -9,8 +9,6 @@ add_to_path:
   - $ORCHESTRA_DOTDIR/support
 environment:
   - JOBS: #@ str(datavalue("parallelism"))
-  - QML2_IMPORT_PATH: $ORCHESTRA_ROOT/qml
-  - QT_PLUGIN_PATH: $ORCHESTRA_ROOT/plugins
   - PKG_CONFIG_PATH: $ORCHESTRA_ROOT/lib/pkgconfig:$ORCHESTRA_ROOT/share/pkgconfig${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
   - INSTALL_LINK_ONLY_PATH: $ORCHESTRA_ROOT/link-only
   - LIBGL_DRIVERS_PATH: $ORCHESTRA_ROOT/lib/dri${LIBGL_DRIVERS_PATH:+:${LIBGL_DRIVERS_PATH}}
