@@ -10,5 +10,6 @@ components:
         dependencies:
           - test/revng
           - test/revng-c
+          - toolchain/host/gdb
         configure: mkdir -p "$BUILD_DIR"
         install: echo "Nothing to do"
