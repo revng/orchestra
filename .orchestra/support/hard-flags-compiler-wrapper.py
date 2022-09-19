@@ -117,7 +117,7 @@ def main():
     sys.argv = replace_argv0(sys.argv)
 
     disable_wrapper = int(os.environ.get("HARD_FLAGS_IGNORE", "0")) != 0
-    if disable_wrapper or "-E" in sys.argv or "-S" in sys.argv:
+    if disable_wrapper or "-S" in sys.argv:
         exec(other(sys.argv))
 
     prefix = "HARD_FLAGS_"
@@ -156,7 +156,9 @@ def main():
     is_compiling = bool(source_arguments)
 
     # Are we linking or compiling an individual translation unit?
-    is_linking = has_inputs and "-c" not in sys.argv
+    is_linking = (has_inputs
+                  and ("-c" not in sys.argv
+                       and "-E" not in sys.argv))
 
     if is_clang_tidy:
         exec(clang_tidy(sys.argv))
