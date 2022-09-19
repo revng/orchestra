@@ -78,6 +78,7 @@ PACKAGES+=(python3-cffi)
 PACKAGES+=(doxygen)
 PACKAGES+=(shellcheck)
 PACKAGES+=(nodejs)
+PACKAGES+=(wine)
 PACKAGES+=(wine32)
 PACKAGES+=(xxd)
 
@@ -98,6 +99,7 @@ PACKAGES+=(p7zip-full)
 #     orc install --test toolchain/win32-vc16/vc
 #
 PACKAGES+=(winbind)
+PACKAGES+=(wine)
 PACKAGES+=(wine32)
 
 apt-get -qq install --no-install-recommends --yes "${PACKAGES[@]}"
