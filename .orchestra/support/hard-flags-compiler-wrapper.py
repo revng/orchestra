@@ -132,7 +132,7 @@ def main():
     has_inputs = False
     source_arguments = set()
     ignore_next = False
-    to_ignore = set(["-o", "-L", "-I", "--sysroot", "-idirafter", "-MT", "-MF"])
+    to_ignore = set(["-o", "-L", "-I", "--sysroot", "-idirafter", "-MT", "-MF", "-x"])
     for index, arg in enumerate(sys.argv[1:]):
         if arg in to_ignore:
             ignore_next = True
