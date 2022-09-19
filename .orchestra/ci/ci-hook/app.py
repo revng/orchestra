@@ -4,6 +4,7 @@ import base64
 import hashlib
 import hmac
 import json
+import yaml
 import os
 import string
 import time
@@ -19,32 +20,24 @@ from cryptography.hazmat.backends import default_backend
 from flask import Flask, request
 
 app = Flask(__name__)
-config_file = os.environ.get("CONFIG_FILE_PATH", "config.json")
-
-
-def get_env_or_fail(var_name):
-    value = os.getenv(var_name)
-    if value is None:
-        raise Exception(f"Environment variable {var_name} is not set!")
-    return value
-
-
-GITLAB_SECRET = get_env_or_fail("GITLAB_SECRET")
-GITHUB_APP_SECRET = get_env_or_fail("GITHUB_APP_SECRET").encode("utf-8")
-revng_push_ci_private_key_b64 = get_env_or_fail("REVNG_PUSH_CI_PRIVATE_KEY_BASE64")
-revng_push_ci_private_key = base64.b64decode(revng_push_ci_private_key_b64).decode("utf-8")
-github_priv_key_b64 = get_env_or_fail("GITHUB_PRIVATE_KEY_BASE64")
-github_priv_key = default_backend().load_pem_private_key(base64.b64decode(github_priv_key_b64), None)
-ADMIN_TOKEN = get_env_or_fail("GITLAB_ADMIN_TOKEN")
-
-GITHUB_API_URL = "https://api.github.com"
+config_file = os.environ.get("CONFIG_FILE_PATH", "config.yml")
 
 try:
     with open(config_file) as f:
-        config = json.load(f)
+        config = yaml.load(f, Loader=yaml.SafeLoader)
 except IOError:
     print(f"Could not open configuration file ({config_file})")
     exit(1)
+
+GITLAB_SECRET = config["gitlab_secret"]
+GITHUB_APP_SECRET = config["github_app_secret"].encode("utf-8")
+revng_push_ci_private_key_b64 = config["revng_push_ci_private_key_base64"]
+revng_push_ci_private_key = base64.b64decode(revng_push_ci_private_key_b64).decode("utf-8")
+github_priv_key_b64 = config["github_private_key_base64"]
+github_priv_key = default_backend().load_pem_private_key(base64.b64decode(github_priv_key_b64), None)
+ADMIN_TOKEN = config["gitlab_admin_token"]
+
+GITHUB_API_URL = "https://api.github.com"
 
 allowed_to_push = config["allowed_to_push"]
 GITLAB_URL = config["gitlab_url"]
@@ -461,3 +454,4 @@ def github_hook():
     )
 
     return "All good\n", 200
+
