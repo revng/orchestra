@@ -1,0 +1,63 @@
+#@ load("@ytt:overlay", "overlay")
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  ida:
+    license: license.txt
+    binary_archives: private
+    builds:
+       default:
+        dependencies:
+          - glibc
+          - ncurses
+        configure: |
+          mkdir -p "$BUILD_DIR" 
+
+          fetch.sh "${NON_REDISTRIBUTABLE_BASE_URL}/ida-installer"
+          fetch.sh "${NON_REDISTRIBUTABLE_BASE_URL}/ida.reg"
+          INSTALLER="${SOURCE_ARCHIVES}/ida-installer"
+          chmod +x "$INSTALLER"
+        install: |
+          # Install IDA in /opt/ida
+          INSTALLER="${SOURCE_ARCHIVES}/ida-installer"
+          INSTALL_DIR="$DESTDIR$ORCHESTRA_ROOT"
+          IDA_INSTALL_DIR="$INSTALL_DIR/opt/ida"
+          mkdir -p "$IDA_INSTALL_DIR"
+          OLDHOME="$HOME"
+          export HOME="$BUILD_DIR"
+          unshare -rn \
+            "$INSTALLER" \
+            --installpassword "$IDA_INSTALLER_PASSWORD" \
+            --prefix "$IDA_INSTALL_DIR" \
+            --mode unattended
+          export HOME="$OLDHOME"
+
+          # Disable Python plugin
+          rm "$IDA_INSTALL_DIR/plugins/idapython"*".so"
+
+          # Copy ida.reg
+          cp -a "${SOURCE_ARCHIVES}/ida.reg" "$IDA_INSTALL_DIR"
+
+          # Create a symlink to ncurses
+          ln -s ../../lib64/libcurses.so "$IDA_INSTALL_DIR/libcurses.so"
+
+          # Copy the license to the build directory
+          mkdir -p "$BUILD_DIR" 
+          cp "$IDA_INSTALL_DIR/license.txt" "$BUILD_DIR"
+
+          # Create wrapper scripts in /bin
+          mkdir -p "$INSTALL_DIR/bin"
+          find "$IDA_INSTALL_DIR" -maxdepth 1 -type f -executable -name "ida*" | while read EXECUTABLE; do
+            NAME="$(basename "$EXECUTABLE")"
+            cat > "$INSTALL_DIR/bin/$NAME" <<'EOF'
+          #!/bin/bash
+          SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+          export IDAUSR="$(mktemp -d)"
+          trap 'rm -rf -- "$IDAUSR"' EXIT;
+          cp -a "$SCRIPT_DIR/../opt/ida/ida.reg" "$IDAUSR"
+          exec unshare -rn "$SCRIPT_DIR/../opt/ida/$(basename $0)" "$@"
+          EOF
+            chmod +x "$INSTALL_DIR/bin/$NAME"
+          done
