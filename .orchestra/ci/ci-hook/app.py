@@ -214,6 +214,10 @@ def trigger_ci(username, repo_url, base_repo_url, ref, status_update_metadata: O
             variables["BASE_USER_OPTIONS_YML"] = \
                 string.Template(pull_request_user_options).substitute(tpl_params)
 
+        if not is_anonymous:
+            for variable, value in config.get("authenticated_user_variables", {}).items():
+                variables[variable] = value
+
         parameters = {
             "ref": BRANCH,
             "variables": [{"key": key, "value": value}
