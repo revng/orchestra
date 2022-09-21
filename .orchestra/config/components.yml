@@ -17,6 +17,7 @@ environment:
   - NODE_PATH: $ORCHESTRA_ROOT/node_modules${NODE_PATH:+:${NODE_PATH}}
   - NODE_CACHE: $ORCHESTRA_ROOT/share/node_cache
   - LIBRARY_PATH: /usr/lib/x86_64-linux-gnu
+  - TERMINFO: $ORCHESTRA_ROOT/share/terminfo
   - HARD_FLAGS_COMPILE: #@ str(datavalue("hard_flags_compile"))
   - HARD_FLAGS_CXX_CLANG: #@ str(datavalue("hard_flags_cxx_clang"))
   - HARD_FLAGS_CLANG: #@ str(datavalue("hard_flags_clang"))

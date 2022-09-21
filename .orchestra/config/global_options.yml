@@ -37,4 +37,3 @@ build_from_source: []
 branches:
   - develop
   - master
-nonredistributable_base_url: "https://dummydomain.com/nonredistributable/"

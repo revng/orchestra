@@ -4,6 +4,7 @@ import base64
 import hashlib
 import hmac
 import json
+import yaml
 import os
 import string
 import time
@@ -19,32 +20,24 @@ from cryptography.hazmat.backends import default_backend
 from flask import Flask, request
 
 app = Flask(__name__)
-config_file = os.environ.get("CONFIG_FILE_PATH", "config.json")
-
-
-def get_env_or_fail(var_name):
-    value = os.getenv(var_name)
-    if value is None:
-        raise Exception(f"Environment variable {var_name} is not set!")
-    return value
-
-
-GITLAB_SECRET = get_env_or_fail("GITLAB_SECRET")
-GITHUB_APP_SECRET = get_env_or_fail("GITHUB_APP_SECRET").encode("utf-8")
-revng_push_ci_private_key_b64 = get_env_or_fail("REVNG_PUSH_CI_PRIVATE_KEY_BASE64")
-revng_push_ci_private_key = base64.b64decode(revng_push_ci_private_key_b64).decode("utf-8")
-github_priv_key_b64 = get_env_or_fail("GITHUB_PRIVATE_KEY_BASE64")
-github_priv_key = default_backend().load_pem_private_key(base64.b64decode(github_priv_key_b64), None)
-ADMIN_TOKEN = get_env_or_fail("GITLAB_ADMIN_TOKEN")
-
-GITHUB_API_URL = "https://api.github.com"
+config_file = os.environ.get("CONFIG_FILE_PATH", "config.yml")
 
 try:
     with open(config_file) as f:
-        config = json.load(f)
+        config = yaml.load(f, Loader=yaml.SafeLoader)
 except IOError:
     print(f"Could not open configuration file ({config_file})")
     exit(1)
+
+GITLAB_SECRET = config["gitlab_secret"]
+GITHUB_APP_SECRET = config["github_app_secret"].encode("utf-8")
+revng_push_ci_private_key_b64 = config["revng_push_ci_private_key_base64"]
+revng_push_ci_private_key = base64.b64decode(revng_push_ci_private_key_b64).decode("utf-8")
+github_priv_key_b64 = config["github_private_key_base64"]
+github_priv_key = default_backend().load_pem_private_key(base64.b64decode(github_priv_key_b64), None)
+ADMIN_TOKEN = config["gitlab_admin_token"]
+
+GITHUB_API_URL = "https://api.github.com"
 
 allowed_to_push = config["allowed_to_push"]
 GITLAB_URL = config["gitlab_url"]
@@ -58,6 +51,7 @@ ci_job_url = config["ci_job_url"]
 github_installation_id = config["github_installation_id"]
 default_user_target_components = config["default_user_target_components"]
 target_components = config["target_components"]
+revng_orchestra_repo_url = config["revng_orchestra_repo_url"]
 
 _installation_token_info = None
 
@@ -191,6 +185,11 @@ def trigger_ci(username, repo_url, base_repo_url, ref, status_update_metadata: O
             "ORCHESTRA_CONFIG_REPO_SSH_URL": ORCHESTRA_CONFIG_REPO_SSH_URL,
         }
 
+        if base_repo_url == ORCHESTRA_CONFIG_REPO_HTTP_URL and repo_url != base_repo_url:
+            variables["ORCHESTRA_CONFIG_REPO_HTTP_URL"] = repo_url
+        elif base_repo_url == revng_orchestra_repo_url and repo_url != base_repo_url:
+            variables["REVNG_ORCHESTRA_URL"] = repo_url
+
         if status_update_metadata is not None:
             variables["REVNG_CI_STATUS_UPDATE_METADATA"] = json.dumps(status_update_metadata)
 
@@ -214,6 +213,10 @@ def trigger_ci(username, repo_url, base_repo_url, ref, status_update_metadata: O
 
             variables["BASE_USER_OPTIONS_YML"] = \
                 string.Template(pull_request_user_options).substitute(tpl_params)
+
+        if not is_anonymous:
+            for variable, value in config.get("authenticated_user_variables", {}).items():
+                variables[variable] = value
 
         parameters = {
             "ref": BRANCH,
@@ -455,3 +458,4 @@ def github_hook():
     )
 
     return "All good\n", 200
+

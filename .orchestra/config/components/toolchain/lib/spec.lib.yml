@@ -3,8 +3,6 @@
 #@ load("/lib/optimization_flavors.lib.yml", "libc_optimization_flavors")
 #@ load("/lib/fn_args.lib.yml", "mandatory")
 
-#@ spec_archive_name = "spec2006_int_fp.tar.gz"
-#@ spec_archive_url = data.values.nonredistributable_base_url + spec_archive_name
 #! Flags for runspec
 #@ spec_flags = "int"
 #@ link_flags = "-static"
@@ -32,7 +30,7 @@ toolchain/(@= toolchain_name @)/spec/(@= build_type @)/(@= step @):
     (@= flavor @):
       configure: |
         mkdir -p "$BUILD_DIR"
-        extract.sh --into "$BUILD_DIR" "(@= spec_archive_url @)"
+        extract.sh --into "$BUILD_DIR" "${NON_REDISTRIBUITABLE_BASE_URL}/spec2006_int_fp.tar.gz"
         cd "$BUILD_DIR";
         SPEC_INSTALL_NOCHECK=1 ./install.sh -d "$BUILD_URL" -f
         (@ if step == "make": @)
