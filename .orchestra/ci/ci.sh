@@ -40,7 +40,7 @@ function log2() {
     echo -en "${BOLD}" > /dev/stderr
     echo -n '[+]' "${1}" > /dev/stderr
     echo -en "${RESET} " > /dev/stderr
-    echo "${2}"
+    echo "${2}" > /dev/stderr
 }
 
 set -e
