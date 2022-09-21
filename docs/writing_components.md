@@ -32,7 +32,7 @@ and read some of the existing configuration.
 
 ## Defining a new component
 
-It is possible to edit `.orchestra/config/components.yml` 
+It is possible to edit `.orchestra/config/components.yml`
 and directly add a component there, however this is discouraged.
 
 To define a new component in a separate file use the following template
@@ -93,7 +93,7 @@ dependencies:
 ---
 components:
   elfutils: #@ single_build_component(**_elfutils_args())
-``` 
+```
 
 `single_build_component` has many parameters, refer to its definition.
 

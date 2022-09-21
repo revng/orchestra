@@ -40,7 +40,7 @@ We also support installing orchestra inside a virtualenv.
   ```sh
   pip install --upgrade pip wheel
   ```
-* Install orchestra 
+* Install orchestra
   ```sh
   pip cache remove orchestra
   pip install --force-reinstall https://github.com/revng/revng-orchestra/archive/master.zip

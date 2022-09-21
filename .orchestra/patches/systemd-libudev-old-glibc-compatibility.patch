@@ -6,7 +6,7 @@ diff -ur source-original/src/basic/escape.h source/src/basic/escape.h
  #include <stdint.h>
  #include <sys/types.h>
 -#include <uchar.h>
- 
+
  #include "string-util.h"
  #include "missing_type.h"
 diff -ur source-original/src/basic/meson.build source/src/basic/meson.build
@@ -37,7 +37,7 @@ diff -ur source-original/src/basic/meson.build source/src/basic/meson.build
 -        xattr-util.c
 -        xattr-util.h
  '''.split())
- 
+
  missing_audit_h = files('missing_audit.h')
 diff -ur source-original/src/basic/missing_type.h source/src/basic/missing_type.h
 --- source-original/src/basic/missing_type.h	2020-07-30 21:02:36.000000000 +0200
@@ -45,7 +45,7 @@ diff -ur source-original/src/basic/missing_type.h source/src/basic/missing_type.
 @@ -1,12 +1,5 @@
  /* SPDX-License-Identifier: LGPL-2.1+ */
  #pragma once
- 
+
 -#include <uchar.h>
 -
 -#if !HAVE_CHAR32_T
@@ -61,7 +61,7 @@ diff -ur source-original/src/basic/mountpoint-util.c source/src/basic/mountpoint
 @@ -22,6 +24,7 @@
   * with large file handles anyway. */
  #define ORIGINAL_MAX_HANDLE_SZ 128
- 
+
 +#if 0
  int name_to_handle_at_loop(
                  int fd,
@@ -71,7 +71,7 @@ diff -ur source-original/src/basic/mountpoint-util.c source/src/basic/mountpoint
          }
  }
 +#endif
- 
+
  static int fd_fdinfo_mnt_id(int fd, const char *filename, int flags, int *mnt_id) {
          char path[STRLEN("/proc/self/fdinfo/") + DECIMAL_STR_MAX(int)];
 @@ -156,7 +160,7 @@
@@ -88,7 +88,7 @@ diff -ur source-original/src/basic/mountpoint-util.c source/src/basic/mountpoint
          } else if (r < 0)
                  return r;
 +#endif
- 
+
          /* The parent can do name_to_handle_at() but the
           * directory we are interested in can't? If so, it
 @@ -194,11 +199,12 @@
@@ -102,35 +102,35 @@ diff -ur source-original/src/basic/mountpoint-util.c source/src/basic/mountpoint
              memcmp(h->f_handle, h_parent->f_handle, h->handle_bytes) == 0)
                  return 1;
 +#endif
- 
+
          return mount_id != mount_id_parent;
- 
+
 @@ -277,6 +283,7 @@
          return fd_is_mount_point(fd, last_path_component(t), flags);
  }
- 
+
 +#if 0
  int path_get_mnt_id(const char *path, int *ret) {
          int r;
- 
+
 @@ -286,6 +293,7 @@
- 
+
          return r;
  }
 +#endif
- 
+
  bool fstype_is_network(const char *fstype) {
          const char *x;
 @@ -386,9 +394,11 @@
          int mount_id, r;
          char *e;
- 
+
 +#if 0
          r = path_get_mnt_id("/dev", &mount_id);
          if (r < 0)
                  return r;
 +#endif
- 
+
          r = fopen_unlocked("/proc/self/mountinfo", "re", &proc_self_mountinfo);
          if (r < 0)
 diff -ur source-original/src/basic/mountpoint-util.h source/src/basic/mountpoint-util.h
@@ -139,18 +139,18 @@ diff -ur source-original/src/basic/mountpoint-util.h source/src/basic/mountpoint
 @@ -5,7 +5,6 @@
  #include <stdbool.h>
  #include <sys/types.h>
- 
+
 -int name_to_handle_at_loop(int fd, const char *path, struct file_handle **ret_handle, int *ret_mnt_id, int flags);
- 
+
  int path_get_mnt_id(const char *path, int *ret);
- 
+
 diff -ur source-original/src/basic/random-util.c source/src/basic/random-util.c
 --- source-original/src/basic/random-util.c	2020-07-30 21:02:36.000000000 +0200
 +++ source/src/basic/random-util.c	2020-11-23 12:31:12.160369916 +0100
 @@ -307,7 +307,7 @@
          if (srand_called)
                  return;
- 
+
 -#if HAVE_SYS_AUXV_H
 +#if 0
          /* The kernel provides us with 16 bytes of entropy in auxv, so let's try to make use of that to seed
@@ -164,7 +164,7 @@ diff -ur source-original/src/basic/utf8.h source/src/basic/utf8.h
  #include <stddef.h>
  #include <stdint.h>
 -#include <uchar.h>
- 
+
  #include "macro.h"
  #include "missing_type.h"
 diff -ur source-original/src/shared/meson.build source/src/shared/meson.build

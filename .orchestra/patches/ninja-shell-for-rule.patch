@@ -3,7 +3,7 @@ index 76ff93a..d89a762 100644
 --- a/src/build.cc
 +++ b/src/build.cc
 @@ -483,7 +483,7 @@ bool RealCommandRunner::CanRunMore() const {
- 
+
  bool RealCommandRunner::StartCommand(Edge* edge) {
    string command = edge->EvaluateCommand();
 -  Subprocess* subproc = subprocs_.Add(command, edge->use_console());
@@ -22,26 +22,26 @@ index 796a326..dc43c5a 100644
 +      var == "shell" ||
        var == "msvc_deps_prefix";
  }
- 
+
 diff --git a/src/subprocess-posix.cc b/src/subprocess-posix.cc
 index 8e78540..bc43c95 100644
 --- a/src/subprocess-posix.cc
 +++ b/src/subprocess-posix.cc
 @@ -36,8 +36,8 @@ extern char** environ;
- 
+
  using namespace std;
- 
+
 -Subprocess::Subprocess(bool use_console) : fd_(-1), pid_(-1),
 -                                           use_console_(use_console) {
 +Subprocess::Subprocess(bool use_console, const std::string &shell) : fd_(-1), pid_(-1),
 +                                                                     use_console_(use_console), shell_(shell) {
  }
- 
+
  Subprocess::~Subprocess() {
 @@ -117,8 +117,13 @@ bool Subprocess::Start(SubprocessSet* set, const string& command) {
    if (err != 0)
      Fatal("posix_spawnattr_setflags: %s", strerror(err));
- 
+
 -  const char* spawned_args[] = { "/bin/sh", "-c", command.c_str(), NULL };
 -  err = posix_spawn(&pid_, "/bin/sh", &action, &attr,
 +  const char* shell = "/bin/sh";
@@ -57,7 +57,7 @@ index 8e78540..bc43c95 100644
 @@ -238,8 +243,8 @@ SubprocessSet::~SubprocessSet() {
      Fatal("sigprocmask: %s", strerror(errno));
  }
- 
+
 -Subprocess *SubprocessSet::Add(const string& command, bool use_console) {
 -  Subprocess *subprocess = new Subprocess(use_console);
 +Subprocess *SubprocessSet::Add(const string& command, bool use_console, const string &shell) {
@@ -70,16 +70,16 @@ index ff3baac..be14d95 100644
 --- a/src/subprocess-win32.cc
 +++ b/src/subprocess-win32.cc
 @@ -23,9 +23,9 @@
- 
+
  using namespace std;
- 
+
 -Subprocess::Subprocess(bool use_console) : child_(NULL) , overlapped_(),
 +Subprocess::Subprocess(bool use_console, const std::string & shell) : child_(NULL) , overlapped_(),
                                             is_reading_(false),
 -                                           use_console_(use_console) {
 +                                                                      use_console_(use_console), shell_(shell) {
  }
- 
+
  Subprocess::~Subprocess() {
 diff --git a/src/subprocess.h b/src/subprocess.h
 index 9e3d2ee..171489e 100644
@@ -87,25 +87,25 @@ index 9e3d2ee..171489e 100644
 +++ b/src/subprocess.h
 @@ -51,7 +51,7 @@ struct Subprocess {
    const std::string& GetOutput() const;
- 
+
   private:
 -  Subprocess(bool use_console);
 +  Subprocess(bool use_console, const std::string &shell);
    bool Start(struct SubprocessSet* set, const std::string& command);
    void OnPipeReady();
- 
+
 @@ -72,6 +72,7 @@ struct Subprocess {
    pid_t pid_;
  #endif
    bool use_console_;
 +  const std::string &shell_;
- 
+
    friend struct SubprocessSet;
  };
 @@ -83,7 +84,7 @@ struct SubprocessSet {
    SubprocessSet();
    ~SubprocessSet();
- 
+
 -  Subprocess* Add(const std::string& command, bool use_console = false);
 +  Subprocess* Add(const std::string& command, bool use_console = false, const std::string &shell="");
    bool DoWork();
