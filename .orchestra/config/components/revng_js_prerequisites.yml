@@ -17,7 +17,8 @@ configure: |
   echo '(@= package_json_sha @) package.json' | sha256sum -c -
 
   #! Generate package lock
-  npm install --package-lock-only --silent
+  NPM=$(which -a npm | grep -v "$ORCHESTRA_ROOT" | head -n1)
+  "$NPM" install --package-lock-only --silent
 
   #! from the package-lock.json read the urls of the tars we have to download
   jq -r '.dependencies[].resolved' package-lock.json | \
