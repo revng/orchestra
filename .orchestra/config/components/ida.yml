@@ -59,7 +59,7 @@ components:
             cat > "$INSTALL_DIR/bin/$NAME" <<'EOF'
           #!/bin/bash
           SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-          export IDAUSR="$(mktemp -d)"
+          export IDAUSR="$(mktemp -d tmp.IDAUSR.XXXXXXXXXX)"
           trap 'rm -rf -- "$IDAUSR"' EXIT;
           cp -a "$SCRIPT_DIR/../opt/ida/ida.reg" "$IDAUSR"
           exec unshare -rn "$SCRIPT_DIR/../opt/ida/$(basename $0)" "$@"

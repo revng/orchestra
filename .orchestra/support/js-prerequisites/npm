@@ -6,8 +6,8 @@
 
 set -euo pipefail
 
-PORT_FILE=$(mktemp)
-CACHE_FOLDER=$(mktemp -d)
+PORT_FILE=$(mktemp tmp.npm-port-file.XXXXXXXXXX)
+CACHE_FOLDER=$(mktemp -d tmp.npm-cache.XXXXXXXXXX)
 REPO_PID=0
 SCRIPT_FOLDER="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 

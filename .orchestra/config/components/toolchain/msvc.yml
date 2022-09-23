@@ -168,7 +168,7 @@ toolchain/(@= name @)/vc:
         export INCLUDE="(@= ";".join(["$SCRIPT_DIR/" + path for path in include]) @)"
         export LIB="(@= ";".join(["$SCRIPT_DIR/" + path for path in lib]) @)"
 
-        OUTPUT="$(mktemp)";
+        OUTPUT="$(mktemp tmp.msvc-cl.exe.XXXXXXXXXX)";
         trap 'rm -f -- "$OUTPUT"' EXIT;
 
         # Suppress wine debug information
