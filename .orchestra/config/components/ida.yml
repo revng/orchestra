@@ -13,7 +13,7 @@ components:
           - glibc
           - ncurses
         configure: |
-          mkdir -p "$BUILD_DIR" 
+          mkdir -p "$BUILD_DIR"
 
           fetch.sh "${NON_REDISTRIBUTABLE_BASE_URL}/ida-installer"
           fetch.sh "${NON_REDISTRIBUTABLE_BASE_URL}/ida.reg"
@@ -44,7 +44,7 @@ components:
           ln -s ../../lib64/libcurses.so "$IDA_INSTALL_DIR/libcurses.so"
 
           # Copy the license to the build directory
-          mkdir -p "$BUILD_DIR" 
+          mkdir -p "$BUILD_DIR"
           cp "$IDA_INSTALL_DIR/license.txt" "$BUILD_DIR"
 
           # Create wrapper scripts in /bin
