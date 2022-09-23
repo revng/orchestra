@@ -65,7 +65,7 @@ components:
           export IDAUSR="$(mktemp -d tmp.IDAUSR.XXXXXXXXXX)"
           trap 'rm -rf -- "$IDAUSR"' EXIT;
           cp -a "$SCRIPT_DIR/../opt/ida/ida.reg" "$IDAUSR"
-          exec unshare -rn "$SCRIPT_DIR/../opt/ida/$(basename $0)" "$@"
+          unshare -rn "$SCRIPT_DIR/../opt/ida/$(basename $0)" "$@"
           EOF
             chmod +x "$INSTALL_DIR/bin/$NAME"
           done

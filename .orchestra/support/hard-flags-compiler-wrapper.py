@@ -50,9 +50,8 @@ def run(arguments):
         sys.exit(returncode)
 
 def exec(arguments):
-    log(f"execve({shlex_join(arguments)})")
-    sys.stderr.flush()
-    os.execv(arguments[0], arguments)
+    run(arguments)
+    sys.exit(0)
 
 def is_gold(arguments):
     for argument in reversed(arguments):
