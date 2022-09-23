@@ -39,6 +39,9 @@ components:
             --mode unattended
           export HOME="$OLDHOME"
 
+          # Cleanup
+          rm -f /tmp/installbuilder_installer*.log
+
           # Disable Python plugin
           rm "$IDA_INSTALL_DIR/plugins/idapython"*".so"
 
