@@ -20,6 +20,11 @@ components:
           INSTALLER="${SOURCE_ARCHIVES}/ida-installer"
           chmod +x "$INSTALLER"
         install: |
+          if test -z "${IDA_INSTALLER_PASSWORD:-}"; then
+            echo 'IDA_INSTALLER_PASSWORD is not set'
+            exit 1
+          fi
+
           # Install IDA in /opt/ida
           INSTALLER="${SOURCE_ARCHIVES}/ida-installer"
           INSTALL_DIR="$DESTDIR$ORCHESTRA_ROOT"
