@@ -1,0 +1,18 @@
+#@ load("@ytt:overlay", "overlay")
+#@ load("@ytt:template", "template")
+#@ load("/lib/pip.lib.yml", "pip_package")
+
+#@ def params():
+name: revng-qa-python-dependencies
+dependencies:
+- python-base-packages
+requirements: |-
+  expandvars
+  jinja2
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  _: #@ template.replace(pip_package(**params()))

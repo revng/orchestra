@@ -1,0 +1,79 @@
+#@ load("@ytt:overlay", "overlay")
+#@ load("@ytt:template", "template")
+#@ load("/lib/pip.lib.yml", "pip_package")
+
+#@ def params():
+name: revng-python-dependencies
+dependencies:
+- python-base-packages
+- libyaml
+- cython
+requirements: |-
+  # Python language checkers/formatters
+  black
+  flake8
+  flake8-breakpoint
+  flake8-builtins
+  flake8-comprehensions
+  flake8-eradicate
+  flake8-plugin-utils
+  flake8-polyfill
+  flake8-return
+  flake8-simplify
+  isort
+  mypy
+  pep8-naming
+  types-backports
+  types-PyYAML
+  types-requests
+  types-urllib3
+
+  # cmake-format executable
+  cmakelang
+
+  # Applications/Script dependencies
+  aiodataloader
+  ariadne[asgi-file-uploads]>=0.16
+  cffi
+  Jinja2
+  gql[aiohttp]
+  grandiso
+  jsonschema
+  networkx
+  pefile
+  pydot
+  pyelftools
+
+  # This is our fork of the python-idb package that includes some fixes.
+  https://github.com/revng/python-idb/archive/08ba07a.tar.gz
+
+  # pydot 3.0.2 introduced an incompatibility with pydot which is supposed to be
+  # resolved in a later version, but still causes problems to us (for instance,
+  # monotone framework headers generation fails), so we request v2.4.7.  See
+  # https://github.com/pydot/pydot/issues/277
+  pyparsing==2.4.7
+
+  pytest
+  pytest-asyncio
+  requests
+  requests-toolbelt
+  rich
+
+  --global-option=--with-libyaml
+  pyyaml
+
+  # uvicorn[standard] but without watchfiles (since it requires rust)
+  uvicorn==0.18.3
+  httptools>=0.5.0
+  python-dotenv>=0.13
+  uvloop>=0.14.0,!=0.15.0,!=0.15.1
+  websockets>=10.0
+
+  xdg
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  _: #@ template.replace(pip_package(**params()))

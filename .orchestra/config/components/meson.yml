@@ -1,0 +1,17 @@
+#@ load("@ytt:overlay", "overlay")
+#@ load("@ytt:template", "template")
+#@ load("/lib/pip.lib.yml", "pip_package")
+
+#@ def params():
+name: meson
+dependencies:
+- python-base-packages
+requirements: |-
+  meson==0.56.2
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  _: #@ template.replace(pip_package(**params()))
