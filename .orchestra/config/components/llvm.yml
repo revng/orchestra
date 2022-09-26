@@ -60,6 +60,7 @@ builds:
         - libunwind
         - zlib
         - ncurses
+        - lit
       #@ if/end ndebug == False:
       ndebug: false
   #@ end

@@ -1,0 +1,59 @@
+#@ load("@ytt:data", "data")
+
+#@ load("/lib/fn_args.lib.yml", "mandatory")
+#@ load("/lib/util.lib.yml", "datavalue")
+
+#@yaml/text-templated-strings
+---
+#@ def pip_package(
+#@        name=mandatory,
+#@        requirements=mandatory,
+#@        dependencies=mandatory
+#@  ):
+(@= name @):
+  builds:
+    default:
+      #@ if/end dependencies:
+      dependencies: #@ dependencies
+      configure: |-
+        mkdir -p "$BUILD_DIR"
+        cd "$BUILD_DIR"
+        cat > requirements.txt <<'EOF'
+        (@= requirements @)
+        EOF
+
+        pip-package-list.py \
+          (@= name @) \
+          -r requirements.txt \
+          > packages.csv
+
+        mkdir -p packages
+        cd packages
+        while IFS=, read -r NAME URL; do
+          fetch.sh "$URL"
+          echo "$NAME" >> "../package-list.txt"
+        done < ../packages.csv
+      install: |-
+        cd "$BUILD_DIR"
+        export HARD_FLAGS_COMPILE="-I$ORCHESTRA_ROOT/include/python(@= str(datavalue("python_version")) @) $HARD_FLAGS_COMPILE"
+        python \
+            -m pip \
+            --disable-pip-version-check \
+            --no-python-version-warning \
+            install \
+            --compile \
+            --no-index \
+            --no-build-isolation \
+            --no-warn-script-location \
+            --ignore-installed \
+            --root "$DESTDIR" \
+            --verbose \
+            packages/*
+
+        PYTHON_PACKAGES_DIR="$DESTDIR$ORCHESTRA_ROOT/share/orchestra/python-packages/"
+        mkdir -p "$PYTHON_PACKAGES_DIR"
+        cp \
+          -a \
+          package-list.txt \
+          "$PYTHON_PACKAGES_DIR/(@= name @).txt"
+#@ end

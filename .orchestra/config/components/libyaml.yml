@@ -1,0 +1,31 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+
+#@ source_url = "https://github.com/yaml/libyaml/archive/refs/tags/0.2.5.tar.gz"
+
+#@yaml/text-templated-strings
+---
+#@ def args():
+license: source/License
+configure: |
+  mkdir -p "$BUILD_DIR/source"
+  extract.sh --into "$BUILD_DIR/source" "(@= source_url @)"
+  cd "$BUILD_DIR"
+  cmake "$BUILD_DIR/source" \
+    -GNinja \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIBS=On \
+    -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT"    
+build_system: ninja
+build_dependencies:
+  - host-c-toolchain
+  - cmake
+  - glibc
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  libyaml: #@ single_build_component(**args())
