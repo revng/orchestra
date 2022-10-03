@@ -11,5 +11,6 @@ components:
           - test/revng
           - test/revng-c
           - toolchain/host/gdb
+          - revng-vscode-web
         configure: mkdir -p "$BUILD_DIR"
         install: echo "Nothing to do"

@@ -1,0 +1,73 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+
+#@yaml/text-templated-strings
+---
+#@ def revng_vscode_web_args():
+binary_archives: private
+dependencies:
+- revng-c
+build_dependencies:
+- revng-ui
+- revng-theme
+- vscode-web
+configure: |
+  mkdir -p "$BUILD_DIR"
+install: |
+  PYTHON_PACKAGE_BASE=$("${ORCHESTRA_DOTDIR}/support/get-python-path" purelib)
+  COMMANDS_DIR="${DESTDIR}${PYTHON_PACKAGE_BASE}/revng/cli/_commands"
+  mkdir -p "$COMMANDS_DIR"
+  cp -a "${ORCHESTRA_DOTDIR}/support/vscode-web/web-ui.py" \
+        "$COMMANDS_DIR"
+
+  INSTALL_DIR="${DESTDIR}${ORCHESTRA_ROOT}/share/vscode-web"
+  mkdir -p "$INSTALL_DIR/static"
+  tar -xf "${ORCHESTRA_ROOT}/share/vscode-web.tar.xz" -C"$INSTALL_DIR"
+
+  # Repackage vsixs inside the destionation directory
+  # If the EXTENSIONS_DIR has been specified and exists we'll take each vsix file and unzip it,
+  # as this is the format needed by vscode-web to load extensions properly
+  for extension in "$ORCHESTRA_ROOT"/share/vscode-extensions/*.vsix; do
+    # We need a temporary directory since:
+    # * unzip does not have the equivalent of --strip-components
+    # * we need to read the extension's name from the package.json file
+    TEMP=$(mktemp -d --tmpdir tmp.revng.vscode-web-ext-unpack.XXXXXXXXXX)
+    # Inside the vsix there's a couple of manifest files in the root, these are for the
+    # marketplace, whereas the `extension` directory contains the actual extension files
+    # that need to be included
+    unzip -qq "$extension" 'extension/*' -d"$TEMP"
+    NAME=$(jq -r .name "$TEMP/extension/package.json")
+    cp -raT "$TEMP/extension" "$INSTALL_DIR/static/extensions/$NAME"
+    rm -rf "$TEMP"
+  done
+
+  # Copy product.json and icons to to INSTALL_DIR
+  cp -a "$ORCHESTRA_DOTDIR/support/vscode-web/product.json" "$INSTALL_DIR/product.json"
+  cp -a "$ORCHESTRA_DOTDIR/support/logo.ico" "$INSTALL_DIR/static/favicon.ico"
+  cp -a "$ORCHESTRA_DOTDIR/support/logo.png" "$INSTALL_DIR/static/code-192.png"
+  cp -a "$ORCHESTRA_DOTDIR/support/logo.png" "$INSTALL_DIR/static/code-512.png"
+
+  # Since all extensions are explicitly specified in `product.json`, we can
+  # remove all the other extensions that are not specified there
+  EXTENSIONS=$(jq -r '.builtinExtensions[]' "$INSTALL_DIR/product.json")
+
+  pushd "$INSTALL_DIR/static/extensions" &> /dev/null || exit
+
+  # We compare the list of folders in the current directory (the extensions directory) to the list
+  # of extensions that we specified in builtinExtensions, and we'll delete any that do not appear in
+  # the latter
+  readarray -t EXTRANEOUS_EXTENSIONS < \
+    <(comm -23 \
+      <(find . -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort) \
+      <(echo "$EXTENSIONS" | sort))
+  rm -rf "${EXTRANEOUS_EXTENSIONS[@]}"
+
+  popd &> /dev/null || exit
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  revng-vscode-web: #@ single_build_component(**revng_vscode_web_args())
