@@ -12,27 +12,24 @@ from base64 import b64encode
 from collections import defaultdict
 from hashlib import sha512
 from http.server import BaseHTTPRequestHandler
+from os.path import basename
+from pathlib import Path
 from shutil import copyfileobj
 from socketserver import ThreadingTCPServer
-from typing import Dict, Tuple
+from typing import Dict, List, Tuple
 from urllib.parse import unquote
 
 
 def parse_tgz(path: str) -> Tuple[Dict, str]:
-    def get_file(tar, name):
-        if name in tar.getnames():
-            return tar.extractfile(name)
-        return None
-
     with tarfile.open(path, "r:*") as tar:
-        if (
-            (file := get_file(tar, "package.json"))
-            or (file := get_file(tar, "node/package.json"))
-            or (file := get_file(tar, "package/package.json"))
-        ):
+        package_json = [m.name for m in tar.getmembers() if basename(m.name) == "package.json"]
+        if len(package_json) > 0:
+            filename = sorted(package_json, key=len)[0]
+            file = tar.extractfile(filename)
+            assert file is not None
             return json.load(file), path
         else:
-            raise ValueError()
+            raise ValueError(f"Cannot find package.json in {path}")
 
 
 def find_last_package_version(packages):
@@ -73,16 +70,20 @@ def fix_package_jsons(grouped_packages):
     return result
 
 
-def parse_packages(directory: str):
-    with os.scandir(directory) as scan:
-        packages = [parse_tgz(entry.path) for entry in scan if entry.is_file()]
+def parse_packages(directories: List[str]):
+    packages = []
+    for directory in directories:
+        if not os.path.isdir(directory):
+            continue
+        with os.scandir(directory) as scan:
+            packages.extend([parse_tgz(entry.path) for entry in scan if entry.is_file()])
     grouped_pkgs = defaultdict(list)
     for package in packages:
         grouped_pkgs[package[0]["name"]].append(package)
     return fix_package_jsons(grouped_pkgs)
 
 
-PACKAGES = parse_packages(sys.argv[1])
+PACKAGES = parse_packages(sys.argv[2:])
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -93,12 +94,23 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_json(PACKAGES[package_name])
             else:
                 self.send_response(404)
-        elif match := re.match(r"/tarball/(?P<filename>.*)", self.path):
+        elif (match := re.match(r"/tarball/(?P<filename>.*)", self.path)) or (
+            match := re.match(
+                r"/(|@(?P<prefix>.+)/)(?P<package>.+)/-/(?P<filename>(?P=package).*\.tgz)",
+                self.path,
+            )
+        ):
             self.send_response(200)
             self.send_header("Content-type", "application/octet-stream")
             self.end_headers()
-            with open(f"{sys.argv[1]}/{match['filename']}", "rb") as f:
-                copyfileobj(f, self.wfile)
+            filename = match["filename"]
+            if "prefix" in match.groupdict() and match["prefix"]:
+                filename = f"{match['prefix']}-{filename}"
+            for directory in sys.argv[2:]:
+                if (Path(directory) / filename).is_file():
+                    with open(f"{directory}/{filename}", "rb") as f:
+                        copyfileobj(f, self.wfile)
+                    break
         else:
             self.send_error(404)
 
@@ -117,12 +129,12 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main():
-    if len(sys.argv) != 3:
-        print(f"Usage: {sys.argv[0]} <tar folder> <port file>")
+    if len(sys.argv) < 3:
+        print(f"Usage: {sys.argv[0]} <port file> <tar directory 1> ...")
         sys.exit(1)
 
     with ThreadingTCPServer(("", 0), Handler) as httpd:
-        with open(sys.argv[2], "w") as port_file:
+        with open(sys.argv[1], "w") as port_file:
             port_file.write(f"{httpd.server_address[1]}")
         httpd.serve_forever()
 
