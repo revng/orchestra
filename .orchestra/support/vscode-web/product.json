@@ -1,0 +1,48 @@
+{
+    "productConfiguration": {
+        "nameShort": "rev.ng Web UI",
+        "nameLong": "rev.ng Web UI",
+        "applicationName": "revng-web",
+        "dataFolderName": ".revng-web",
+        "version": "1.71.2",
+        "extensionEnabledApiProposals": {}
+    },
+    "initialColorTheme": {
+        "themeType": "dark"
+    },
+    "configurationDefaults": {
+        "workbench.startupEditor": "none",
+        "window.menuBarVisibility": "classic",
+        "editor.foldingMaximumRegions": 65000,
+        "editor.colorTheme": "revng",
+        "workbench.colorTheme": "revng"
+    },
+    "extensionsPrefix": "/static/extensions",
+    "builtinExtensions": [
+        "configuration-editing",
+        "diff",
+        "html",
+        "image-preview",
+        "json",
+        "markdown-basics",
+        "markdown-language-features",
+        "markdown-math",
+        "references-view",
+        "revng-color-theme",
+        "revng-ui",
+        "search-result",
+        "simple-browser",
+        "theme-abyss",
+        "theme-defaults",
+        "theme-kimbie-dark",
+        "theme-monokai",
+        "theme-monokai-dimmed",
+        "theme-quietlight",
+        "theme-red",
+        "theme-seti",
+        "theme-solarized-dark",
+        "theme-solarized-light",
+        "theme-tomorrow-night-blue",
+        "yaml"
+    ]
+}
