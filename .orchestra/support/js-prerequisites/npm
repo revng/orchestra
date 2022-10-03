@@ -1,13 +1,12 @@
 #!/bin/bash
-
 #
 # This file is distributed under the MIT License. See LICENSE.md for details.
 #
 
 set -euo pipefail
 
-PORT_FILE=$(mktemp tmp.npm-port-file.XXXXXXXXXX)
-CACHE_FOLDER=$(mktemp -d tmp.npm-cache.XXXXXXXXXX)
+PORT_FILE=$(mktemp --tmpdir tmp.revng.port-file.XXXXXXXXXX)
+CACHE_FOLDER=$(mktemp -d --tmpdir tmp.revng.npm.XXXXXXXXXX)
 REPO_PID=0
 SCRIPT_FOLDER="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 
@@ -18,7 +17,8 @@ cleanup() {
 }
 trap cleanup SIGINT SIGTERM ERR EXIT
 
-"$SCRIPT_FOLDER/../libexec/static-npm-registry" "$NODE_CACHE" "$PORT_FILE" &
+readarray -t CACHES < <(echo "$ORCHESTRA_NODE_CACHE" | tr ':' '\n')
+"$SCRIPT_FOLDER/../libexec/static-npm-registry" "$PORT_FILE" "${CACHES[@]}" &
 REPO_PID=$!
 
 NEW_PATH=""

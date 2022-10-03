@@ -1,0 +1,48 @@
+#!/usr/bin/env node
+/*
+ * This is a wrapper script for yarn that does the following:
+ * * Always adding flags present in `HARD_FLAGS_YARN`
+ * * Enforcing offline mode with an offline cache in $SOURCE_ARCHIVES/yarn and without registry
+ *
+ * This will make yarn work without making any requests to the internet (the same cannot be said
+ * for installed dependencies lifecycle scripts)
+ *
+ * This file needs to be a javascript file, yarn prepends a temporary directory with a wrapper
+ * script to itself in PATH to make sure that if a lifecycle script runs `yarn` it runs the
+ * same one as the one installing the dependency. We ensure that this script is run instead by
+ * `require`-ing the real yarn, this maintains this script as the "yarn executable" file and so
+ * yarn will point to it in its wrapper script.
+ */
+const process = require('process');
+const fs = require('fs');
+
+// We assume this script is in $ROOT/bin and yarn is installed in
+// $ROOT/lib/node_modules/yarn/bin/yarn.js
+const YARN_PATH = "../lib/node_modules/yarn/bin/yarn.js";
+
+// Push hard flags to argv
+for (const arg of process.env['HARD_FLAGS_YARN'].split(' ')) {
+    process.argv.push(arg);
+}
+
+// Change the execpath so it looks like yarn.js is being executed
+process.env['npm_execpath'] = YARN_PATH;
+
+// Set environment variables to force offline mode
+process.env['yarn_yarn_offline_mirror'] = `${process.env['SOURCE_ARCHIVES']}/yarn`;
+process.env['yarn_yarn_offline_mirror_pruning'] = 'false';
+process.env['yarn_registry'] = '';
+process.env['yarn_disable_self_update_check'] = 'true';
+
+// Set HOME to a temporary directory, this is so the user's caches are left untouched
+const fake_home = fs.mkdtempSync('/tmp/tmp.revng.fake-yarn-home.');
+const yarn_cache = fs.mkdtempSync('/tmp/tmp.revng.yarn-cache.');
+process.on("exit", () => {
+    fs.rmSync(fake_home, {force: true, recursive: true});
+    fs.rmSync(yarn_cache, {force: true, recursive: true});
+});
+process.env['HOME'] = fake_home;
+process.argv.push("--cache-folder", yarn_cache);
+
+// Actually require yarn.js, this will delegate execution to yarn
+require(YARN_PATH);

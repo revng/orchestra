@@ -1,0 +1,151 @@
+#!/usr/bin/env python3
+#
+# This file is distributed under the MIT License. See LICENSE.md for details.
+#
+
+import argparse
+import json
+import os
+import re
+from base64 import b64decode
+from binascii import hexlify
+from dataclasses import dataclass
+from pathlib import Path
+from subprocess import DEVNULL, PIPE, run
+from typing import Dict, List
+
+YARN_DESERIALIZE_LOCKFILE = """
+const fs = require('fs');
+const lf = require('@yarnpkg/lockfile');
+
+console.log(JSON.stringify(lf.parse(fs.readFileSync('yarn.lock', 'utf8')).object));
+"""
+
+
+@dataclass
+class PackageInfo:
+    url: str
+    basename: str
+    hash_: str
+
+
+def decode_hash(string: str) -> str:
+    algo, hash_ = string.split("-", 1)
+    decoded_hash = hexlify(b64decode(hash_)).decode("utf-8")
+    return f"{algo}-{decoded_hash}"
+
+
+def parse_npm_dependencies(lockfile) -> List[PackageInfo]:
+    info = []
+    for name, dep_info in lockfile["dependencies"].items():
+        if dep_info.get("resolved") is not None:
+            dep_url = dep_info["resolved"]
+            dep_hash = decode_hash(dep_info["integrity"])
+            basename = os.path.basename(dep_url)
+            if match := re.match(r"@(?P<prefix>[\w_-]*)/", name):
+                basename = f"{match['prefix']}-{basename}"
+            info.append(PackageInfo(dep_url, basename, dep_hash))
+        elif dep_info.get("peer", False) is True or dep_info.get("optional", False) is True:
+            pass
+        else:
+            raise ValueError(f"Dependency {name} does not have a download url")
+        if "dependencies" in dep_info:
+            info.extend(parse_npm_dependencies(dep_info))
+    return info
+
+
+def parse_yarn_lock(lockfile):
+    json_lock = run(
+        ["node", "-"], input=YARN_DESERIALIZE_LOCKFILE, text=True, check=True, stdout=PIPE
+    )
+    return json.loads(json_lock.stdout)
+
+
+def parse_yarn_dependencies(parsed_lockfile: Dict[str, dict]):
+    info = []
+    for name_version, dep_info in parsed_lockfile.items():
+        if "@npm:" in name_version:
+            # Handle aliases
+            name_version = name_version.split("@npm:", 1)[1]
+        name = name_version.rsplit("@", 1)[0]
+        if "resolved" in dep_info and dep_info["resolved"] is not None:
+            dep_url = re.sub(r"#[0-9A-Fa-f]+$", "", dep_info["resolved"])
+            basename = os.path.basename(dep_url)
+            if (
+                match := re.match(r"(?P<prefix>@[\w_-]*)/", name)
+            ) and "codeload.github.com" not in dep_url:
+                # We want to put the prefix only if it's not a git repo checkout
+                basename = f"{match['prefix']}-{basename}"
+            if "integrity" in dep_info:
+                dep_hash = decode_hash(dep_info["integrity"])
+            else:
+                dep_hash = "none"
+            info.append(PackageInfo(dep_url, basename, dep_hash))
+        elif dep_info["peer"] is True:
+            pass
+        else:
+            raise ValueError(f"Dependency {name} does not have a download url")
+    return info
+
+
+def deduplicate(info: List[PackageInfo]) -> List[PackageInfo]:
+    result = []
+    urls = set()
+    for i in info:
+        if i.url not in urls:
+            result.append(i)
+            urls.add(i.url)
+    return result
+
+
+def main():
+    argparser = argparse.ArgumentParser(description="Populate orchestra cache")
+    argparser.add_argument("package_manager", type=str, choices=["yarn", "npm"])
+    argparser.add_argument("-o", "--output", type=str, required=False)
+    parsed_args = argparser.parse_args()
+
+    if parsed_args.package_manager == "npm":
+        src_archive = Path(f"{os.environ['SOURCE_ARCHIVES']}/npm")
+        src_archive.mkdir(parents=True, exist_ok=True)
+        with open("package-lock.json") as file:
+            lockfile = json.load(file)
+
+        info = parse_npm_dependencies(lockfile)
+    else:
+        src_archive = Path(f"{os.environ['SOURCE_ARCHIVES']}/yarn")
+        src_archive.mkdir(parents=True, exist_ok=True)
+        with open("yarn.lock") as file:
+            lockfile = parse_yarn_lock(file)
+
+        info = parse_yarn_dependencies(lockfile)
+    info = deduplicate(info)
+
+    copy_arg = "--no-copy"
+    if parsed_args.output is not None:
+        cache_dir = Path(parsed_args.output)
+        cache_dir.mkdir(exist_ok=True)
+        os.chdir(cache_dir)
+        copy_arg = ""
+
+    if len(info) == 0:
+        return
+
+    run(
+        [
+            "xargs",
+            "-n3",
+            f"-P{os.cpu_count()}",
+            "sh",
+            "-c",
+            f"fetch.sh {copy_arg} --src-archive-dir {str(src_archive.resolve())}"
+            + " --hash $0 --save-as $1 $2",
+        ],
+        stdout=DEVNULL,
+        text=True,
+        check=True,
+        input="\n".join(f"{i.hash_} {i.basename} {i.url}" for i in info),
+    )
+
+
+if __name__ == "__main__":
+    main()

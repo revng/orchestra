@@ -13,8 +13,9 @@ environment:
   - INSTALL_LINK_ONLY_PATH: $ORCHESTRA_ROOT/link-only
   - LIBGL_DRIVERS_PATH: $ORCHESTRA_ROOT/lib/dri${LIBGL_DRIVERS_PATH:+:${LIBGL_DRIVERS_PATH}}
   - NPM_CONFIG_USERCONFIG: $ORCHESTRA_ROOT/share/npmrc
-  - NODE_PATH: $ORCHESTRA_ROOT/node_modules${NODE_PATH:+:${NODE_PATH}}
-  - NODE_CACHE: $ORCHESTRA_ROOT/share/node_cache
+  - NODE_PATH: $ORCHESTRA_ROOT/lib/node_modules${NODE_PATH:+:${NODE_PATH}}
+  - ORCHESTRA_NODE_CACHE: $ORCHESTRA_ROOT/share/node_cache
+  - HARD_FLAGS_YARN: "--non-interactive --no-progress --frozen-lockfile --offline"
   - LIBRARY_PATH: /usr/lib/x86_64-linux-gnu
   - TERMINFO: $ORCHESTRA_ROOT/share/terminfo
   - HARD_FLAGS_COMPILE: #@ str(datavalue("hard_flags_compile"))

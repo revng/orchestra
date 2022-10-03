@@ -1,7 +1,7 @@
 #@ load("@ytt:overlay", "overlay")
 #@ load("/lib/create_component.lib.yml", "single_build_component")
 
-#@ package_json_sha = "afab0111cc6ba0132edf3f93aa49aef4a953dc584fc14b4e197ffe94fe236c80"
+#@ package_json_sha = "db73fe13e485f1445a6d55e42c2342c143ee1b8de57f5d140949f50005c9c8f0"
 
 #@yaml/text-templated-strings
 ---
@@ -12,41 +12,46 @@ configure: |
   cd "$BUILD_DIR"
   cp -a "$JS_DIR/package.json" .
 
-  #! check that package.json has the right hash, this is to trigger a rebuild in orchestra
-  #! whenever we change the file
+  # check that package.json has the right hash, this is to trigger a rebuild in orchestra
+  # whenever we change the file
   echo '(@= package_json_sha @) package.json' | sha256sum -c -
 
-  #! Generate package lock
-  NPM=$(which -a npm | grep -v "$ORCHESTRA_ROOT" | head -n1)
-  "$NPM" install --package-lock-only --silent
+  # Generate package lock
+  "$ORCHESTRA_DOTDIR"/support/npm-wrapper/system-npm install --package-lock-only --silent
 
-  #! from the package-lock.json read the urls of the tars we have to download
-  jq -r '.dependencies[].resolved' package-lock.json | \
-  while IFS= read -r URL; do
-    fetch.sh "$URL"
-  done
-
-  #! parse the integrity field in all depenendencies to check that the downloaded files match
-  #! the hash stored in package-lock.json
-  PACKAGE_NAMES=$(jq -r '.dependencies[].resolved' package-lock.json | sed 's;.*/\([^/]*\)$;\1;g')
-  PACKAGE_HASH=$(jq -r '.dependencies[].integrity' package-lock.json | sed 's;^sha512-;;' | while read -r HASH; do echo "$HASH" | base64 -d | xxd -p -c128; done)
-  paste -d' ' <(echo "$PACKAGE_HASH") <(echo "$PACKAGE_NAMES") | sha512sum -c -
+  # NOTE: until we install this component fetch-js-dependencies will only work with npm lockfiles
+  #       due to yarn lockfiles needing the `@yarnpkg/lockfile` dependency installed to be read
+  "$ORCHESTRA_DOTDIR"/support/fetch-js-dependencies npm -o ./.cache
 install: |
   JS_DIR="$ORCHESTRA_DOTDIR/support/js-prerequisites"
 
   cd "$BUILD_DIR"
   mkdir "${DESTDIR}${ORCHESTRA_ROOT}/share/node_cache"
 
-  #! copy all download packages to node_cache
-  cp -a *.tgz "${DESTDIR}${ORCHESTRA_ROOT}/share/node_cache"
+  # copy all download packages to node_cache
+  cp -a .cache/*.tgz "${DESTDIR}${ORCHESTRA_ROOT}/share/node_cache"
 
-  #! copy the npm_static_repository tool
+  # copy the npm_static_repository tool
   cp -a "$JS_DIR/static-npm-registry" "${DESTDIR}${ORCHESTRA_ROOT}/libexec"
   cp -a "$JS_DIR/npm" "${DESTDIR}${ORCHESTRA_ROOT}/bin"
 
-  #! Create npmrc
+  # Create npmrc
   cat - > "${DESTDIR}${ORCHESTRA_ROOT}/share/npmrc" << EOF
   EOF
+
+  # Install packages needed for building
+  export ORCHESTRA_NODE_CACHE="$BUILD_DIR/.cache:$ORCHESTRA_NODE_CACHE"
+
+  # TODO: once we import node in orchestra, outline in its own component
+  npm --global \
+      --prefix="${DESTDIR}${ORCHESTRA_ROOT}" \
+      install \
+        prettier yarn @yarnpkg/lockfile
+
+  # Overwrite yarn with our wrapper
+  rm "${DESTDIR}${ORCHESTRA_ROOT}/bin/"{yarn,yarnpkg}
+  cp -a "$JS_DIR/yarn" "${DESTDIR}${ORCHESTRA_ROOT}/bin/yarn"
+  ln -s "yarn" "${DESTDIR}${ORCHESTRA_ROOT}/bin/yarnpkg"
 #@ end
 
 #@overlay/match by=overlay.all, expects=1
