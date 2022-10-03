@@ -1,0 +1,21 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/vscode_extension.lib.yml", "vscode_extension")
+
+#@yaml/text-templated-strings
+---
+#@ def revng_ui_args():
+repository: revng-ui
+license: LICENSE.md
+binary_archives: private
+build_dependencies:
+- revng
+development_packages:
+- revng-model
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  revng-ui: #@ vscode_extension(**revng_ui_args())
