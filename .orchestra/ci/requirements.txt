@@ -30,10 +30,9 @@ ariadne[asgi-file-uploads]>=0.16
 cffi
 expandvars
 Jinja2
-gql
+gql[aiohttp]
 grandiso
 graphlib-backport
-hypercorn
 jsonschema
 # lit version should always match clang-release and llvm version
 lit==12.0.0
@@ -51,10 +50,11 @@ git+https://github.com/revng/python-idb.git
 # See https://github.com/pydot/pydot/issues/277
 pyparsing==2.4.7
 pytest
-pytest-parallel
+pytest-asyncio
 requests
 requests-toolbelt
 rich
 pyyaml
+uvicorn[standard]
 Werkzeug
 xdg
