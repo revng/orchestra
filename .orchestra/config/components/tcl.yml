@@ -1,0 +1,32 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/make.lib.yml", "make")
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+
+#@ source_url = "https://prdownloads.sourceforge.net/tcl/tcl8.6.12-src.tar.gz"
+
+#@yaml/text-templated-strings
+---
+#@ def args():
+license: source/license.terms
+configure: |
+  mkdir -p "$BUILD_DIR/source"
+  extract.sh --into "$BUILD_DIR/source" "(@= source_url @)"
+  cd "$BUILD_DIR" && ./source/unix/configure \
+    --prefix="$ORCHESTRA_ROOT" \
+    --enable-shared
+install: |
+  cd "$BUILD_DIR"
+  (@= make @)
+  (@= make @) install DESTDIR="$DESTDIR"
+  ln -s tclsh8.6 "$DESTDIR$ORCHESTRA_ROOT/bin/tclsh"
+  ls "$DESTDIR$ORCHESTRA_ROOT/bin/tclsh"
+build_dependencies:
+  - glibc
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  tcl: #@ single_build_component(**args())
