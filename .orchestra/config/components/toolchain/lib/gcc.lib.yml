@@ -96,7 +96,8 @@ configure: |
   mkdir -p "$BUILD_DIR"
   cd "$BUILD_DIR"
 
-  gcc -c -fPIC -x c <(echo 'char __libc_single_threaded __attribute__ ((weak));') -o "$BUILD_DIR/fake-libc-single-threaded.o"
+  echo 'char __libc_single_threaded __attribute__ ((weak));' > fake-libc-single-threaded.c
+  gcc -c -fPIC -x c fake-libc-single-threaded.c -o "$BUILD_DIR/fake-libc-single-threaded.o"
 
   "$SOURCE_DIR/configure" \
     --host=x86_64-pc-linux-gnu \
