@@ -36,7 +36,8 @@ configure: |
     --without-tack \
     --without-tests \
     --without-trace \
-    --prefix="$ORCHESTRA_ROOT"
+    --prefix="$ORCHESTRA_ROOT" \
+    --with-pkg-config-libdir="$ORCHESTRA_ROOT/lib/pkgconfig"
 install: |
   cd "$BUILD_DIR"
   (@= make @)
