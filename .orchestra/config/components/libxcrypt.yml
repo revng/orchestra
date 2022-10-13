@@ -1,0 +1,35 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+
+#@ source_url = "https://github.com/besser82/libxcrypt/releases/download/v4.4.28/libxcrypt-4.4.28.tar.xz"
+
+#@yaml/text-templated-strings
+---
+#@ def libxcrypt_args():
+license: COPYING.LIB
+configure: |
+  mkdir -p "$BUILD_DIR"
+  extract.sh --into "$BUILD_DIR" (@= source_url @)
+
+  cd "$BUILD_DIR"
+  # By specifying --enable-obsolete-api=glibc we're providing libcrypt.so.1
+  # and not libcrypt.so.2. Python seems to link only to the former.
+  # The latter should be preferred but we'd rather not ship both.
+  ./configure \
+    --prefix="$ORCHESTRA_ROOT" \
+    --disable-static \
+    --enable-hashes=strong,glibc \
+    --enable-obsolete-api=glibc \
+    --disable-failure-tokens
+build_system: make
+build_dependencies:
+  - host-c-toolchain
+  - glibc
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  libxcrypt: #@ single_build_component(**libxcrypt_args())

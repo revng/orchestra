@@ -1,0 +1,72 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/make.lib.yml", "make")
+#@ load("/lib/util.lib.yml", "datavalue")
+
+#@yaml/text-templated-strings
+---
+#@ def python_component():
+#@ full_python_version = datavalue("full_python_version")
+#@ python_version = datavalue("python_version")
+#@ source_url = "https://www.python.org/ftp/python/" + full_python_version + "/Python-" + full_python_version + ".tar.xz"
+license: LICENSE
+builds:
+  default:
+    configure: |
+      mkdir -p "$BUILD_DIR"
+      extract.sh --into "$BUILD_DIR" (@= source_url @)
+
+      # Implicitly force PYTHONNOUSERSITE
+      sed -i \
+        's/if (no_user_site_directory)/if (1)/' \
+        "$BUILD_DIR/Python/initconfig.c"
+
+      cd "$BUILD_DIR"
+
+      # orchestra's libc has a buggy getaddrinfo; we expect users to have a newer libc
+      ac_cv_buggy_getaddrinfo=no ./configure \
+        --prefix="$ORCHESTRA_ROOT" \
+        --libdir="${ORCHESTRA_ROOT}/lib64" \
+        --enable-optimizations \
+        --enable-shared \
+        --enable-ipv6 \
+        --disable-test-modules \
+        --with-ensurepip=install \
+        --with-lto \
+        --with-readline \
+        --with-system-ffi \
+        --with-system-expat \
+        --without-static-libpython
+
+      grep -v HAVE_SYS_AUXV_H pyconfig.h > pyconfig.h.tmp
+      mv pyconfig.h.tmp pyconfig.h
+    install: |
+      cd "$BUILD_DIR"
+      (@= make @)
+      (@= make @) install DESTDIR="$DESTDIR"
+
+      INSTALLDIR="${DESTDIR}${ORCHESTRA_ROOT}"
+      ln -s python3 "${INSTALLDIR}"/bin/python
+      ln -s python3-config "${INSTALLDIR}"/bin/python-config
+      ln -s idle3 "${INSTALLDIR}"/bin/idle
+      ln -s pydoc3 "${INSTALLDIR}"/bin/pydoc
+
+      "${INSTALLDIR}"/bin/python -m ensurepip
+    build_dependencies:
+      - host-c-toolchain
+      - glibc
+    dependencies:
+      - bzip2
+      - expat
+      - libffi
+      - libxcrypt
+      - openssl
+      - readline
+      - sqlite
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  python: #@ python_component()

@@ -26,5 +26,5 @@ index e439a07..ff65295 100644
  			if (x<i/2) small=0x0.8p0;
  			else if (x==i/2 && d+1==z) small=0x1.0p0;
  			else small=0x1.8p0;
--- 
+--
 2.10.0

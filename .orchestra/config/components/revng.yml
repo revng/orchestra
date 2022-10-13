@@ -19,6 +19,7 @@ dependencies:
   - qemu
   - boost
   - clang-release
+  - revng-python-dependencies
 use_asan: false
 #@ end
 

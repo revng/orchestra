@@ -45,6 +45,7 @@ install: |
 build_dependencies:
   - host-c-toolchain
   - glibc
+  - meson
 dependencies:
   - libffi
   - zlib

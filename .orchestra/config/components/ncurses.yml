@@ -1,8 +1,11 @@
 #@ load("@ytt:data", "data")
 #@ load("@ytt:overlay", "overlay")
 #@ load("/lib/create_component.lib.yml", "single_build_component")
+#@ load("/lib/make.lib.yml", "make")
 
-#@ source_url = "https://ftp.gnu.org/pub/gnu/ncurses/ncurses-6.2.tar.gz"
+#@ ncurses_ver = "6.3"
+#@ source_url = "https://ftp.gnu.org/pub/gnu/ncurses/ncurses-" + ncurses_ver + ".tar.gz"
+#@ ncurses_major = ncurses_ver.split(".")[0]
 
 #@yaml/text-templated-strings
 ---
@@ -13,27 +16,15 @@ configure: |
   extract.sh --into "$BUILD_DIR" (@= source_url @)
   cd "$BUILD_DIR"
   ./configure \
-    --disable-stripping \
-    --disable-term-driver \
-    --disable-termcap \
-    --disable-widec \
-    --enable-colorfgbg \
-    --enable-const \
-    --enable-echo \
-    --enable-hard-tabs \
-    --enable-leaks \
-    --enable-overwrite \
-    --enable-symlinks \
-    --enable-warnings \
+    --enable-pc-files \
+    --enable-widec \
     --with-cxx \
     --with-cxx-binding \
     --with-cxx-shared \
-    --with-macros \
-    --with-manpage-format=normal \
-    --with-progs \
-    --with-rcs-ids \
     --with-shared \
-    --with-termlib \
+    --with-versioned-syms \
+    --with-xterm-kbs=del \
+    --with-manpage-format=normal \
     --without-ada \
     --without-assertions \
     --without-debug \
@@ -45,8 +36,37 @@ configure: |
     --without-tack \
     --without-tests \
     --without-trace \
-    --prefix="$ORCHESTRA_ROOT"
-build_system: make
+    --prefix="$ORCHESTRA_ROOT" \
+    --with-pkg-config-libdir="$ORCHESTRA_ROOT/lib/pkgconfig"
+install: |
+  cd "$BUILD_DIR"
+  (@= make @)
+  (@= make @) install DESTDIR="$DESTDIR"
+
+  INSTALLDIR="${DESTDIR}${ORCHESTRA_ROOT}"
+
+  # Adapted from ArchLinux PKGBUILD
+  # fool packages looking to link to non-wide-character ncurses libraries
+  for lib in ncurses ncurses++ form panel menu; do
+    printf "INPUT(-l%sw)\n" "${lib}" > "$INSTALLDIR/lib/lib${lib}.so"
+    ln -sv lib${lib}w.so.(@= ncurses_ver @) "$INSTALLDIR/lib/lib${lib}.so.(@= ncurses_ver @)"
+    ln -sv lib${lib}w.so.(@= ncurses_ver @) "$INSTALLDIR/lib/lib${lib}.so.(@= ncurses_major @)"
+    ln -sv ${lib}w.pc "$INSTALLDIR/lib/pkgconfig/${lib}.pc"
+  done
+
+  # some packages look for -lcurses during build
+  printf 'INPUT(-lncursesw)\n' > "$INSTALLDIR/lib/libcursesw.so"
+  ln -sv libncurses.so "$INSTALLDIR/lib/libcurses.so"
+
+  # tic and ticinfo functionality is built in by default
+  # make sure that anything linking against it links against libncursesw.so instead
+  for lib in tic tinfo; do
+    printf "INPUT(libncursesw.so.(@= ncurses_major @))\n" > "$INSTALLDIR/lib/lib${lib}.so"
+    ln -sv libncursesw.so.(@= ncurses_ver @) "$INSTALLDIR/lib/lib${lib}.so.(@= ncurses_ver @)"
+    ln -sv libncursesw.so.(@= ncurses_ver @) "$INSTALLDIR/lib/lib${lib}.so.(@= ncurses_major @)"
+    ln -sv ncursesw.pc "$INSTALLDIR/lib/pkgconfig/${lib}.pc"
+  done
+
 build_dependencies:
   - gcc-host-toolchain
   - glibc
@@ -57,3 +77,4 @@ build_dependencies:
 ---
 components:
   ncurses: #@ single_build_component(**ncurses_args())
+

@@ -2,9 +2,7 @@ FROM ubuntu:22.04
 
 COPY install-dependencies.sh \
      install-system-dependencies.sh \
-     install-python-dependencies.sh \
      install-node-dependencies.sh \
-     requirements.txt \
      /
 
 RUN /install-dependencies.sh \

@@ -16,6 +16,8 @@ build_dependencies:
   - cmake
   - ninja
   - host-cxx-toolchain
+dependencies:
+  - revng-qa-python-dependencies
 test_triggers:
   - test/revng-qa
 #@ end

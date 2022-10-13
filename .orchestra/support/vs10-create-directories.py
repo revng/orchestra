@@ -26,11 +26,9 @@ def visit(tree, entry, prefix, result):
 
 def main():
     parser = argparse.ArgumentParser(description='.')
-    #parser.add_argument('--input', metavar='INPUTFILE', default="/dev/stdin", help='The input file.')
     parser.add_argument('--create-directories',
                         action='store_true',
                         help="Create directories.")
-    #parser.add_argument('--max', metavar='MAX', default="1024", type=int, help='Maximum.')
     parser.add_argument('directory', metavar='DIRECTORY')
     parser.add_argument('file', metavar='FILE')
     parser.add_argument('component', metavar='COMPONENT')

@@ -16,15 +16,6 @@ configure: |
   sed -i 's|struct obstack ._obstack_compat|\0 = 0|g' "$BUILD_DIR/source/malloc/obstack.c"
   patch-if-exists "${ORCHESTRA_DOTDIR}/patches/glibc-2.13-fix-isinf.patch" "$BUILD_DIR/source"
 
-  # Create __libc_single_threaded symbol (required by recent libstdc++)
-  echo 'char __libc_single_threaded;' >> "$BUILD_DIR/source/misc/error.c"
-  sed -i \
-    's/GLIBC_2.13/GLIBC_2.13\n  GLIBC_2.32/' \
-    "$BUILD_DIR/source/Versions.def"
-  sed -i \
-    's/^}/  GLIBC_2.32 {\n    __libc_single_threaded;\n  }\n}/g' \
-    "$BUILD_DIR/source/misc/Versions"
-
   cd $BUILD_DIR
   export CC="cc -no-pie -fuse-ld=bfd -Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath,$RPATH_PLACEHOLDER/link-only/lib"
   ./source/configure \

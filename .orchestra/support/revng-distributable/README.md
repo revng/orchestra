@@ -66,7 +66,7 @@ To test the static binary translator use `revng-translate`.
   -i \
   root/share/revng/qa/tests/runtime/x86_64/compiled/calc \
   -o /tmp/calc.translated
-  
+
 /tmp/calc.translated '(+ 3 5)'
 ```
 

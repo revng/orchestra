@@ -9,7 +9,7 @@
   pip install -r requirements.txt
   deactivate
   ```
-  **Warning**: it is important to create the virtualenv after copying 
+  **Warning**: it is important to create the virtualenv after copying
   the project in its target directory. Virtualenvs are not relocatable.
 * Create `config.json` file from config.example.json template
 * Create `environment` file from `environment.example` template with secrets

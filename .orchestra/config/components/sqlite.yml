@@ -1,0 +1,32 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+
+#@ source_url = "https://github.com/sqlite/sqlite/archive/refs/tags/version-3.39.4.tar.gz"
+
+#@yaml/text-templated-strings
+---
+#@ def sqlite_args():
+license: source/LICENSE.md
+configure: |
+  mkdir -p "$BUILD_DIR/source"
+  extract.sh --into "$BUILD_DIR/source" "(@= source_url @)"
+  cd "$BUILD_DIR" && ./source/configure \
+    --prefix="$ORCHESTRA_ROOT" \
+    --enable-shared \
+    --enable-all \
+    --with-pic \
+    --disable-tcl
+build_system: make
+build_dependencies:
+  - tcl
+dependencies:
+  - glibc
+  - readline
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  sqlite: #@ single_build_component(**sqlite_args())

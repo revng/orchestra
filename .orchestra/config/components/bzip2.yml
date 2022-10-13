@@ -1,0 +1,62 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+#@ load("/lib/make.lib.yml", "make")
+
+#@ bzip2_ver = "1.0.8"
+#@ source_url = "https://sourceware.org/pub/bzip2/bzip2-" + bzip2_ver + ".tar.gz"
+
+#@yaml/text-templated-strings
+---
+#@ def bzip2_args():
+license: LICENSE
+configure: |
+  mkdir -p "$BUILD_DIR"
+  extract.sh --into "$BUILD_DIR" (@= source_url @)
+
+  sed 's/-Winline//g' -i "$BUILD_DIR"/Makefile*
+
+install: |
+  cd "$BUILD_DIR"
+
+  # Build
+  (@= make @) -f Makefile-libbz2_so PREFIX=/
+  (@= make @) bzip2 bzip2recover PREFIX=/
+
+  # Install
+  INSTALLDIR="${DESTDIR}${ORCHESTRA_ROOT}"
+  install -dm755 "$INSTALLDIR"/{bin,lib64,include,lib64/pkgconfig}
+
+  install -m755 bzip2-shared "$INSTALLDIR"/bin/bzip2
+  install -m755 bzip2recover bzdiff bzgrep bzmore "$INSTALLDIR"/bin
+  ln -sf bzip2 "$INSTALLDIR"/bin/bunzip2
+  ln -sf bzip2 "$INSTALLDIR"/bin/bzcat
+
+  cp -a libbz2.so* "$INSTALLDIR"/lib64
+  ln -s libbz2.so.(@= bzip2_ver @) "$INSTALLDIR"/lib64/libbz2.so
+  install -m644 bzlib.h "$INSTALLDIR"/include/
+
+  cat > "$INSTALLDIR"/lib64/pkgconfig/bzip2.pc <<'EOF'
+  prefix=${pcfiledir}/../..
+  exec_prefix=${prefix}
+  bindir=${exec_prefix}/bin
+  libdir=${exec_prefix}/lib64
+  includedir=${prefix}/include
+
+  Name: bzip2
+  Description: A file compression library
+  Version: (@= bzip2_ver @)
+  Libs: -L${libdir} -lbz2
+  Cflags: -I${includedir}
+  EOF
+
+build_dependencies:
+  - host-c-toolchain
+  - glibc
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  bzip2: #@ single_build_component(**bzip2_args())
