@@ -37,18 +37,18 @@
         cd "$BUILD_DIR"
         export HARD_FLAGS_COMPILE="-I$ORCHESTRA_ROOT/include/python(@= str(datavalue("python_version")) @) $HARD_FLAGS_COMPILE"
         python \
-            -m pip \
-            --disable-pip-version-check \
-            --no-python-version-warning \
-            install \
-            --compile \
-            --no-index \
-            --no-build-isolation \
-            --no-warn-script-location \
-            --ignore-installed \
-            --root "$DESTDIR" \
-            --verbose \
-            packages/*
+          -m pip \
+          --disable-pip-version-check \
+          --no-python-version-warning \
+          install \
+          --compile \
+          --no-index \
+          --no-build-isolation \
+          --no-warn-script-location \
+          --ignore-installed \
+          --root "$DESTDIR" \
+          --verbose \
+          packages/*
 
         PYTHON_PACKAGES_DIR="$DESTDIR$ORCHESTRA_ROOT/share/orchestra/python-packages/"
         mkdir -p "$PYTHON_PACKAGES_DIR"
