@@ -11,5 +11,7 @@ components:
           - test/revng
           - test/revng-c
           - toolchain/host/gdb
+          - toolchain/win32/gcc
+          - toolchain/win64/gcc
         configure: mkdir -p "$BUILD_DIR"
         install: echo "Nothing to do"
