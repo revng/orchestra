@@ -31,6 +31,7 @@
 - -DCMAKE_BUILD_RPATH="$RPATH_PLACEHOLDER/lib:$RPATH_PLACEHOLDER/(@= data.values.sanitizers_libs_path @):$RPATH_PLACEHOLDER/lib/revng/analyses"
 - -DCMAKE_INSTALL_RPATH="$RPATH_PLACEHOLDER/lib:$RPATH_PLACEHOLDER/(@= data.values.sanitizers_libs_path @):$RPATH_PLACEHOLDER/lib/revng/analyses"
 - -DCMAKE_BUILD_TYPE="(@= cmake_build_type @)"
+- -DPython_FIND_VIRTUALENV=STANDARD
 #@ end
 
 ---
