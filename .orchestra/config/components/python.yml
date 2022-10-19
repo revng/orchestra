@@ -6,9 +6,8 @@
 #@yaml/text-templated-strings
 ---
 #@ def python_component():
-#@ full_python_version = datavalue("full_python_version")
-#@ python_version = datavalue("python_version")
-#@ source_url = "https://www.python.org/ftp/python/" + full_python_version + "/Python-" + full_python_version + ".tar.xz"
+#@ python_version = "3.10.7"
+#@ source_url = "https://www.python.org/ftp/python/" + python_version + "/Python-" + python_version + ".tar.xz"
 license: LICENSE
 builds:
   default:

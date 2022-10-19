@@ -1,0 +1,25 @@
+#!/usr/bin/env python3
+# Utility function that will return a path from sysconfig, used for
+# e.g. knowing which path is python's include or site-packages
+
+import argparse
+import sys
+import sysconfig
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("pathname", type=str)
+    args = parser.parse_args()
+
+    sys_dict = sysconfig.get_paths()
+    if args.pathname in sys_dict:
+        print(sys_dict[args.pathname])
+        return 0
+    else:
+        sys.stderr.write(f"Path '{args.pathname}' not present\n")
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
