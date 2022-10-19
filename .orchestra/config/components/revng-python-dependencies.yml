@@ -43,6 +43,7 @@ requirements: |-
   pefile
   pydot
   pyelftools
+  lddcollect
 
   # This is our fork of the python-idb package that includes some fixes.
   https://github.com/revng/python-idb/archive/08ba07a.tar.gz
