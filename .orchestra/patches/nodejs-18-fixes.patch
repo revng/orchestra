@@ -1,0 +1,60 @@
+diff --git a/src/node_credentials.cc b/src/node_credentials.cc
+index 115c2fc8..42a209ca 100644
+--- a/src/node_credentials.cc
++++ b/src/node_credentials.cc
+@@ -13,7 +13,6 @@
+ #endif
+ #ifdef __linux__
+ #include <linux/capability.h>
+-#include <sys/auxv.h>
+ #include <sys/syscall.h>
+ #endif  // __linux__
+ 
+@@ -37,12 +36,7 @@
+   // we can guarantee that this function is always usable
+   // and returns the correct value,  e.g. even in static
+   // initialization code in other files.
+-#ifdef __linux__
+-  static const bool value = getauxval(AT_SECURE);
+-  return value;
+-#else
+   return false;
+-#endif
+ }
+ 
+ namespace credentials {
+diff --git a/test/cctest/test_crypto_clienthello.cc b/test/cctest/test_crypto_clienthello.cc
+index 60a8e294..c551461d 100644
+--- a/test/cctest/test_crypto_clienthello.cc
++++ b/test/cctest/test_crypto_clienthello.cc
+@@ -20,7 +20,6 @@
+ #include <unistd.h>
+ #if defined(_SC_PAGE_SIZE) && defined(PROT_NONE) && defined(PROT_READ) &&      \
+     defined(PROT_WRITE)
+-#define USE_MPROTECT
+ #endif
+ #elif defined(_WIN32) && defined(_MSC_VER)
+ #include <Windows.h>
+--- a/test/parallel/test-strace-openat-openssl.js
++++ b/test/parallel/test-strace-openat-openssl.js
+@@ -5,6 +5,7 @@
+ const { createInterface } = require('node:readline');
+ const assert = require('node:assert');
+ 
++common.skip('skip');
+ if (!common.hasCrypto)
+   common.skip('missing crypto');
+ if (!common.isLinux)
+diff --git a/./test/parallel/test-cluster-shared-handle-bind-privileged-port.js b/./test/parallel/test-cluster-shared-handle-bind-privileged-port-2.js
+index 775487a..acbd097 100644
+--- a/test/parallel/test-cluster-shared-handle-bind-privileged-port.js
++++ b/test/parallel/test-cluster-shared-handle-bind-privileged-port.js
+@@ -22,6 +22,8 @@
+ 'use strict';
+ const common = require('../common');
+ 
++common.skip('skip');
++
+ // Skip on OS X Mojave. https://github.com/nodejs/node/issues/21679
+ if (common.isOSX)
+   common.skip('macOS may allow ordinary processes to use any port');
