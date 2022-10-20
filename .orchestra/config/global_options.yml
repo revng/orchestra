@@ -32,9 +32,6 @@ hard_flags_link_gold: -Wl,--gdb-index
 hard_flags_clangtidy: --extra-arg-before=-nostdinc++ --extra-arg-before=-nostdinc --extra-arg-before=-idirafter --extra-arg-before=$ORCHESTRA_ROOT/lib64/llvm/clang-release/include/c++/v1 --extra-arg-before=-idirafter --extra-arg-before=$ORCHESTRA_ROOT/lib/clang/(@= clang_release_version @)/include --extra-arg-before=-idirafter --extra-arg-before=$ORCHESTRA_ROOT/link-only/include --extra-arg-before=-idirafter --extra-arg-before=/usr/include/x86_64-linux-gnu --extra-arg-before=-idirafter --extra-arg-before=/usr/include
 revng_extra_compiler_flags: -fplugin=libclangTidyPlugin.so -Wl,--no-undefined -Wno-unused-command-line-argument -stdlib=libc++ -fuse-ld=lld
 
-python_version: "3.10"
-full_python_version: "3.10.7"
-
 parallelism: $(nproc)
 build_from_source: []
 branches:

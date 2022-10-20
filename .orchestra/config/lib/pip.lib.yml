@@ -35,7 +35,7 @@
         done < ../packages.csv
       install: |-
         cd "$BUILD_DIR"
-        export HARD_FLAGS_COMPILE="-I$ORCHESTRA_ROOT/include/python(@= str(datavalue("python_version")) @) $HARD_FLAGS_COMPILE"
+        export HARD_FLAGS_COMPILE="-I"$("${ORCHESTRA_DOTDIR}/support/get-python-path" include)" $HARD_FLAGS_COMPILE"
         python \
           -m pip \
           --disable-pip-version-check \
