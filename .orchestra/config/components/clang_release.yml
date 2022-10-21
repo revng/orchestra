@@ -44,7 +44,6 @@ dependencies:
   - gcc-host-toolchain
   - libunwind
   - zlib
-  - ncurses
 #@ end
 
 ---
@@ -115,7 +114,6 @@ dependencies:
   - gcc-host-toolchain
   - libunwind
   - zlib
-  - ncurses
 #@ end
 
 #@ end
@@ -224,7 +222,6 @@ dependencies:
   - gcc-host-toolchain
   - libunwind
   - zlib
-  - ncurses
 #@ end
 
 #@overlay/match by=overlay.all, expects=1

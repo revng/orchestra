@@ -59,7 +59,6 @@ builds:
         - host-libcxx
         - libunwind
         - zlib
-        - ncurses
         - lit
       #@ if/end ndebug == False:
       ndebug: false
