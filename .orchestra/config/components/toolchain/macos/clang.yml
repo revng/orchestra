@@ -22,6 +22,7 @@ toolchain/macos/(@= name @)/clang:
         cp "$ORCHESTRA_DOTDIR/support/add-sysroot-wrapper.sh" "${TMP_ROOT}${ORCHESTRA_ROOT}/bin/(@= triple @)-clang++"
       dependencies:
         - clang-release
+        - clang-runtime
         - toolchain/macos/sdk
         - toolchain/macos/(@= name @)/ld64
 #@ end
