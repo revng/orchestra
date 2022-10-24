@@ -1,0 +1,24 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+
+#@yaml/text-templated-strings
+---
+#@ def gcc_runtime_args():
+license: LICENSE.TXT
+configure: |
+  mkdir -p "$BUILD_DIR"
+install: |
+  cd "$BUILD_DIR"
+  cp -a "${ORCHESTRA_ROOT}/share/orchestra/toolchain_host_gcc.license" LICENSE.TXT
+  tar xf "${ORCHESTRA_ROOT}/share/orchestra/save_for_later/gcc-runtime.tar.xz" \
+    -C "${DESTDIR}${ORCHESTRA_ROOT}"
+build_dependencies:
+  - toolchain/host/gcc
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  gcc-runtime: #@ single_build_component(**gcc_runtime_args())
