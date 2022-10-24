@@ -1,0 +1,30 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+
+#@yaml/text-templated-strings
+---
+#@ def clang_runtime_args():
+license: LICENSE.TXT
+configure: |
+  mkdir -p "$BUILD_DIR"
+install: |
+  cd "$BUILD_DIR"
+  cp -a "${ORCHESTRA_ROOT}/share/orchestra/clang-release.license" LICENSE.TXT
+  tar xf "${ORCHESTRA_ROOT}/share/orchestra/save_for_later/clang-runtime.tar.xz" \
+    -C "${DESTDIR}${ORCHESTRA_ROOT}"
+
+  # Fix libc++
+  rm "${DESTDIR}${ORCHESTRA_ROOT}/lib/libc++.so" || true
+  echo 'INPUT(libc++.so.1 -lc++abi -lpthread)' > "${DESTDIR}${ORCHESTRA_ROOT}/lib/libc++.so"
+build_dependencies:
+  - clang-release
+dependencies:
+  - zlib
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  clang-runtime: #@ single_build_component(**clang_runtime_args())

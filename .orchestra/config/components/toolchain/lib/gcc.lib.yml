@@ -188,6 +188,12 @@ install: |
   # Fixinclude locates the wrong pthread.h
   find "${DESTDIR}${ORCHESTRA_ROOT}" -type d -name include-fixed -exec rm -f {}/pthread.h \;
 
+  (@- if "host" in toolchain_name: @)
+  "$ORCHESTRA_DOTDIR"/support/save-for-later \
+    -i "${DESTDIR}${ORCHESTRA_ROOT}" \
+    gcc-runtime
+  (@- end @)
+
 dependencies: #@ dependencies
 build_dependencies: #@ build_dependencies
 #@ end
