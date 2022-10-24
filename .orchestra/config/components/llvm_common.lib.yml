@@ -38,3 +38,8 @@
 #@ def configure_llvm(**kwargs):
 #@   return _configure_llvm(**kwargs)[0]
 #@ end
+
+---
+
+#! This should always point to the `clang-release` tag
+#@ clang_source_url = "https://github.com/revng/llvm-project/archive/de75a69.tar.gz"

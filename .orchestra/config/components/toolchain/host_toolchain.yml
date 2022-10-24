@@ -28,7 +28,7 @@ components:
     builds:
       default:
         dependencies:
-          - clang-release
+          - libcxx
           - toolchain/host/gcc
         install: exit 0
         configure: mkdir -p "$BUILD_DIR"

@@ -1,11 +1,10 @@
 #@ load("@ytt:data", "data")
 #@ load("@ytt:overlay", "overlay")
-#@ load("/components/llvm_common.lib.yml", "configure_llvm")
+#@ load("/components/llvm_common.lib.yml", "configure_llvm", "clang_source_url")
 #@ load("/lib/create_component.lib.yml", "single_build_component")
 #@ load("/lib/ninja.lib.yml", "ninja")
 
-#! This should always point to the `clang-release` tag
-#@ source_url = "https://github.com/revng/llvm-project/archive/de75a69.tar.gz"
+#@ source_url = clang_source_url
 
 #! Disable this to facilitate LLVM update
 #@ llvm_enable_pgo_lto = True
@@ -186,18 +185,6 @@ install: |
           "${EXECUTABLE}"
       ) \
       "${DESTDIR}${ORCHESTRA_ROOT}/bin"
-  done
-
-  # Symlink to /lib/llvm/clang-release/lib/libc++*.so* to /lib
-  for LIBRARY in "${DESTDIR}${ORCHESTRA_ROOT}/lib/llvm/clang-release/lib/"libc++*.so*; do
-    ln \
-      -s $(
-        realpath \
-          --no-symlinks \
-          --relative-to="${DESTDIR}${ORCHESTRA_ROOT}/lib" \
-          "${LIBRARY}"
-      ) \
-      "${DESTDIR}${ORCHESTRA_ROOT}/lib"
   done
 
   # Leave `opt` and `llvm-config` to the `llvm` component

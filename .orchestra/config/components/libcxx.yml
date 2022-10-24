@@ -1,0 +1,53 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:overlay", "overlay")
+#@ load("/components/llvm_common.lib.yml", "configure_llvm", "clang_source_url")
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+#@ load("/lib/ninja.lib.yml", "ninja")
+
+#@yaml/text-templated-strings
+---
+#@ def cmake_opts():
+- -DLLVM_ENABLE_PROJECTS="libcxxabi;libcxx"
+- -DLIBCXX_ENABLE_EXPERIMENTAL_LIBRARY=ON
+- -DLIBCXX_INSTALL_EXPERIMENTAL_LIBRARY=ON
+- -DBUILD_SHARED_LIBS=ON
+- -DLLVM_ENABLE_ZLIB=ON
+- -DLLVM_BUILD_RUNTIME=ON
+- -DLIBCXXABI_HAS_CXA_THREAD_ATEXIT_IMPL=0
+- -DCMAKE_C_COMPILER="(@= data.values.regular_c_compiler @)"
+- -DCMAKE_CXX_COMPILER="(@= data.values.regular_cxx_compiler @)"
+- -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT"
+- -DCMAKE_INSTALL_RPATH="$RPATH_PLACEHOLDER/lib"
+- -DLLVM_ENABLE_OCAMLDOC=OFF
+#@ end
+
+#@yaml/text-templated-strings
+---
+#@ def libcxx_args():
+license: source/llvm/LICENSE.TXT
+configure: |
+  extract.sh --into "$BUILD_DIR/source" "(@= clang_source_url @)"
+
+  sed -i 's|GIT_FOUND|FALSE|g' "$BUILD_DIR/source/llvm/cmake/modules/VersionFromVCS.cmake"
+  (@= configure_llvm(cmake_build_type="Release", cflags="-w", additional_cmake_options=cmake_opts(), source_dir="$BUILD_DIR/source") @)
+install: |
+  cd "$BUILD_DIR"
+
+  # Build
+  (@= ninja @) install-cxx install-cxxabi
+
+  # Fix libc++
+  rm "${DESTDIR}${ORCHESTRA_ROOT}/lib/libc++.so" || true
+  echo 'INPUT(libc++.so.1 -lc++abi -lpthread)' > "${DESTDIR}${ORCHESTRA_ROOT}/lib/libc++.so"
+build_dependencies:
+  - cmake
+  - clang-release
+dependencies:
+  - zlib
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  libcxx: #@ single_build_component(**libcxx_args())
