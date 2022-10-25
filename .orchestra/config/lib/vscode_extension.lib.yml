@@ -1,0 +1,91 @@
+#@ load("@ytt:template", "template")
+
+#@ load("/lib/fn_args.lib.yml", "mandatory")
+#@ load("/lib/assert.lib.yml", "fail")
+
+#@yaml/text-templated-strings
+---
+#@ def vscode_extension(
+#@      license="",
+#@      repository=None,
+#@      build_dependencies=[],
+#@      development_packages=[],
+#@      binary_archives=None,
+#@  ):
+
+#@ if/end repository:
+repository: #@ repository
+license: #@ license
+
+#@ if/end binary_archives:
+binary_archives: #@ binary_archives
+
+check_branch:
+- npm run --if-present format && npm run --if-present lint
+
+default_build: default
+builds:
+  #@ for flavor in ["default", "debug"]:
+  (@= flavor @):
+    build_dependencies:
+    - revng-js-prerequisites
+    - #@ template.replace(build_dependencies)
+
+    configure: |
+      mkdir -p "$BUILD_DIR"
+      cd "$BUILD_DIR"
+      cp -a "$SOURCE_DIR/"package{,-lock}.json .
+      "$ORCHESTRA_DOTDIR"/support/fetch-js-dependencies npm -o cache/
+
+    install: |
+      cd "$BUILD_DIR"
+
+      function do_install() {
+        cd "$BUILD_DIR"
+        # Copy vsix to /share/vscode-extensions
+        mkdir -p "${DESTDIR}${ORCHESTRA_ROOT}/share/vscode-extensions"
+        cp -a build/*.vsix "${DESTDIR}${ORCHESTRA_ROOT}/share/vscode-extensions"
+      }
+
+      if [ -f source-hash ] && cmp source-hash <("$ORCHESTRA_DOTDIR"/support/directory-hash "$SOURCE_DIR"); then
+        do_install
+        exit 0
+      fi
+
+      "$ORCHESTRA_DOTDIR"/support/directory-hash "$SOURCE_DIR" > source-hash.tmp
+
+      rsync \
+        --archive --delete --quiet \
+        --exclude=.git \
+        --exclude-from=<(
+          git \
+            -C "$SOURCE_DIR" \
+            ls-files \
+            --exclude-standard \
+            --others \
+            --ignored \
+            --directory
+        ) \
+        "$SOURCE_DIR/" "$BUILD_DIR/build/"
+
+      cd "$BUILD_DIR/build"
+      export ORCHESTRA_NODE_CACHE="$BUILD_DIR/cache:$ORCHESTRA_NODE_CACHE"
+
+      npm install --no-audit --omit peer (@= " ".join(development_packages) @)
+      
+      # vsce will try to do an update check if in a tty, we use cat to suppress this
+      (@- if flavor == "default": @)
+      NODE_ENV=production npm run package | cat
+      (@- else: @)
+      NODE_ENV=development npm run package | cat
+      (@- end @)
+
+      if [ "$RUN_TESTS" -eq 1 ]; then
+        npm run --if-present test
+      fi
+
+      do_install
+
+      mv source-hash{.tmp,}
+  #@ end
+#@ end

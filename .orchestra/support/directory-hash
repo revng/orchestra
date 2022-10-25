@@ -1,0 +1,38 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+from hashlib import sha256
+from pathlib import Path
+from typing import NoReturn
+
+
+def error(msg: str) -> NoReturn:
+    sys.stderr.write(f"{msg}\n")
+    sys.exit(1)
+
+
+def main():
+    if len(sys.argv) != 2:
+        error(f"{sys.argv[0]} [folder name]")
+
+    directory = sys.argv[1]
+    if not os.path.isdir(directory):
+        error("Directory does not exists")
+
+    os.chdir(directory)
+    paths = []
+    with os.scandir() as scan:
+        for entry in scan:
+            if not entry.path.startswith("./.git") and entry.is_file():
+                paths.append(entry.path)
+
+    hash_ = sha256()
+    for path in sorted(paths):
+        hash_.update(path.encode())
+        hash_.update(Path(path).read_bytes())
+    print(hash_.hexdigest())
+
+
+if __name__ == "__main__":
+    main()

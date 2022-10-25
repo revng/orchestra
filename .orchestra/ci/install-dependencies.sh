@@ -9,4 +9,3 @@ if [ "$EUID" -eq 0 ]; then
 else
     sudo "$SCRIPT_DIR/install-system-dependencies.sh"
 fi
-"$SCRIPT_DIR/install-node-dependencies.sh"
