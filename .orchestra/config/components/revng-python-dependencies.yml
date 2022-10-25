@@ -6,7 +6,7 @@
 name: revng-python-dependencies
 dependencies:
 - python-base-packages
-- libyaml
+- pyyaml
 - cython
 requirements: |-
   # Python language checkers/formatters
@@ -58,9 +58,6 @@ requirements: |-
   requests
   requests-toolbelt
   rich
-
-  --global-option=--with-libyaml
-  pyyaml
 
   # uvicorn[standard] but without watchfiles (since it requires rust)
   uvicorn==0.18.3
