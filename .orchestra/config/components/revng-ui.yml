@@ -10,8 +10,8 @@ license: LICENSE.md
 binary_archives: private
 build_dependencies:
 - revng
-install: |
-  npm install --no-audit --save-optional --omit peer revng-model
+development_packages:
+- revng-model
 #@ end
 
 #@overlay/match by=overlay.all, expects=1

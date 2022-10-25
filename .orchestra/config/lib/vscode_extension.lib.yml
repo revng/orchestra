@@ -9,7 +9,7 @@
 #@      license="",
 #@      repository=None,
 #@      build_dependencies=[],
-#@      install=None,
+#@      development_packages=[],
 #@      binary_archives=None,
 #@  ):
 
@@ -71,11 +71,7 @@ builds:
       cd "$BUILD_DIR/build"
       export ORCHESTRA_NODE_CACHE="$BUILD_DIR/cache:$ORCHESTRA_NODE_CACHE"
 
-      (@- if install: @)
-      (@= install @)
-      (@- else: @)
-      npm install --no-audit
-      (@- end @)
+      npm install --no-audit --omit peer (@= " ".join(development_packages) @)
       
       # vsce will try to do an update check if in a tty, we use cat to suppress this
       (@- if flavor == "default": @)
