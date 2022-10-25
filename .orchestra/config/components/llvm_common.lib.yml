@@ -20,7 +20,7 @@
     -DCMAKE_MODULE_LINKER_FLAGS="(@= cflags @)" \
     -DCMAKE_C_FLAGS="(@= cflags @)" \
     -DCMAKE_CXX_FLAGS="(@= cflags @)" \
-    -DLLVM_TARGETS_TO_BUILD="AArch64;AMDGPU;ARM;Mips;SystemZ;X86" \
+    -DLLVM_TARGETS_TO_BUILD="AArch64;ARM;Mips;SystemZ;X86" \
     -DLLVM_INSTALL_UTILS=ON \
     -DLLVM_ENABLE_DUMP=ON \
     -DLLVM_ENABLE_TERMINFO=OFF \
