@@ -34,28 +34,43 @@ builds:
     configure: |
       mkdir -p "$BUILD_DIR"
       cd "$BUILD_DIR"
-      cp "$SOURCE_DIR/"package{,-lock}.json .
-      "$ORCHESTRA_DOTDIR"/support/fetch-js-dependencies npm -o ./.cache
+      cp -a "$SOURCE_DIR/"package{,-lock}.json .
+      "$ORCHESTRA_DOTDIR"/support/fetch-js-dependencies npm -o cache/
 
     install: |
       cd "$BUILD_DIR"
-      if [ -f .source-hash ] && \
-         cmp .source-hash <("$ORCHESTRA_DOTDIR"/support/directory-hash "$SOURCE_DIR"); then
+
+      function do_install() {
+        cd "$BUILD_DIR"
+        # Copy vsix to /share/vscode-extensions
         mkdir -p "${DESTDIR}${ORCHESTRA_ROOT}/share/vscode-extensions"
         cp -a build/*.vsix "${DESTDIR}${ORCHESTRA_ROOT}/share/vscode-extensions"
+      }
+
+      if [ -f source-hash ] && cmp source-hash <("$ORCHESTRA_DOTDIR"/support/directory-hash "$SOURCE_DIR"); then
+        do_install
         exit 0
       fi
 
-      "$ORCHESTRA_DOTDIR"/support/directory-hash "$SOURCE_DIR" > .source-hash.tmp
+      "$ORCHESTRA_DOTDIR"/support/directory-hash "$SOURCE_DIR" > source-hash.tmp
 
       rsync \
         --archive --delete --quiet \
         --exclude=.git \
-        --exclude-from=<(git -C "$SOURCE_DIR" ls-files --exclude-standard -oi --directory) \
-          "$SOURCE_DIR/" "$BUILD_DIR/build/"
+        --exclude-from=<(
+          git \
+            -C "$SOURCE_DIR" \
+            ls-files \
+            --exclude-standard \
+            --others \
+            --ignored \
+            --directory
+        ) \
+        "$SOURCE_DIR/" "$BUILD_DIR/build/"
 
       cd "$BUILD_DIR/build"
-      export ORCHESTRA_NODE_CACHE="$BUILD_DIR/.cache:$ORCHESTRA_NODE_CACHE"
+      export ORCHESTRA_NODE_CACHE="$BUILD_DIR/cache:$ORCHESTRA_NODE_CACHE"
+
       (@- if install: @)
       (@= install @)
       (@- else: @)
@@ -73,10 +88,8 @@ builds:
         npm run --if-present test
       fi
 
-      # Copy vsix to /share/vscode-extensions
-      mkdir -p "${DESTDIR}${ORCHESTRA_ROOT}/share/vscode-extensions"
-      cp -a *.vsix "${DESTDIR}${ORCHESTRA_ROOT}/share/vscode-extensions"
+      do_install
 
-      mv ../.source-hash{.tmp,}
+      mv source-hash{.tmp,}
   #@ end
 #@ end
