@@ -27,9 +27,9 @@ This repository contains the orchestra configuration for rev.ng.
   orc components
   ```
 
-### Virtualenvs
+### Virtualenv
 
-We also support installing orchestra inside a virtualenv.
+If you do not want to install orchestra globally, you can use a `virtualenv`.
 
 * Create and activate a virtualenv
   ```sh
@@ -49,10 +49,6 @@ We also support installing orchestra inside a virtualenv.
   ```sh
   ./.orchestra/ci/install-dependencies.sh
   ```
-* Install Python-only dependencies (all distributions)
-  ```sh
-  ./.orchestra/ci/install-python-dependencies.sh
-  ```
 
 ## Configuration for the public
 
@@ -64,7 +60,7 @@ For example, to fork the `revng` project do the following:
 
 ```bash
 # Ensure the revng component is cloned
-orchestra clone revng
+orc clone revng
 cd sources/revng
 git remote add myremote <your-remote-url>
 ```
