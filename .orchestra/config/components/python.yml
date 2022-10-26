@@ -6,7 +6,7 @@
 #@yaml/text-templated-strings
 ---
 #@ def python_component():
-#@ python_version = "3.10.7"
+#@ python_version = "3.11.0"
 #@ source_url = "https://www.python.org/ftp/python/" + python_version + "/Python-" + python_version + ".tar.xz"
 license: LICENSE
 builds:
@@ -49,8 +49,6 @@ builds:
       ln -s python3-config "${INSTALLDIR}"/bin/python-config
       ln -s idle3 "${INSTALLDIR}"/bin/idle
       ln -s pydoc3 "${INSTALLDIR}"/bin/pydoc
-
-      "${INSTALLDIR}"/bin/python -m ensurepip
     build_dependencies:
       - host-c-toolchain
       - glibc
