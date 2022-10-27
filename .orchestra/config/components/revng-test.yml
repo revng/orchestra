@@ -42,6 +42,7 @@ build_dependencies:
   - revng
   - revng-qa
   - test/revng-qa
+  - clang-release
 #@ end
 
 #@ def revng_c_test():
@@ -52,6 +53,7 @@ build_dependencies:
   - revng-qa
   - test/revng
   - test/revng-qa
+  - clang-release
 #@ end
 
 #@overlay/match by=overlay.all, expects=1
