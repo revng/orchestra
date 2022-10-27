@@ -14,9 +14,10 @@ components:
           - ncurses
         configure: |
           mkdir -p "$BUILD_DIR"
+          cd "$BUILD_DIR"
 
-          fetch.sh "${NON_REDISTRIBUTABLE_BASE_URL}/ida-installer"
-          fetch.sh "${NON_REDISTRIBUTABLE_BASE_URL}/ida.reg"
+          fetch.sh --no-copy "${NON_REDISTRIBUTABLE_BASE_URL}/ida-installer"
+          fetch.sh --no-copy "${NON_REDISTRIBUTABLE_BASE_URL}/ida.reg"
           INSTALLER="${SOURCE_ARCHIVES}/ida-installer"
           chmod +x "$INSTALLER"
         install: |
