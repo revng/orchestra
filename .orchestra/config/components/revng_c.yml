@@ -15,7 +15,6 @@ dependencies:
   - host-libcxx
   - revng
   - boost
-  - revng-qa
 use_asan: false
 #@ end
 
