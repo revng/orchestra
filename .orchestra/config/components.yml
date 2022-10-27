@@ -25,6 +25,7 @@ environment:
   - HARD_FLAGS_LINK_LATE: #@ str(datavalue("hard_flags_link_late"))
   - HARD_FLAGS_LINK_GOLD: #@ str(datavalue("hard_flags_link_gold"))
   - HARD_FLAGS_CLANGTIDY: #@ str(datavalue("hard_flags_clangtidy"))
+  - REVNG_TRANSLATE_LDFLAGS: --sysroot=/ -L$ORCHESTRA_ROOT/lib
   - "-LD_LIBRARY_PATH": ""
   - "-COMPILER_PATH": ""
   - "-CPATH": ""
