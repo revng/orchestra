@@ -47,7 +47,6 @@ install: |
   ln -s . "$DESTDIR$INSTALL_LINK_ONLY_PATH/usr"
   rm -f "$DESTDIR$INSTALL_LINK_ONLY_PATH"/libexec/getconf/POSIX_V7_LP64_OFF64*
   rm -rf "$DESTDIR$INSTALL_LINK_ONLY_PATH"/bin
-  cp -a "$DESTDIR$INSTALL_LINK_ONLY_PATH"/lib/*.o "$DESTDIR$ORCHESTRA_ROOT"/lib/
 
   # This file is needed because gcc fixinclude detects it when bootstrapping toolchains
   touch "$DESTDIR$INSTALL_LINK_ONLY_PATH/include/stdc-predef.h"
