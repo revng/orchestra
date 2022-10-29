@@ -14,12 +14,12 @@ build_dependencies:
   - host-cxx-toolchain
   - revng-js-prerequisites
 dependencies:
+  - boost
   - host-libcxx
   - llvm
   - qemu
-  - boost
-  - clang-release
   - revng-python-dependencies
+  - toolchain/host/binutils
 use_asan: false
 #@ end
 
