@@ -194,9 +194,10 @@ install: |
     clang-runtime \
     '^lib\/libc\+\+[^/]*$'
 
-  # Leave `opt` and `llvm-config` to the `llvm` component
+  # Leave `opt`, `llvm-config` and `llvm-symbolizer` to the `llvm` component
   rm -f "${DESTDIR}${ORCHESTRA_ROOT}/bin/opt"*
   rm -f "${DESTDIR}${ORCHESTRA_ROOT}/bin/llvm-config"*
+  rm -f "${DESTDIR}${ORCHESTRA_ROOT}/bin/llvm-symbolizer"*
 
   # Create wrappers
   mkdir -p "${DESTDIR}${ORCHESTRA_ROOT}/link-only/bin"

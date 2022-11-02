@@ -40,7 +40,7 @@ builds:
         # Keep only `opt`, `llvm-config` and mlir executables from `/bin`
         mkdir "${DESTDIR}${ORCHESTRA_ROOT}/bin-tmp"
 
-        for EXECUTABLE_PREFIX in opt llvm-config mlir-; do
+        for EXECUTABLE_PREFIX in opt llvm-config llvm-symbolizer mlir-; do
           mv \
             "${DESTDIR}${ORCHESTRA_ROOT}/bin/$EXECUTABLE_PREFIX"* \
             "${DESTDIR}${ORCHESTRA_ROOT}/bin-tmp"
