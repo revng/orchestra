@@ -82,7 +82,9 @@
 #! The sed is required to make `--sysroot=/` work with `--with-gxx-include-dir`
 #! properly.
 configure: |
-  extract.sh --into "$SOURCE_DIR" "(@= source_url @)"
+  export SOURCE_DIR="$BUILD_DIR/source"
+  mkdir -p "$SOURCE_DIR"
+  extract.sh --into "$SOURCE_DIR" (@= source_url @)
   patch-if-exists "${ORCHESTRA_DOTDIR}/patches/gcc-(@= gcc_version @)-cfns-fix-mismatch-in-gnu_inline-attributes.patch" "$SOURCE_DIR"
   patch-if-exists "${ORCHESTRA_DOTDIR}/patches/gcc-(@= gcc_version @)-cpp-musl-support.patch" "$SOURCE_DIR"
   patch-if-exists "${ORCHESTRA_DOTDIR}/patches/gcc-(@= gcc_version @)-fixes.patch" "$SOURCE_DIR"
@@ -202,7 +204,7 @@ build_dependencies: #@ build_dependencies
 #@yaml/text-templated-strings
 ---
 #@ def create_gcc_component(**kwargs):
-license: COPYING
+license: source/COPYING
 default_build: stage2
 builds:
   stage1: #@ gcc_build(stage=1, **kwargs)

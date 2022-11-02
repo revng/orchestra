@@ -25,11 +25,11 @@
 #@ # You can verify that this is the case by running `gdb --configuration`, it
 #@ # should state "(relocatable)".
 
-license: COPYING
+license: source/COPYING
 configure: |
+  export SOURCE_DIR="$BUILD_DIR/source"
+  mkdir -p "$SOURCE_DIR"
   extract.sh --into "$SOURCE_DIR" (@= source_url @)
-  mkdir -p "$BUILD_DIR"
-
   cd "$BUILD_DIR" && "$SOURCE_DIR/configure" \
     --build=x86_64-pc-linux-gnu \
     --host=x86_64-pc-linux-gnu \

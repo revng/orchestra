@@ -17,6 +17,6 @@ build_dependencies:
 ---
 components:
   expat:
-    license: COPYING
+    license: source/COPYING
     default_build: optimized
     builds: #@ typical_cmake_builds(**build_args())

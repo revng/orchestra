@@ -14,10 +14,11 @@
 #@   ):
 #@   source_url = "https://ftp.gnu.org/gnu/binutils/binutils-" + binutils_version + ".tar.bz2"
 #@   binutils_sysroot = binutils_sysroot or "$ORCHESTRA_ROOT/" + triple
-license: COPYING
+license: source/COPYING
 configure: |
+  export SOURCE_DIR="$BUILD_DIR/source"
+  mkdir -p "$SOURCE_DIR"
   extract.sh --into "$SOURCE_DIR" (@= source_url @)
-  mkdir -p "$BUILD_DIR"
   cd "$BUILD_DIR" && "$SOURCE_DIR/configure" \
     --build=x86_64-pc-linux-gnu \
     --host=x86_64-pc-linux-gnu \

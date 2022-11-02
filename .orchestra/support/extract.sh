@@ -3,7 +3,10 @@ set -euo pipefail
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-INTO="${SOURCE_DIR}"
+INTO=""
+if test -d "${SOURCE_DIR-}"; then
+    INTO="${SOURCE_DIR}"
+fi
 SRC_ARCHIVE_DIR="${SOURCE_ARCHIVES}"
 
 POSITIONAL=()
@@ -36,6 +39,11 @@ done
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
 URL="${POSITIONAL[0]}"
+
+if test -z "$INTO"; then
+    echo "No destination specified and SOURCE_DIR not set" > /dev/stderr
+    exit 1
+fi
 
 echo "Extracting $URL into $INTO"
 
