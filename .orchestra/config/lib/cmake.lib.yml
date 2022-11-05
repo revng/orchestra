@@ -67,15 +67,17 @@
 #@ flavor_extra_compiler_flags = opts["extra_compiler_flags"] + " " + extra_compiler_flags
 (@= flavor @):
   configure: |
-    (@- if pre_configure_script: @)
+    (@ if pre_configure_script: @)
     (@-= pre_configure_script @)
-    (@ end -@)
-
-    (@- if source_url: @)
-    extract.sh "(@= source_url @)"
-    (@ end -@)
+    (@ end @)
 
     mkdir -p "$BUILD_DIR"
+
+    (@ if source_url: @)
+    export SOURCE_DIR="$BUILD_DIR/source"
+    mkdir -p "$SOURCE_DIR"
+    extract.sh "(@= source_url @)"
+    (@ end @)
 
     cd "$BUILD_DIR";
     (@= cmake @) \
@@ -86,13 +88,13 @@
       (@= expand_args(extra_cmake_args) @)
       (@- end @)
 
-    (@- if post_configure_script: @)
+    (@ if post_configure_script: @)
     (@= post_configure_script @)
     (@ end @)
   install: |
-    (@- if pre_install_script: @)
+    (@ if pre_install_script: @)
     (@= pre_install_script @)
-    (@ end -@)
+    (@ end @)
 
     cmake --build "$BUILD_DIR" ${JOBS:+-j$JOBS}
 
@@ -102,11 +104,11 @@
       ctest --output-on-failure ${JOBS:+-j$JOBS}
       cd -
     fi
-    (@- end @)
+    (@ end @)
 
     cmake --install "$BUILD_DIR"
 
-    (@- if post_install_script: @)
+    (@ if post_install_script: @)
     (@= post_install_script @)
     (@ end @)
   #@ if/end dependencies:

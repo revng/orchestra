@@ -20,6 +20,7 @@ components:
         dependencies:
           - glibc
           - toolchain/host/binutils
+          - clang-runtime
           - clang-release
         install: exit 0
         configure: mkdir -p "$BUILD_DIR"
@@ -28,7 +29,7 @@ components:
     builds:
       default:
         dependencies:
-          - clang-release
-          - toolchain/host/gcc
+          - clang-runtime
+          - gcc-runtime
         install: exit 0
         configure: mkdir -p "$BUILD_DIR"

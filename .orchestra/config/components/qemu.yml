@@ -42,7 +42,6 @@ builds:
         (@= make @) install
       build_dependencies:
         - host-c-toolchain
-        - clang-release
         - glibc
       dependencies:
         - zlib

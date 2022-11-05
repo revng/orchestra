@@ -3,13 +3,13 @@
 #@ load("/lib/pip.lib.yml", "pip_package")
 
 #@ def params():
-name: revng-qa-python-dependencies
+name: pyyaml
 dependencies:
-- pyyaml
-- python-base-packages
+- libyaml
+- cython
 requirements: |-
-  expandvars
-  jinja2
+  --global-option=--with-libyaml
+  pyyaml
 #@ end
 
 #@overlay/match by=overlay.all, expects=1

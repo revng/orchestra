@@ -188,21 +188,16 @@ install: |
       "${DESTDIR}${ORCHESTRA_ROOT}/bin"
   done
 
-  # Symlink to /lib/llvm/clang-release/lib/libc++*.so* to /lib
-  for LIBRARY in "${DESTDIR}${ORCHESTRA_ROOT}/lib/llvm/clang-release/lib/"libc++*.so*; do
-    ln \
-      -s $(
-        realpath \
-          --no-symlinks \
-          --relative-to="${DESTDIR}${ORCHESTRA_ROOT}/lib" \
-          "${LIBRARY}"
-      ) \
-      "${DESTDIR}${ORCHESTRA_ROOT}/lib"
-  done
+  # Save libc++ files for later
+  "$ORCHESTRA_DOTDIR"/support/save-for-later \
+    -i "${DESTDIR}${ORCHESTRA_ROOT}/lib/llvm/clang-release" \
+    clang-runtime \
+    '^lib\/libc\+\+[^/]*$'
 
-  # Leave `opt` and `llvm-config` to the `llvm` component
+  # Leave `opt`, `llvm-config` and `llvm-symbolizer` to the `llvm` component
   rm -f "${DESTDIR}${ORCHESTRA_ROOT}/bin/opt"*
   rm -f "${DESTDIR}${ORCHESTRA_ROOT}/bin/llvm-config"*
+  rm -f "${DESTDIR}${ORCHESTRA_ROOT}/bin/llvm-symbolizer"*
 
   # Create wrappers
   mkdir -p "${DESTDIR}${ORCHESTRA_ROOT}/link-only/bin"
