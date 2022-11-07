@@ -21,14 +21,6 @@ readarray -t CACHES < <(echo "$ORCHESTRA_NODE_CACHE" | tr ':' '\n')
 "$SCRIPT_FOLDER/../libexec/static-npm-registry" "$PORT_FILE" "${CACHES[@]}" &
 REPO_PID=$!
 
-NEW_PATH=""
-
-while read -r COMPONENT; do
-    if [[ -n "$COMPONENT" && "$COMPONENT" != "$SCRIPT_FOLDER" ]]; then
-        NEW_PATH="$COMPONENT:$NEW_PATH"
-    fi
-done < <(echo "$PATH" | tr ':' '\n')
-
 while [ -z "$(cat "$PORT_FILE")" ]; do sleep 0.1s; done
 PORT=$(cat "$PORT_FILE")
-PATH="$NEW_PATH" npm --registry="http://127.0.0.1:$PORT" --cache="$CACHE_FOLDER" "$@"
+system-npm --registry="http://127.0.0.1:$PORT" --cache="$CACHE_FOLDER" "$@"
