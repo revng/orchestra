@@ -1,7 +1,7 @@
 #@ load("@ytt:overlay", "overlay")
 #@ load("/lib/create_component.lib.yml", "single_build_component")
 
-#@ package_json_sha = "db73fe13e485f1445a6d55e42c2342c143ee1b8de57f5d140949f50005c9c8f0"
+#@ package_json_sha = "fcb10a1055a762b77f844baf8348212fe7478d06c45427d70c2c2abd53d70229"
 
 #@yaml/text-templated-strings
 ---
@@ -17,7 +17,7 @@ configure: |
   echo '(@= package_json_sha @) package.json' | sha256sum -c -
 
   # Generate package lock
-  "$ORCHESTRA_DOTDIR"/support/npm-wrapper/system-npm install --package-lock-only --silent
+  "$ORCHESTRA_DOTDIR"/support/js-prerequisites/system-npm install --package-lock-only --silent
 
   # NOTE: until we install this component fetch-js-dependencies will only work with npm lockfiles
   #       due to yarn lockfiles needing the `@yarnpkg/lockfile` dependency installed to be read
@@ -33,7 +33,8 @@ install: |
 
   # copy the npm_static_repository tool
   cp -a "$JS_DIR/static-npm-registry" "${DESTDIR}${ORCHESTRA_ROOT}/libexec"
-  cp -a "$JS_DIR/npm" "${DESTDIR}${ORCHESTRA_ROOT}/bin"
+  cp -a "$JS_DIR/npm" "$JS_DIR/system-npm" \
+    "${DESTDIR}${ORCHESTRA_ROOT}/bin"
 
   # Create npmrc
   cat - > "${DESTDIR}${ORCHESTRA_ROOT}/share/npmrc" << EOF
@@ -46,7 +47,10 @@ install: |
   npm --global \
       --prefix="${DESTDIR}${ORCHESTRA_ROOT}" \
       install \
-        prettier yarn @yarnpkg/lockfile
+        yarn @yarnpkg/lockfile \
+        prettier eslint lint-staged gts \
+        eslint-plugin-node eslint-plugin-prettier \
+        @typescript-eslint/eslint-plugin @typescript-eslint/parser
 
   # Overwrite yarn with our wrapper
   rm "${DESTDIR}${ORCHESTRA_ROOT}/bin/"{yarn,yarnpkg}
