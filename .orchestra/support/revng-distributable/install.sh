@@ -8,6 +8,7 @@ mkdir -p "${DESTDIR}${ORCHESTRA_ROOT}/revng/root"
 cd "$ORCHESTRA_ROOT"
 
 for component in "$@"; do
+  echo "$component"
   orc inspect component dependencies --installed --runtime "$component"
 done | sort | uniq | \
 grep -v '^glibc$' | \
@@ -105,7 +106,7 @@ rm "$TMP_IDX"
 
 echo "Generating checksums"
 cd "$DESTDIR/$ORCHESTRA_ROOT/revng"
-find root -type f -exec sha256sum {} \; > checksums.sha256
+find root -type f -print0 | xargs -0 -P"$JOBS" -n100 sha256sum > checksums.sha256
 sha256sum README.md environment revng >> checksums.sha256
 
 echo "Final cleanup"
