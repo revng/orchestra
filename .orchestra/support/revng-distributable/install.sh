@@ -116,5 +116,5 @@ find . -type d -empty -delete
 if [ "$RUN_TESTS" -eq 1 ]; then
   cd "$DESTDIR/$ORCHESTRA_ROOT/revng"
   ./revng daemon-self-test \
-          "$ORCHESTRA_ROOT/share/revng/test/tests/runtime/calc-x86-64-static-revng-qa.compiled"
+          "$ORCHESTRA_ROOT/share/revng/test/tests/runtime/calc-x86-64-static-revng-qa.compiled-stripped-"*
 fi
