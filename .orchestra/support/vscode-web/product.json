@@ -15,7 +15,14 @@
         "window.menuBarVisibility": "classic",
         "editor.foldingMaximumRegions": 65000,
         "editor.colorTheme": "revng",
-        "workbench.colorTheme": "revng"
+        "workbench.colorTheme": "revng",
+        "revng.general.profiles": [
+            {
+                "id": "9b473245-159e-4984-a052-f2d9131314ea",
+                "name": "Local",
+                "directURLs": ["http://127.0.0.1:8000/"]
+            }
+        ]
     },
     "extensionsPrefix": "/static/extensions",
     "builtinExtensions": [
