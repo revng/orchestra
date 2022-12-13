@@ -47,7 +47,7 @@ builds:
         cp -a build/*.vsix "${DESTDIR}${ORCHESTRA_ROOT}/share/vscode-extensions"
       }
 
-      if [ -f source-hash ] && cmp source-hash <("$ORCHESTRA_DOTDIR"/support/directory-hash "$SOURCE_DIR"); then
+      if [ -f source-hash ] && cmp -s source-hash <("$ORCHESTRA_DOTDIR"/support/directory-hash "$SOURCE_DIR"); then
         do_install
         exit 0
       fi
