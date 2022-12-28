@@ -1,0 +1,51 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+#@ load("/lib/make.lib.yml", "make")
+#@ load("/lib/util.lib.yml", "datavalue")
+
+#@ source_url = "https://ftp.gnu.org/gnu/gcc/gcc-" + str(datavalue("gcc_host_version")) + "/gcc-" + str(datavalue("gcc_host_version")) + ".tar.gz"
+
+#@yaml/text-templated-strings
+---
+#@ def args():
+license: source/COPYING
+configure: |
+  mkdir -p "$BUILD_DIR/source"
+  extract.sh --into "$BUILD_DIR/source" (@= source_url @)
+
+  cd "$BUILD_DIR"
+
+  echo 'char __libc_single_threaded __attribute__ ((weak));' > fake-libc-single-threaded.c
+  gcc -c -fPIC -x c fake-libc-single-threaded.c -o "$BUILD_DIR/fake-libc-single-threaded.o"
+
+  ./source/configure \
+    --prefix="$INSTALL_LINK_ONLY_PATH/early-gcc" \
+    --disable-multilib \
+    --enable-languages=c,c++ \
+    --disable-nls \
+    --disable-libsanitizer \
+    --with-glibc-version=2.13 \
+    --disable-bootstrap \
+    --with-sysroot=$INSTALL_LINK_ONLY_PATH \
+    --with-gmp="$ORCHESTRA_ROOT" \
+    --with-mpfr="$ORCHESTRA_ROOT" \
+    --with-mpc="$ORCHESTRA_ROOT" \
+    --disable-libgomp \
+    CFLAGS_FOR_TARGET="--sysroot=$INSTALL_LINK_ONLY_PATH -I$ORCHESTRA_ROOT/include" \
+    CXXFLAGS_FOR_TARGET="--sysroot=$INSTALL_LINK_ONLY_PATH -I$ORCHESTRA_ROOT/include" \
+    LDFLAGS_FOR_TARGET="--sysroot=$INSTALL_LINK_ONLY_PATH -Wl,-z,origin -Wl,--enable-new-dtags -L$ORCHESTRA_ROOT/lib -L$INSTALL_LINK_ONLY_PATH/lib"
+build_system: make
+build_dependencies:
+  - glibc
+  - toolchain/host/linux-headers
+  - gmp
+  - mpc
+  - mpfr
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  early-gcc: #@ single_build_component(**args())
