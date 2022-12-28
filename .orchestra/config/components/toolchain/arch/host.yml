@@ -37,10 +37,11 @@ extra_gcc_configure_options:
   - --without-isl
   - --enable-default-pie
   - --enable-default-ssp
-  - --enable-libmpx
+  - --disable-libmpx
+  - --with-glibc-version=2.13
   - CFLAGS_FOR_TARGET="-I/usr/include/tirpc -I$ORCHESTRA_ROOT/link-only/include"
   - CXXFLAGS_FOR_TARGET="-I/usr/include/tirpc -I$ORCHESTRA_ROOT/link-only/include"
-  - LDFLAGS_FOR_TARGET="-L$INSTALL_LINK_ONLY_PATH/lib -L$ORCHESTRA_ROOT/lib -lrt --sysroot=/ -Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath,$RPATH_PLACEHOLDER/lib"
+  - LDFLAGS_FOR_TARGET="-L$INSTALL_LINK_ONLY_PATH/lib -L$ORCHESTRA_ROOT/lib -lrt --sysroot=$INSTALL_LINK_ONLY_PATH -Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath,$RPATH_PLACEHOLDER/lib"
 extra_binutils_configure_options:
   - --enable-gold=default
 extra_gcc_make_variables: LIBRARY_PATH=/usr/lib/x86_64-linux-gnu

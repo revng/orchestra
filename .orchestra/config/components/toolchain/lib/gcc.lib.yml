@@ -147,7 +147,7 @@ configure: |
     (@= expand_args(build_specific_configure_options) @) \
     CFLAGS="-w -ggdb3 -O3 (@= data.values.hard_flags_compile @)" \
     CXXFLAGS="-w -ggdb3 -O3 (@= data.values.hard_flags_compile @) -std=gnu++11" \
-    LDFLAGS="(@= data.values.hard_flags_link @) (@= data.values.hard_flags_link_late @) -static-libgcc -static-libstdc++ $BUILD_DIR/fake-libc-single-threaded.o"
+    LDFLAGS="(@= data.values.hard_flags_link @) (@= data.values.hard_flags_link_late @) -static-libgcc -static-libstdc++ $BUILD_DIR/fake-libc-single-threaded.o -L$INSTALL_LINK_ONLY_PATH/lib64 --sysroot=$INSTALL_LINK_ONLY_PATH"
 install: |
   cd "$BUILD_DIR"
   (@= make @) (@= extra_gcc_make_variables @)
