@@ -115,7 +115,7 @@ configure: |
     --enable-obsolete \
     --enable-secureplt \
     --disable-werror \
-    --enable-nls \
+    --disable-nls \
     --without-included-gettext \
     --enable-checking=release \
     --enable-libstdcxx-time \

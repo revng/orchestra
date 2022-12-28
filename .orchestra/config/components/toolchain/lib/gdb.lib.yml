@@ -57,7 +57,7 @@ configure: |
     --enable-64-bit-bfd \
     --enable-gdbserver \
     --enable-lto \
-    --enable-nls \
+    --disable-nls \
     --enable-obsolete \
     --enable-plugins \
     --enable-source-highlight \
