@@ -9,6 +9,8 @@
 #@ def params():
 toolchain_name: host
 triple: x86_64-pc-linux-gnu
+linux_version: "4.5.2"
+linux_arch_name: x86_64
 binutils_version: "2.39"
 gdb_version: "12.1"
 gcc_version: #@ str(datavalue("gcc_host_version"))
@@ -45,6 +47,7 @@ extra_gcc_configure_options:
 extra_binutils_configure_options:
   - --enable-gold=default
 extra_gcc_make_variables: LIBRARY_PATH=/usr/lib/x86_64-linux-gnu
+linux_headers_install_path: link-only
 #@ end
 
 #@overlay/match by=overlay.all, expects=1
