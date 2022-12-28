@@ -17,7 +17,7 @@ configure: |
   patch-if-exists "${ORCHESTRA_DOTDIR}/patches/glibc-2.13-fix-isinf.patch" "$BUILD_DIR/source"
 
   cd $BUILD_DIR
-  export CC="cc -no-pie -fuse-ld=bfd -Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath,$RPATH_PLACEHOLDER/link-only/lib"
+  export CC="cc -no-pie -fuse-ld=bfd -Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath,$RPATH_PLACEHOLDER/link-only/lib -L$INSTALL_LINK_ONLY_PATH/lib"
   ./source/configure \
     --disable-profile \
     --without-gd \
@@ -50,6 +50,8 @@ install: |
 
   # This file is needed because gcc fixinclude detects it when bootstrapping toolchains
   touch "$DESTDIR$INSTALL_LINK_ONLY_PATH/include/stdc-predef.h"
+build_dependencies:
+  - libgcc
 #@ end
 
 #@overlay/match by=overlay.all, expects=1
