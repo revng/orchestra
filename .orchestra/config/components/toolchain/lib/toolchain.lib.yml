@@ -34,7 +34,9 @@
 #@    extra_gcc_make_variables="",
 #@    dynamic=None,
 #@    spec=False,
+#@    linux_headers_install_path=None,
 #@ ):
+#@ linux_headers_install_path = linux_headers_install_path or (triple + "/usr")
 
 #@ if/end binutils_version:
 (@= "toolchain/" + toolchain_name + "/binutils" @): #@ create_binutils_component(toolchain_name=toolchain_name, triple=triple, binutils_version=binutils_version, extra_binutils_configure_options=extra_binutils_configure_options, binutils_sysroot=binutils_sysroot)
@@ -43,7 +45,7 @@
 (@= "toolchain/" + toolchain_name + "/gdb" @): #@ create_gdb_component(triple=triple, gdb_version=gdb_version)
 
 #@ if/end linux_version:
-(@= "toolchain/" + toolchain_name + "/linux-headers" @): #@ create_linux_headers_component(triple=triple, linux_version=linux_version, arch_name=linux_arch_name)
+(@= "toolchain/" + toolchain_name + "/linux-headers" @): #@ create_linux_headers_component(triple=triple, linux_version=linux_version, arch_name=linux_arch_name, install_path=linux_headers_install_path)
 
 #@ if/end gcc_version:
 (@= "toolchain/" + toolchain_name + "/gcc" @): #@ create_gcc_component(toolchain_name=toolchain_name, triple=triple, gcc_sysroot=gcc_sysroot, gcc_version=gcc_version, extra_gcc_configure_options=extra_gcc_configure_options, extra_gcc_make_variables=extra_gcc_make_variables, musl_version=musl_version, uclibc_version=uclibc_version, linux_version=linux_version, mingw64_version=mingw64_version)

@@ -3,7 +3,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def create_linux_headers_component(triple=mandatory, linux_version=mandatory, arch_name=mandatory):
+#@ def create_linux_headers_component(triple=mandatory, linux_version=mandatory, arch_name=mandatory, install_path=mandatory):
 
 #@   source_url = "https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-" + linux_version + ".tar.xz"
 
@@ -17,5 +17,5 @@ builds:
       cd "$BUILD_DIR"
       (@= make @) -C "$BUILD_DIR" \
         ARCH=(@= arch_name @) \
-        INSTALL_HDR_PATH="${DESTDIR}${ORCHESTRA_ROOT}/(@= triple @)/usr" headers_install
+        INSTALL_HDR_PATH="${DESTDIR}${ORCHESTRA_ROOT}/(@= install_path @)" headers_install
 #@ end
