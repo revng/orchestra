@@ -14,7 +14,7 @@ linux_arch_name: x86_64
 binutils_version: "2.39"
 gdb_version: "12.1"
 gcc_version: #@ str(datavalue("gcc_host_version"))
-gcc_sysroot: /
+gcc_sysroot: $INSTALL_LINK_ONLY_PATH
 #! binutils_sysroot: /
 extra_gcc_configure_options:
   - --without-cloog
@@ -41,9 +41,11 @@ extra_gcc_configure_options:
   - --enable-default-ssp
   - --disable-libmpx
   - --with-glibc-version=2.13
-  - CFLAGS_FOR_TARGET="-I/usr/include/tirpc -I$ORCHESTRA_ROOT/link-only/include"
-  - CXXFLAGS_FOR_TARGET="-I/usr/include/tirpc -I$ORCHESTRA_ROOT/link-only/include"
-  - LDFLAGS_FOR_TARGET="-L$INSTALL_LINK_ONLY_PATH/lib -L$ORCHESTRA_ROOT/lib -lrt --sysroot=$INSTALL_LINK_ONLY_PATH -Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath,$RPATH_PLACEHOLDER/lib"
+  - CC=$INSTALL_LINK_ONLY_PATH/early-gcc/bin/gcc
+  - CXX=$INSTALL_LINK_ONLY_PATH/early-gcc/bin/g++
+  - CFLAGS_FOR_TARGET="--sysroot=$INSTALL_LINK_ONLY_PATH -I$ORCHESTRA_ROOT/include"
+  - CXXFLAGS_FOR_TARGET="--sysroot=$INSTALL_LINK_ONLY_PATH -I$ORCHESTRA_ROOT/include"
+  - LDFLAGS_FOR_TARGET="--sysroot=$INSTALL_LINK_ONLY_PATH -Wl,-z,origin -Wl,--enable-new-dtags -L$ORCHESTRA_ROOT/lib -L$INSTALL_LINK_ONLY_PATH/lib"
 extra_binutils_configure_options:
   - --enable-gold=default
 linux_headers_install_path: link-only
