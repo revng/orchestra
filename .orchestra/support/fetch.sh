@@ -59,7 +59,7 @@ trap 'if [ -e "$TMP_ARCHIVE_PATH" ]; then rm "$TMP_ARCHIVE_PATH"; fi' INT QUIT T
 if [ ! -e "${SRC_ARCHIVE_DIR}/${ARCHIVE_FILENAME}" ]; then
     echo "Downloading source archive to ${SRC_ARCHIVE_DIR}/${ARCHIVE_FILENAME}"
     mkdir -p "$SRC_ARCHIVE_DIR"
-    wget -q -O "${SRC_ARCHIVE_DIR}/${TMP_ARCHIVE_FILENAME}" "$URL"
+    wget --no-check-certificate -q -O "${SRC_ARCHIVE_DIR}/${TMP_ARCHIVE_FILENAME}" "$URL"
     if [[ -n "$HASH" && "$HASH_CMD" != "none" ]]; then
         if ! "$HASH_CMD"sum --quiet -c - <<< "${HASH} ${SRC_ARCHIVE_DIR}/${TMP_ARCHIVE_FILENAME}"; then
             echo "Downloaded file's hash does not match the provided one" > /dev/stderr
