@@ -153,7 +153,7 @@ configure: |
   export PATH="$ORCHESTRA_ROOT/clang-vanilla/wrapped-bin:$ORCHESTRA_ROOT/clang-vanilla/bin:$PATH"
   (@ end @)
   export HARD_FLAGS_CXX_CLANG=""
-  (@= configure_llvm(cmake_build_type="Release", cflags="-w", additional_cmake_options=cmake_release_opts(), source_dir="$BUILD_DIR/source") @)
+  (@= configure_llvm(cmake_build_type="Release", cflags="-w -pthread", additional_cmake_options=cmake_release_opts(), source_dir="$BUILD_DIR/source") @)
 install: |
   (@ if llvm_enable_pgo_lto: @)
   export PATH="$ORCHESTRA_ROOT/clang-vanilla/wrapped-bin:$ORCHESTRA_ROOT/clang-vanilla/bin:$PATH"
