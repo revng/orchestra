@@ -46,7 +46,6 @@ extra_gcc_configure_options:
   - LDFLAGS_FOR_TARGET="-L$INSTALL_LINK_ONLY_PATH/lib -L$ORCHESTRA_ROOT/lib -lrt --sysroot=$INSTALL_LINK_ONLY_PATH -Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath,$RPATH_PLACEHOLDER/lib"
 extra_binutils_configure_options:
   - --enable-gold=default
-extra_gcc_make_variables: LIBRARY_PATH=/usr/lib/x86_64-linux-gnu
 linux_headers_install_path: link-only
 #@ end
 
