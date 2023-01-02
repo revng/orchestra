@@ -9,10 +9,12 @@
 #@ def params():
 toolchain_name: host
 triple: x86_64-pc-linux-gnu
+linux_version: "4.5.2"
+linux_arch_name: x86_64
 binutils_version: "2.39"
 gdb_version: "12.1"
 gcc_version: #@ str(datavalue("gcc_host_version"))
-gcc_sysroot: /
+gcc_sysroot: $INSTALL_LINK_ONLY_PATH
 #! binutils_sysroot: /
 extra_gcc_configure_options:
   - --without-cloog
@@ -37,13 +39,16 @@ extra_gcc_configure_options:
   - --without-isl
   - --enable-default-pie
   - --enable-default-ssp
-  - --enable-libmpx
-  - CFLAGS_FOR_TARGET="-I/usr/include/tirpc -I$ORCHESTRA_ROOT/link-only/include"
-  - CXXFLAGS_FOR_TARGET="-I/usr/include/tirpc -I$ORCHESTRA_ROOT/link-only/include"
-  - LDFLAGS_FOR_TARGET="-L$INSTALL_LINK_ONLY_PATH/lib -L$ORCHESTRA_ROOT/lib -lrt --sysroot=/ -Wl,-z,origin -Wl,--enable-new-dtags -Wl,-rpath,$RPATH_PLACEHOLDER/lib"
+  - --disable-libmpx
+  - --with-glibc-version=2.13
+  - CC=$INSTALL_LINK_ONLY_PATH/early-gcc/bin/gcc
+  - CXX=$INSTALL_LINK_ONLY_PATH/early-gcc/bin/g++
+  - CFLAGS_FOR_TARGET="--sysroot=$INSTALL_LINK_ONLY_PATH -I$ORCHESTRA_ROOT/include"
+  - CXXFLAGS_FOR_TARGET="--sysroot=$INSTALL_LINK_ONLY_PATH -I$ORCHESTRA_ROOT/include"
+  - LDFLAGS_FOR_TARGET="--sysroot=$INSTALL_LINK_ONLY_PATH -Wl,-z,origin -Wl,--enable-new-dtags -L$ORCHESTRA_ROOT/lib -L$INSTALL_LINK_ONLY_PATH/lib"
 extra_binutils_configure_options:
   - --enable-gold=default
-extra_gcc_make_variables: LIBRARY_PATH=/usr/lib/x86_64-linux-gnu
+linux_headers_install_path: link-only
 #@ end
 
 #@overlay/match by=overlay.all, expects=1

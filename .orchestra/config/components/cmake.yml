@@ -23,6 +23,7 @@ configure: |
 build_system: make
 build_dependencies:
   - gcc-host-toolchain
+  - ncurses
 #@ end
 
 #@overlay/match by=overlay.all, expects=1

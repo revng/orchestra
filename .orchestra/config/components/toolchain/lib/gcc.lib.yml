@@ -41,6 +41,9 @@
 #@ if/end stage == 2 and "host" not in toolchain_name:
 - toolchain/(@= toolchain_name @)/gcc~stage1
 
+#@ if/end stage == 2 and "host" in toolchain_name:
+- early-gcc
+
 - glibc
 - gmp
 - mpfr
@@ -115,7 +118,7 @@ configure: |
     --enable-obsolete \
     --enable-secureplt \
     --disable-werror \
-    --enable-nls \
+    --disable-nls \
     --without-included-gettext \
     --enable-checking=release \
     --enable-libstdcxx-time \
@@ -147,7 +150,7 @@ configure: |
     (@= expand_args(build_specific_configure_options) @) \
     CFLAGS="-w -ggdb3 -O3 (@= data.values.hard_flags_compile @)" \
     CXXFLAGS="-w -ggdb3 -O3 (@= data.values.hard_flags_compile @) -std=gnu++11" \
-    LDFLAGS="(@= data.values.hard_flags_link @) (@= data.values.hard_flags_link_late @) -static-libgcc -static-libstdc++ $BUILD_DIR/fake-libc-single-threaded.o"
+    LDFLAGS="(@= data.values.hard_flags_link @) (@= data.values.hard_flags_link_late @) -static-libgcc -static-libstdc++ $BUILD_DIR/fake-libc-single-threaded.o -L$INSTALL_LINK_ONLY_PATH/lib64 --sysroot=$INSTALL_LINK_ONLY_PATH"
 install: |
   cd "$BUILD_DIR"
   (@= make @) (@= extra_gcc_make_variables @)

@@ -19,8 +19,6 @@ configure: |
     CXXFLAGS="-fPIC" \
     LDFLAGS="-static-libgcc"
 build_system: make
-build_dependencies:
-  - glibc
 #@ end
 
 #@overlay/match by=overlay.all, expects=1
