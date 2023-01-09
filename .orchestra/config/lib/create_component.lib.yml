@@ -38,8 +38,10 @@ builds:
     #@ if/end dependencies:
     dependencies: #@ dependencies
 
-    #@ if/end build_dependencies:
-    build_dependencies: #@ build_dependencies
+    build_dependencies:
+    #@ if/end build_system == "ninja":
+    - ninja
+    - #@ template.replace(build_dependencies)
 
     configure: #@ configure
 

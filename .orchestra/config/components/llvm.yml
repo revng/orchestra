@@ -54,6 +54,7 @@ builds:
 
       build_dependencies:
         - cmake
+        - ninja
         - host-cxx-toolchain
       dependencies:
         - host-libcxx
