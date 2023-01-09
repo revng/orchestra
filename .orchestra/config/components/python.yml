@@ -59,6 +59,8 @@ builds:
       - openssl
       - readline
       - sqlite
+      - libb2
+      - xz
 #@ end
 
 #@overlay/match by=overlay.all, expects=1
