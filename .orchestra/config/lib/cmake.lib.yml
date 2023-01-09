@@ -1,4 +1,5 @@
 #@ load("@ytt:data", "data")
+#@ load("@ytt:template", "template")
 
 #@ load("/lib/fn_args.lib.yml", "mandatory")
 #@ load("/lib/shell.lib.yml", "expand_args")
@@ -114,8 +115,11 @@
   #@ if/end dependencies:
   dependencies: #@ dependencies
 
-  #@ if/end build_dependencies:
-  build_dependencies: #@ build_dependencies
+  build_dependencies:
+  - cmake
+  #@ if/end build_system == "Ninja":
+  - ninja
+  - #@ template.replace(build_dependencies)
 
   #@ if/end opts["ndebug"] == False:
   ndebug: false

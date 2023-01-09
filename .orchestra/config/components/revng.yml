@@ -8,7 +8,6 @@ test: true
 extra_cmake_args: #@ cmake_boost_configuration
 extra_compiler_flags: #@ data.values.revng_extra_compiler_flags
 build_dependencies:
-  - cmake
   - host-cxx-toolchain
   - revng-js-prerequisites
 dependencies:

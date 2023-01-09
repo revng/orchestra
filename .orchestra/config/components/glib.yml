@@ -45,6 +45,7 @@ install: |
 build_dependencies:
   - host-c-toolchain
   - meson
+  - ninja
 dependencies:
   - libffi
   - zlib
