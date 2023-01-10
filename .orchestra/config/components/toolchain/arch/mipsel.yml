@@ -4,7 +4,7 @@
 #@ def params():
 toolchain_name: mipsel
 triple: mipsel-unknown-linux-musl
-linux_version: "4.5.2"
+linux_version: "6.1.4"
 linux_arch_name: mips
 binutils_version: "2.35"
 gdb_version: "8.2.1"

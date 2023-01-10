@@ -5,7 +5,7 @@
 ---
 #@ def create_linux_headers_component(triple=mandatory, linux_version=mandatory, arch_name=mandatory, install_path=mandatory):
 
-#@   source_url = "https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-" + linux_version + ".tar.xz"
+#@   source_url = "https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-" + linux_version + ".tar.xz"
 
 license: COPYING
 builds:
