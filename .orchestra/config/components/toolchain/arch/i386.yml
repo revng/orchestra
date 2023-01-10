@@ -4,7 +4,7 @@
 #@ def params():
 toolchain_name: i386
 triple: i386-gentoo-linux-musl
-linux_version: "4.5.2"
+linux_version: "6.1.4"
 linux_arch_name: i386
 binutils_version: "2.35"
 gdb_version: "8.2.1"

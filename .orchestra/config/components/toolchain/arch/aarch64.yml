@@ -5,7 +5,7 @@
 toolchain_name: aarch64
 triple: aarch64-unknown-linux-musl
 linux_arch_name: arm64
-linux_version: "4.14.18"
+linux_version: "6.1.4"
 binutils_version: "2.35"
 gdb_version: "8.2.1"
 musl_version: "1.1.19"

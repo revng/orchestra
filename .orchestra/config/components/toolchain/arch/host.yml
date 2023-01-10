@@ -9,6 +9,8 @@
 #@ def params():
 toolchain_name: host
 triple: x86_64-pc-linux-gnu
+linux_version: "6.1.4"
+linux_arch_name: x86_64
 binutils_version: "2.39"
 gdb_version: "12.1"
 gcc_version: #@ str(datavalue("gcc_host_version"))

@@ -5,7 +5,7 @@
 toolchain_name: arm
 triple: armv7a-hardfloat-linux-uclibceabi
 linux_arch_name: arm
-linux_version: "4.5.2"
+linux_version: "6.1.4"
 uclibc_arch_name: arm
 uclibc_version: "0.9.33.2"
 binutils_version: "2.35"
