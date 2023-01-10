@@ -16,6 +16,11 @@ dependencies:
   - revng
   - boost
 use_asan: false
+post_install_script: |
+  if [ "$RUN_TESTS" -eq 1 ]; then
+    cd "$SOURCE_DIR"
+    revng check-conventions
+  fi
 #@ end
 
 #@overlay/match by=overlay.all, expects=1
