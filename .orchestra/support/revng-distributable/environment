@@ -24,3 +24,4 @@ ORCHESTRA_DOTDIR="/nonexistent_directory_ignore_this"
 unset SCRIPT
 
 export PS1="[orchestra] ${PS1:-}"
+INSTALL_LINK_ONLY_PATH=/
