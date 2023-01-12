@@ -51,7 +51,6 @@ builds:
       ln -s pydoc3 "${INSTALLDIR}"/bin/pydoc
     build_dependencies:
       - host-c-toolchain
-      - glibc
     dependencies:
       - bzip2
       - expat

@@ -32,7 +32,6 @@ dependencies:
 
 build_dependencies:
   - host-c-toolchain
-  - glibc
 #@ end
 
 #@overlay/match by=overlay.all, expects=1

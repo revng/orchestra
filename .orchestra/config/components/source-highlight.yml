@@ -28,7 +28,6 @@ dependencies:
   - host-libcxx
 build_dependencies:
   - host-cxx-toolchain
-  - glibc
 #@ end
 
 #@overlay/match by=overlay.all, expects=1

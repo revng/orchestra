@@ -53,7 +53,6 @@ builds:
       find "$DESTDIR" -name "*.a" -delete
     build_dependencies:
       - host-c-toolchain
-      - glibc
 #@ end
 
 #@overlay/match by=overlay.all, expects=1

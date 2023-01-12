@@ -21,7 +21,6 @@ build_system: ninja
 build_dependencies:
   - host-c-toolchain
   - cmake
-  - glibc
 #@ end
 
 #@overlay/match by=overlay.all, expects=1

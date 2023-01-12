@@ -24,8 +24,9 @@ configure: |
 build_system: make
 build_dependencies:
   - host-cxx-toolchain
-  - glibc
   - python
+dependencies:
+  - host-libcxx
 #@ end
 
 #@overlay/match by=overlay.all, expects=1

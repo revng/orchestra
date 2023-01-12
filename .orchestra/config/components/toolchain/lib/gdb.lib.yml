@@ -109,7 +109,6 @@ dependencies:
   - source-highlight
 build_dependencies:
   - host-cxx-toolchain
-  - glibc
   - zlib
 #@ end
 

@@ -26,7 +26,6 @@ configure: |
 build_system: make
 build_dependencies:
   - host-c-toolchain
-  - glibc
 dependencies:
   - zlib
 #@ end

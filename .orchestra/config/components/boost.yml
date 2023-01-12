@@ -40,7 +40,6 @@ install: |
 
 build_dependencies:
   - host-cxx-toolchain
-  - glibc
 dependencies:
   - host-libcxx
   - libunwind
