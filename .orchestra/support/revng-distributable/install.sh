@@ -19,6 +19,7 @@ grep -vP '^include/(?!revng/PipelineC/(Prototypes|ForwardDeclarationsC)\.h)' | \
 grep -vE \
   -e 'cmake' \
   -e 'node_modules' \
+  -e 'node_cache' \
   -e 'man/' \
   -e '^lib64/llvm/clang-release/' \
   -e '^lib64/pkgconfig/' \
