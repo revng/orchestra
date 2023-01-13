@@ -9,7 +9,6 @@ extra_cmake_args: #@ cmake_boost_configuration
 extra_compiler_flags: #@ data.values.revng_extra_compiler_flags
 build_dependencies:
   - host-cxx-toolchain
-  - revng-js-prerequisites
 dependencies:
   - boost
   - host-libcxx
@@ -17,6 +16,7 @@ dependencies:
   - qemu
   - revng-python-dependencies
   - toolchain/host/binutils
+  - revng-js-prerequisites
 use_asan: false
 post_install_script: |
   if [ "$RUN_TESTS" -eq 1 ]; then
