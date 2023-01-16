@@ -22,7 +22,7 @@ install: |
   ln -s tclsh8.6 "$DESTDIR$ORCHESTRA_ROOT/bin/tclsh"
   ls "$DESTDIR$ORCHESTRA_ROOT/bin/tclsh"
 build_dependencies:
-  - glibc
+  - host-c-toolchain
 #@ end
 
 #@overlay/match by=overlay.all, expects=1
