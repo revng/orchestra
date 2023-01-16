@@ -19,9 +19,9 @@ configure: |
     --disable-tcl
 build_system: make
 build_dependencies:
+  - host-c-toolchain
   - tcl
 dependencies:
-  - glibc
   - readline
 #@ end
 

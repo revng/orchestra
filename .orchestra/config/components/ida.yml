@@ -10,7 +10,6 @@ components:
     builds:
        default:
         dependencies:
-          - glibc
           - ncurses
         configure: |
           mkdir -p "$BUILD_DIR"
