@@ -9,7 +9,6 @@
 ---
 #@ def cmake_opts():
 - -DBUILD_SHARED_LIBS=ON
-- -DLLVM_ENABLE_ZLIB=ON
 - -DLLVM_ENABLE_PROJECTS="clang;mlir"
 - -DCMAKE_C_COMPILER="(@= data.values.regular_c_compiler @)"
 - -DCMAKE_CXX_COMPILER="(@= data.values.regular_cxx_compiler @)"
@@ -59,6 +58,7 @@ builds:
       dependencies:
         - host-libcxx
         - libunwind
+        - libedit
         - zlib
         - lit
       #@ if/end ndebug == False:

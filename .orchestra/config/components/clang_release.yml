@@ -44,6 +44,7 @@ build_dependencies:
 dependencies:
   - gcc-host-toolchain
   - libunwind
+  - libedit
   - zlib
 #@ end
 
@@ -115,6 +116,7 @@ build_dependencies:
 dependencies:
   - gcc-host-toolchain
   - libunwind
+  - libedit
   - zlib
 #@ end
 
@@ -219,6 +221,7 @@ build_dependencies:
 dependencies:
   - gcc-host-toolchain
   - libunwind
+  - libedit
   - zlib
 #@ end
 
