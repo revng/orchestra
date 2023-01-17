@@ -17,6 +17,7 @@ environment:
   - ORCHESTRA_NODE_CACHE: $ORCHESTRA_ROOT/share/node_cache
   - HARD_FLAGS_YARN: "--non-interactive --no-progress --frozen-lockfile --offline"
   - TERMINFO: $ORCHESTRA_ROOT/share/terminfo
+  - WINEPREFIX: $ORCHESTRA_DOTDIR/wine-prefix
   - HARD_FLAGS_COMPILE: #@ str(datavalue("hard_flags_compile"))
   - HARD_FLAGS_CXX_CLANG: #@ str(datavalue("hard_flags_cxx_clang"))
   - HARD_FLAGS_CLANG: #@ str(datavalue("hard_flags_clang"))

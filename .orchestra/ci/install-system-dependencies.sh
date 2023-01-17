@@ -78,8 +78,6 @@ PACKAGES+=(python3-cffi)
 PACKAGES+=(doxygen)
 PACKAGES+=(shellcheck)
 PACKAGES+=(nodejs)
-PACKAGES+=(wine)
-PACKAGES+=(wine32)
 PACKAGES+=(xxd)
 
 #
