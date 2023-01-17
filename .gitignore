@@ -6,4 +6,5 @@ sources
 .orchestra/source_archives
 .orchestra/cache
 .orchestra/config/user_*.yml
+.orchestra/wine-prefix
 .idea
