@@ -8,7 +8,7 @@
 #@ source_url = "https://github.com/revng/llvm-project/archive/feature/clang-release-16.tar.gz"
 
 #! Disable this to facilitate LLVM update
-#@ llvm_enable_pgo_lto = True
+#@ llvm_enable_pgo_lto = False
 
 #@ if llvm_enable_pgo_lto:
 ---
