@@ -237,7 +237,7 @@ configure: |
 
   sed -i 's|GIT_FOUND|FALSE|g' "$BUILD_DIR/source/llvm/cmake/modules/VersionFromVCS.cmake"
   export HARD_FLAGS_CXX_CLANG=""
-  (@= configure_llvm(cmake_build_type="Release", cflags="-w -pthread", additional_cmake_options=cmake_runtime_opts(), source_dir="$BUILD_DIR/source") @)
+  (@= configure_llvm(cmake_build_type="Release", cflags="-pthread", additional_cmake_options=cmake_runtime_opts(), source_dir="$BUILD_DIR/source") @)
 install: |
   export HARD_FLAGS_CXX_CLANG=""
 
@@ -248,8 +248,6 @@ install: |
   (@= ninja @) -v install-runtimes
 
   # Run tests
-  export HARD_FLAGS_C_CLANG="-w"
-  export HARD_FLAGS_CXX_CLANG="-w"
   if test "$RUN_TESTS" -eq 1; then
     (@= ninja @) check-runtimes
   fi
