@@ -212,6 +212,7 @@ install: |
   cp -a "$COMPILER_WRAPPER" clang-tidy
 
 build_dependencies:
+  - glibc
   - cmake
   - ninja
 #@ if llvm_enable_pgo_lto:
