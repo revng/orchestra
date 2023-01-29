@@ -125,7 +125,6 @@ dependencies:
 ---
 #@ def cmake_release_opts():
 - -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;clang-tools-extra;lld"
-- -DLLVM_ENABLE_RUNTIMES="libcxxabi;libcxx"
 - -DBUILD_SHARED_LIBS=ON
 - -DLIBCXXABI_HAS_CXA_THREAD_ATEXIT_IMPL=0
 - -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT/lib/llvm/clang-release"
@@ -177,10 +176,6 @@ install: |
     (@= ninja @) check-all
   fi
 
-  # Fix libc++
-  rm "${DESTDIR}${ORCHESTRA_ROOT}/lib/llvm/clang-release/lib/libc++.so" || true
-  echo 'INPUT(libc++.so.1 -lc++abi -lpthread)' > "${DESTDIR}${ORCHESTRA_ROOT}/lib/llvm/clang-release/lib/libc++.so"
-
   # Symlink to /lib/llvm/clang-release/bin/* to /bin
   for EXECUTABLE in "${DESTDIR}${ORCHESTRA_ROOT}/lib/llvm/clang-release/bin/"*; do
     ln \
@@ -192,12 +187,6 @@ install: |
       ) \
       "${DESTDIR}${ORCHESTRA_ROOT}/bin"
   done
-
-  # Save libc++ files for later
-  "$ORCHESTRA_DOTDIR"/support/save-for-later \
-    -i "${DESTDIR}${ORCHESTRA_ROOT}/lib/llvm/clang-release" \
-    clang-runtime \
-    '^lib\/libc\+\+[^/]*$'
 
   # Leave `opt`, `llvm-config` and `llvm-symbolizer` to the `llvm` component
   rm -f "${DESTDIR}${ORCHESTRA_ROOT}/bin/opt"*
@@ -227,6 +216,57 @@ dependencies:
   - zlib
 #@ end
 
+#@yaml/text-templated-strings
+---
+#@ def cmake_runtime_opts():
+- -DCMAKE_C_COMPILER="(@= data.values.regular_c_compiler @)"
+- -DCMAKE_CXX_COMPILER="(@= data.values.regular_cxx_compiler @)"
+- -DLLVM_ENABLE_RUNTIMES="libcxxabi;libcxx"
+- -DBUILD_SHARED_LIBS=ON
+- -DLIBCXXABI_HAS_CXA_THREAD_ATEXIT_IMPL=0
+- -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT/lib/llvm/clang-release"
+- -DCMAKE_INSTALL_RPATH="$RPATH_PLACEHOLDER/lib/llvm/clang-release/lib:$RPATH_PLACEHOLDER/lib"
+#@ end
+
+#@yaml/text-templated-strings
+---
+#@ def clang_runtime_args():
+license: source/llvm/LICENSE.TXT
+configure: |
+  extract.sh --into "$BUILD_DIR/source" "(@= source_url @)"
+
+  sed -i 's|GIT_FOUND|FALSE|g' "$BUILD_DIR/source/llvm/cmake/modules/VersionFromVCS.cmake"
+  export HARD_FLAGS_CXX_CLANG=""
+  (@= configure_llvm(cmake_build_type="Release", cflags="-w -pthread", additional_cmake_options=cmake_runtime_opts(), source_dir="$BUILD_DIR/source") @)
+install: |
+  export HARD_FLAGS_CXX_CLANG=""
+
+  cd "$BUILD_DIR"
+
+  # Build
+  (@= ninja @) -v runtimes
+  (@= ninja @) -v install-runtimes
+
+  # Run tests
+  export HARD_FLAGS_C_CLANG="-w"
+  export HARD_FLAGS_CXX_CLANG="-w"
+  if test "$RUN_TESTS" -eq 1; then
+    (@= ninja @) check-runtimes
+  fi
+
+  # Fix libc++
+  rm "${DESTDIR}${ORCHESTRA_ROOT}/lib/llvm/clang-release/lib/libc++.so" || true
+  echo 'INPUT(libc++.so.1 -lc++abi -lpthread)' > "${DESTDIR}${ORCHESTRA_ROOT}/lib/llvm/clang-release/lib/x86_64-unknown-linux-gnu/libc++.so"
+build_dependencies:
+  - glibc
+  - cmake
+  - ninja
+  - clang-release
+  - gcc-host-toolchain
+dependencies:
+  - libunwind
+#@ end
+
 #@overlay/match by=overlay.all, expects=1
 #@overlay/match-child-defaults missing_ok=True
 ---
@@ -236,3 +276,4 @@ components:
   clang-profiling-data: #@ single_build_component(**clang_profiling_data_args())
 #@ end
   clang-release: #@ single_build_component(**clang_release_args())
+  clang-runtime: #@ single_build_component(**clang_runtime_args())
