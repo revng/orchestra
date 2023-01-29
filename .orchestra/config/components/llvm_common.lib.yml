@@ -30,6 +30,7 @@
     -DLLVM_INCLUDE_GO_TESTS=OFF \
     -DLLVM_ENABLE_ZLIB=ON \
     -DLLVM_ENABLE_LIBEDIT=ON \
+    -DLLVM_ENABLE_LIBXML2=OFF \
     (@= expand_args(additional_cmake_options) @) \
     -Wno-dev
 #@ end
