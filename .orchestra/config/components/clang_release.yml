@@ -39,6 +39,7 @@ install: |
   cp -a "$COMPILER_WRAPPER" clang++
   cp -a "$COMPILER_WRAPPER" clang-tidy
 build_dependencies:
+  - glibc
   - cmake
   - ninja
 dependencies:
@@ -110,6 +111,7 @@ install: |
   mkdir -p "$PROFDATA_DIR"
   llvm-profdata merge -output="$PROFDATA_DIR/clang-release.prof" $BUILD_DIR/profiles/*.profraw
 build_dependencies:
+  - glibc
   - cmake
   - ninja
   - clang-vanilla
@@ -212,6 +214,7 @@ install: |
   cp -a "$COMPILER_WRAPPER" clang-tidy
 
 build_dependencies:
+  - glibc
   - cmake
   - ninja
 #@ if llvm_enable_pgo_lto:
