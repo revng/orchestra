@@ -124,7 +124,8 @@ dependencies:
 
 ---
 #@ def cmake_release_opts():
-- -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;libcxxabi;libcxx;clang-tools-extra;lld"
+- -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;clang-tools-extra;lld"
+- -DLLVM_ENABLE_RUNTIMES="libcxxabi;libcxx"
 - -DBUILD_SHARED_LIBS=ON
 - -DLIBCXXABI_HAS_CXA_THREAD_ATEXIT_IMPL=0
 - -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT/lib/llvm/clang-release"
