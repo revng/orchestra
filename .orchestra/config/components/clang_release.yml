@@ -239,6 +239,7 @@ configure: |
   export HARD_FLAGS_CXX_CLANG=""
   (@= configure_llvm(cmake_build_type="Release", cflags="-pthread", additional_cmake_options=cmake_runtime_opts(), source_dir="$BUILD_DIR/source") @)
 install: |
+  # Disable -stdlib=libc++
   export HARD_FLAGS_CXX_CLANG=""
 
   cd "$BUILD_DIR"
