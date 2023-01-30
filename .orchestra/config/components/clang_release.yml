@@ -225,6 +225,7 @@ dependencies:
   - zlib
 #@ end
 
+  # Disable -stdlib=libc++
 #@overlay/match by=overlay.all, expects=1
 #@overlay/match-child-defaults missing_ok=True
 ---
