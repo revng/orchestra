@@ -11,7 +11,7 @@
 #! invalidate binary archives and require recompiling
 #! a large number of components
 
-#@ clang_release_version = "12.0.0"
+#@ clang_release_version = "16.0.0"
 #@ gcc_host_version = "11.2.0"
 
 #@data/values
