@@ -17,6 +17,7 @@
 - -DBUILD_SHARED_LIBS=OFF
 - -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT/clang-vanilla"
 - -DLLVM_TARGETS_TO_BUILD="X86"
+- -DCOMPILER_RT_INCLUDE_TESTS=OFF
 #@ end
 
 #@yaml/text-templated-strings
@@ -53,6 +54,7 @@ dependencies:
 #@ def cmake_profiling_data_opts():
 - -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;libcxxabi;libcxx;clang-tools-extra;lld"
 - -DBUILD_SHARED_LIBS=OFF
+- -DCOMPILER_RT_INCLUDE_TESTS=OFF
 - -DLLVM_ENABLE_LTO=Thin
 - -DLLVM_USE_LINKER=lld
 - -DLLVM_BUILD_INSTRUMENTED=IR
@@ -130,6 +132,7 @@ dependencies:
 - -DBUILD_SHARED_LIBS=ON
 - -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT/lib/llvm/clang-release"
 - -DCMAKE_INSTALL_RPATH="$RPATH_PLACEHOLDER/lib/llvm/clang-release/lib:$RPATH_PLACEHOLDER/lib"
+- -DCOMPILER_RT_INCLUDE_TESTS=OFF
 #@ if llvm_enable_pgo_lto:
 - -DLLVM_ENABLE_LTO=Thin
 - -DLLVM_USE_LINKER=lld
@@ -147,11 +150,6 @@ dependencies:
 license: source/llvm/LICENSE.TXT
 configure: |
   extract.sh --into "$BUILD_DIR/source" "(@= source_url @)"
-
-  # compiler-rt tests fail abundantly (in the CI only)
-  find "$BUILD_DIR/source/compiler-rt/test" -name "lit.*" -type f | while read FILE; do
-    echo > "$FILE"
-  done
 
   sed -i 's|GIT_FOUND|FALSE|g' "$BUILD_DIR/source/llvm/cmake/modules/VersionFromVCS.cmake"
   (@ if llvm_enable_pgo_lto: @)
