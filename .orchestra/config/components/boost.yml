@@ -20,6 +20,12 @@ configure: |
   extract.sh --into "$BUILD_DIR" "https://boostorg.jfrog.io/artifactory/main/release/1.81.0/source/boost_1_81_0.tar.bz2"
   cd "$BUILD_DIR"
 
+  # Use --target=x86_64-unknown-linux-gnu instead --target=x86_64-pc-linux
+  sed \
+    -i \
+    's/"--target=.*"/"--target=x86_64-unknown-linux-gnu"/' \
+    tools/build/src/tools/clang.jam
+
   ./bootstrap.sh \
     --prefix="$ORCHESTRA_ROOT" \
     --with-libraries=(@= seq_join(boost_libs(), ",") @) \
