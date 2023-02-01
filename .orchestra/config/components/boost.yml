@@ -17,8 +17,7 @@ license: LICENSE_1_0.txt
 configure: |
   mkdir -p "$BUILD_DIR"
 
-  extract.sh --into "$BUILD_DIR" "https://downloads.sourceforge.net/project/boost/boost/1.72.0/boost_1_72_0.tar.bz2"
-  patch-if-exists "${ORCHESTRA_DOTDIR}/patches/boost-1.63.0-icl-disable-LessThanComparableConcept.patch" "$BUILD_DIR"
+  extract.sh --into "$BUILD_DIR" "https://boostorg.jfrog.io/artifactory/main/release/1.81.0/source/boost_1_81_0.tar.bz2"
   cd "$BUILD_DIR"
 
   ./bootstrap.sh \
