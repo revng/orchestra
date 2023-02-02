@@ -10,7 +10,7 @@
 license: COPYING
 configure: |
   mkdir -p "$BUILD_DIR"
-  echo "Rebuilding everything"
+  echo "Rebuilding everything again"
   extract.sh --into "$BUILD_DIR" "(@= source_url @)"
   cd "$BUILD_DIR" && ./configure \
     --prefix="$ORCHESTRA_ROOT" \
