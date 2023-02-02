@@ -113,12 +113,46 @@ def remove_prefix_argument(args, prefix):
 def replace_output(args, new_output):
     return remove_prefix_argument(args, "-o") + ["-o", new_output]
 
+
+def starts_with_any(string, prefixes):
+    for prefix in prefixes:
+        if string.startswith(prefix):
+            return True
+    return False
+
+
+def filter_disallowed_paths(arguments, variable, target_argument):
+    allowed_prefixes = os.environ.get(variable, "").split(":")
+
+    if not arguments or not allowed_prefixes:
+        return arguments
+
+    merged = [arguments[0]]
+    for previous_argument, argument in zip(arguments[:-1], arguments[1:]):
+        if previous_argument == target_argument:
+            merged[-1] += argument
+        else:
+            merged.append(argument)
+    arguments = merged
+
+    return [argument
+            for argument
+            in arguments
+            if (not argument.startswith(target_argument)
+                or starts_with_any(os.path.realpath(argument[len(target_argument):]),
+                                   allowed_prefixes))]
+
+
 def main():
     sys.argv = replace_argv0(sys.argv)
 
     disable_wrapper = int(os.environ.get("HARD_FLAGS_IGNORE", "0")) != 0
     if disable_wrapper or "-S" in sys.argv:
         exec(other(sys.argv))
+
+    sys.argv = filter_disallowed_paths(sys.argv, "HARD_ALLOWED_INCLUDE_PATH", "-I")
+    sys.argv = filter_disallowed_paths(sys.argv, "HARD_ALLOWED_INCLUDE_PATH", "-isystem")
+    sys.argv = filter_disallowed_paths(sys.argv, "HARD_ALLOWED_LIBRARY_PATH", "-L")
 
     prefix = "HARD_FLAGS_"
     for name, value in os.environ.items():
