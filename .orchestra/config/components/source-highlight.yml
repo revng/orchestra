@@ -15,7 +15,9 @@ configure: |
   cd "$BUILD_DIR"
   sed 's/ throw [(]IOException[)]//g' -i lib/srchilite/fileutil.h lib/srchilite/fileutil.cc
 
-  CC=clang CXX=clang++ ./configure \
+  CC=clang \
+  CXX="clang++ -std=c++11" \
+  ./configure \
     --prefix="$ORCHESTRA_ROOT" \
     --with-boost="$ORCHESTRA_ROOT" \
     --with-sysroot="$ORCHESTRA_ROOT" \
