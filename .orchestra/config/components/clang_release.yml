@@ -250,8 +250,9 @@ install: |
   fi
 
   # Fix libc++
-  rm "${DESTDIR}${ORCHESTRA_ROOT}/lib/llvm/clang-release/lib/libc++.so" || true
-  echo 'INPUT(libc++.so.1 -lc++abi -lpthread)' > "${DESTDIR}${ORCHESTRA_ROOT}/lib/llvm/clang-release/lib/x86_64-unknown-linux-gnu/libc++.so"
+  LIBCXX="${DESTDIR}${ORCHESTRA_ROOT}/lib/llvm/clang-release/lib/x86_64-unknown-linux-gnu/libc++.so"
+  rm "${LIBCXX}"
+  echo 'INPUT(libc++.so.1 -lc++abi -lpthread)' > "${LIBCXX}"
 build_dependencies:
   - glibc
   - cmake
