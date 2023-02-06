@@ -1,8 +1,10 @@
 FROM ubuntu:22.04
 
+COPY sources.list /etc/apt/sources.list
+COPY sources.list.hetzner /etc/apt/sources.list.hetzner
+
 COPY install-dependencies.sh \
      install-system-dependencies.sh \
-     install-node-dependencies.sh \
      /
 
 RUN /install-dependencies.sh \
