@@ -48,7 +48,7 @@ builds:
 
       # Build vscode
       revng/web/build.sh \
-        "${DESTDIR}${ORCHESTRA_ROOT}/share/vscode-web.tar.xz" \
+        "${DESTDIR}${ORCHESTRA_ROOT}/share/vscode-web-vanilla.tar.xz" \
         (@= "1" if flavor == "default" else "0" @)
   #@ end
 #@ end
