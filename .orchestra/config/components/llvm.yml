@@ -13,6 +13,7 @@
 - -DCMAKE_C_COMPILER="(@= data.values.regular_c_compiler @)"
 - -DCMAKE_CXX_COMPILER="(@= data.values.regular_cxx_compiler @)"
 - -DLLVM_ENABLE_OCAMLDOC=OFF
+- -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT/lib/llvm/llvm"
 #@ end
 
 #@yaml/text-templated-strings
@@ -35,22 +36,6 @@ builds:
         if test "$RUN_TESTS" -eq 1; then
           (@= ninja @) check-all
         fi
-
-        # Keep only `opt`, `llvm-config` and mlir executables from `/bin`
-        mkdir "${DESTDIR}${ORCHESTRA_ROOT}/bin-tmp"
-
-        for EXECUTABLE_PREFIX in opt llvm-config llvm-symbolizer mlir-; do
-          mv \
-            "${DESTDIR}${ORCHESTRA_ROOT}/bin/$EXECUTABLE_PREFIX"* \
-            "${DESTDIR}${ORCHESTRA_ROOT}/bin-tmp"
-        done
-
-        rm -rf "${DESTDIR}${ORCHESTRA_ROOT}/bin"
-
-        mv \
-          "${DESTDIR}${ORCHESTRA_ROOT}/bin-tmp" \
-          "${DESTDIR}${ORCHESTRA_ROOT}/bin"
-
       build_dependencies:
         - cmake
         - ninja
