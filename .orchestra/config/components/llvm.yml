@@ -30,6 +30,7 @@ builds:
     (@= flavor @):
       configure: #@ configure_llvm(cmake_build_type=build_type, cflags=cflags, additional_cmake_options=cmake_opts(), source_dir="$SOURCE_DIR")
       install: |
+        # Rebuild
         cd "$BUILD_DIR"
         (@= ninja @) install
 
