@@ -68,22 +68,18 @@ PACKAGES+=(doxygen)
 #
 # qemu dependencies
 #
-PACKAGES+=(libglib2.0-dev)
 PACKAGES+=(python2)
 
 #
 # revng dependencies
 #
-PACKAGES+=(python3-cffi)
 PACKAGES+=(doxygen)
 PACKAGES+=(shellcheck)
 PACKAGES+=(nodejs)
-PACKAGES+=(xxd)
 
 #
 # repackage-apple-sdk dependencies
 #
-PACKAGES+=(liblzma-dev)
 PACKAGES+=(p7zip-full)
 
 #
