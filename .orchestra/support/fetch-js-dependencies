@@ -81,7 +81,7 @@ def parse_yarn_dependencies(parsed_lockfile: Dict[str, dict]):
             else:
                 dep_hash = "none"
             info.append(PackageInfo(dep_url, basename, dep_hash))
-        elif dep_info["peer"] is True:
+        elif dep_info["version"] == "0.0.0" or dep_info["peer"] is True:
             pass
         else:
             raise ValueError(f"Dependency {name} does not have a download url")
