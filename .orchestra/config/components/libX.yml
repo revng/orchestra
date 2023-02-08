@@ -1,0 +1,79 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:overlay", "overlay")
+#@ load("@ytt:template", "template")
+
+#@ load("/lib/create_component.lib.yml", "single_build_component")
+
+#@yaml/text-templated-strings
+---
+#@ def x_args(source_url, extra_args="", dependencies=[], build_dependencies=[]):
+license: COPYING
+configure: |
+  mkdir -p "$BUILD_DIR"
+  extract.sh --into "$BUILD_DIR" "(@= source_url @)"
+
+  cd "$BUILD_DIR"
+  ./configure \
+    --prefix="$ORCHESTRA_ROOT" \
+    --enable-shared \
+    --disable-static \
+    --disable-selective-werror(@= " \\" if extra_args != "" else "" @)
+    (@= extra_args @)
+build_system: make
+build_dependencies:
+  - host-c-toolchain
+  - #@ template.replace(build_dependencies)
+dependencies: #@ dependencies
+#@ end
+
+#@yaml/text-templated-strings
+---
+#@ def x_matrix():
+x11/xcb-proto:
+  source_url: "https://xorg.freedesktop.org/archive/individual/proto/xcb-proto-1.15.tar.xz"
+  build_dependencies: ["python"]
+x11/xproto:
+  source_url: "https://xorg.freedesktop.org/archive/individual/proto/xproto-7.0.31.tar.bz2"
+  extra_args: "--without-xmlto --without-fop --without-xsltproc --disable-specs"
+x11/xextproto:
+  source_url: "https://xorg.freedesktop.org/archive/individual/proto/xextproto-7.3.0.tar.bz2"
+  extra_args: "--without-xmlto --without-fop --without-xsltproc --disable-specs"
+x11/kbproto:
+  source_url: "https://xorg.freedesktop.org/archive/individual/proto/kbproto-1.0.7.tar.bz2"
+  extra_args: "--without-xmlto --without-fop --without-xsltproc --disable-specs"
+x11/inputproto:
+  source_url: "https://xorg.freedesktop.org/archive/individual/proto/inputproto-2.3.tar.bz2"
+  extra_args: "--without-xmlto --without-fop --without-xsltproc --disable-specs"
+xtrans:
+  source_url: "https://xorg.freedesktop.org/releases/individual/lib/xtrans-1.4.0.tar.bz2"
+libxau:
+  source_url: "https://xorg.freedesktop.org/releases/individual/lib/libXau-1.0.11.tar.xz"
+  dependencies: ["x11/xproto"]
+libxcb:
+  source_url: "https://xorg.freedesktop.org/archive/individual/lib/libxcb-1.15.tar.xz"
+  extra_args: "--disable-devel-docs --disable-selinux"
+  dependencies: ["libxau"]
+  build_dependencies: ["python", "x11/xcb-proto"]
+libx11:
+  source_url: "https://www.x.org/releases/individual/lib/libX11-1.8.4.tar.xz"
+  extra_args: "--without-xmlto --without-fop --without-xsltproc --disable-specs --enable-ipv6"
+  dependencies: ["libxcb"]
+  build_dependencies: ["xtrans", "x11/xproto", "x11/xextproto", "x11/kbproto", "x11/inputproto"]
+libxkbfile:
+  source_url: "https://www.x.org/releases/individual/lib/libxkbfile-1.1.2.tar.xz"
+  dependencies: ["libx11"]
+#@ end
+
+#@yaml/text-templated-strings
+---
+#@ def x_components():
+#@ for name, options in dict(x_matrix()).items():
+(@= name @): #@ single_build_component(**x_args(**options))
+#@ end
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  _: #@ template.replace(x_components())

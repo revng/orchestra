@@ -13,6 +13,8 @@ builds:
   (@= flavor @):
     build_dependencies:
     - revng-js-prerequisites
+    - libxkbfile
+    - libx11
     configure: |
       rm -rf "$BUILD_DIR/vscode"
       mkdir -p "$BUILD_DIR/vscode"

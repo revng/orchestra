@@ -101,12 +101,6 @@ PACKAGES+=(wine)
 PACKAGES+=(wine32)
 
 #
-# vscode-web build dependencies
-#
-PACKAGES+=(libsecret-1-dev)
-PACKAGES+=(libxkbfile-dev)
-
-#
 # vscode-web runtime dependencies
 #
 PACKAGES+=(ripgrep)
