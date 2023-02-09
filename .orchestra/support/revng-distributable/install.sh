@@ -19,6 +19,7 @@ grep -vP '^include/(?!revng/PipelineC/(Prototypes|ForwardDeclarationsC)\.h)' | \
 grep -vE \
   -e 'cmake' \
   -e 'node_modules' \
+  -e 'node_cache' \
   -e 'man/' \
   -e '^lib64/llvm/clang-release/' \
   -e '^lib64/pkgconfig/' \
@@ -45,13 +46,15 @@ echo "Creating environment"
 cp -a "$ORCHESTRA_DOTDIR/support/revng-distributable/environment" environment
 
 # shellcheck disable=SC2094
-orchestra environment | \
-  grep -E "^export (PATH|REVNG_TRANSLATE_LDFLAGS)" >> environment
-
-cat >> environment <<EOF
+{
+  orchestra environment | grep -E "^export (PATH|REVNG_TRANSLATE_LDFLAGS)"
+  cat <<EOF
 unset ORCHESTRA_DOTDIR
 unset ORCHESTRA_ROOT
+export REVNG_TRANSLATE_LDFLAGS="\$REVNG_TRANSLATE_LDFLAGS -L/lib -L/usr/lib -L/usr/lib/x86_64-linux-gnu"
 EOF
+} >> environment
+
 
 echo "Copying README.md"
 cp -a "$ORCHESTRA_DOTDIR/support/revng-distributable/README.md" .
@@ -115,7 +118,10 @@ find . -not -type d -not -path './revng/*' -delete
 find . -type d -empty -delete
 
 if [ "$RUN_TESTS" -eq 1 ]; then
-  cd "$DESTDIR/$ORCHESTRA_ROOT/revng"
-  ./revng daemon-self-test \
-          "$ORCHESTRA_ROOT/share/revng/test/tests/runtime/calc-x86-64-static-revng-qa.compiled-stripped-"*
+  TEST_BINARY=$(echo "$ORCHESTRA_ROOT/share/revng/test/tests/runtime/calc-x86-64-static-revng-qa.compiled-stripped-"*)
+  # Orchestra adds quite a few environment variables, which we want to avoid to use when doing self-test
+  # In order to launch self-test with as few environment variables as possible we:
+  # * use `env -i` to start with no environment variables
+  # * use `bash --login` to restore the ones provided at login (e.g. PATH)
+  env -i -C "$DESTDIR/$ORCHESTRA_ROOT/revng" bash --login -c "set -e; ./revng daemon-self-test \"$TEST_BINARY\""
 fi

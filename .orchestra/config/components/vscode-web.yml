@@ -13,6 +13,8 @@ builds:
   (@= flavor @):
     build_dependencies:
     - revng-js-prerequisites
+    - libxkbfile
+    - libx11
     configure: |
       rm -rf "$BUILD_DIR/vscode"
       mkdir -p "$BUILD_DIR/vscode"
@@ -48,7 +50,7 @@ builds:
 
       # Build vscode
       revng/web/build.sh \
-        "${DESTDIR}${ORCHESTRA_ROOT}/share/vscode-web.tar.xz" \
+        "${DESTDIR}${ORCHESTRA_ROOT}/share/vscode-web-vanilla.tar.xz" \
         (@= "1" if flavor == "default" else "0" @)
   #@ end
 #@ end

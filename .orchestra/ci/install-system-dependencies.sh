@@ -68,22 +68,18 @@ PACKAGES+=(doxygen)
 #
 # qemu dependencies
 #
-PACKAGES+=(libglib2.0-dev)
 PACKAGES+=(python2)
 
 #
 # revng dependencies
 #
-PACKAGES+=(python3-cffi)
 PACKAGES+=(doxygen)
 PACKAGES+=(shellcheck)
 PACKAGES+=(nodejs)
-PACKAGES+=(xxd)
 
 #
 # repackage-apple-sdk dependencies
 #
-PACKAGES+=(liblzma-dev)
 PACKAGES+=(p7zip-full)
 
 #
@@ -99,12 +95,6 @@ PACKAGES+=(p7zip-full)
 PACKAGES+=(winbind)
 PACKAGES+=(wine)
 PACKAGES+=(wine32)
-
-#
-# vscode-web build dependencies
-#
-PACKAGES+=(libsecret-1-dev)
-PACKAGES+=(libxkbfile-dev)
 
 #
 # vscode-web runtime dependencies

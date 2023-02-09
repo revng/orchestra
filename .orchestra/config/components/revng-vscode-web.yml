@@ -23,7 +23,7 @@ install: |
 
   INSTALL_DIR="${DESTDIR}${ORCHESTRA_ROOT}/share/vscode-web"
   mkdir -p "$INSTALL_DIR/static"
-  tar -xf "${ORCHESTRA_ROOT}/share/vscode-web.tar.xz" -C"$INSTALL_DIR"
+  tar -xf "${ORCHESTRA_ROOT}/share/vscode-web-vanilla.tar.xz" -C"$INSTALL_DIR"
 
   # Repackage vsixs inside the destionation directory
   # If the EXTENSIONS_DIR has been specified and exists we'll take each vsix file and unzip it,
