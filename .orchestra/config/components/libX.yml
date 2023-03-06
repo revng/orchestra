@@ -52,13 +52,12 @@ libxau:
 libxcb:
   source_url: "https://xorg.freedesktop.org/archive/individual/lib/libxcb-1.15.tar.xz"
   extra_args: "--disable-devel-docs --disable-selinux"
-  dependencies: ["libxau"]
-  build_dependencies: ["python", "x11/xcb-proto"]
+  dependencies: ["libxau", "x11/xcb-proto"]
+  build_dependencies: ["python"]
 libx11:
   source_url: "https://www.x.org/releases/individual/lib/libX11-1.8.4.tar.xz"
   extra_args: "--without-xmlto --without-fop --without-xsltproc --disable-specs --enable-ipv6"
-  dependencies: ["libxcb"]
-  build_dependencies: ["xtrans", "x11/xproto", "x11/xextproto", "x11/kbproto", "x11/inputproto"]
+  dependencies: ["libxcb", "xtrans", "x11/xproto", "x11/xextproto", "x11/kbproto", "x11/inputproto"]
 libxkbfile:
   source_url: "https://www.x.org/releases/individual/lib/libxkbfile-1.1.2.tar.xz"
   dependencies: ["libx11"]
