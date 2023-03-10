@@ -1,5 +1,6 @@
 #@ load("@ytt:overlay", "overlay")
 #@ load("/lib/make.lib.yml", "make")
+#@ load("/lib/ninja.lib.yml", "ninja")
 
 #@yaml/text-templated-strings
 ---
@@ -8,20 +9,21 @@ repository: llvm-project
 license: llvm/LICENSE.TXT
 builds:
   default:
-    dependencies:
-      - llvm
     build_dependencies:
       - cmake
+      - ninja
     configure: |
-      rm -rf "$BUILD_DIR"
-      mkdir -p $(dirname "$BUILD_DIR")
-      cp -far --reflink=auto "$SOURCE_DIR" "$BUILD_DIR"
+      mkdir -p "$BUILD_DIR"
+      rsync \
+        --archive --delete --quiet --exclude=.git \
+        "$SOURCE_DIR/" "$BUILD_DIR/"
       mkdir -p "$BUILD_DIR/build"
 
       sed 's|FILE_PATTERNS|#FILE_PATTERNS|' -i "$BUILD_DIR"/*/docs/doxygen.cfg.in
 
       cd "$BUILD_DIR/build";
       cmake "$BUILD_DIR/llvm" \
+        -GNinja \
         -DCMAKE_BUILD_TYPE="Debug" \
         -DLLVM_BUILD_DOCS=ON \
         -DLLVM_ENABLE_DOXYGEN=ON \
@@ -31,11 +33,7 @@ builds:
         -DLLVM_ENABLE_PROJECTS="clang;mlir" \
         -Wno-dev
     install: |
-      if ! test -s "$BUILD_DIR/build/docs/doxygen/html/Makefile"; then
-        (@= make @) -C "$BUILD_DIR/build" doxygen-llvm
-        (@= make @) -C "$BUILD_DIR/build" doxygen-clang
-        (@= make @) -C "$BUILD_DIR/build" doxygen-mlir
-      fi
+      (@= ninja @) -C "$BUILD_DIR/build" doxygen-llvm doxygen-clang doxygen-mlir
 
       function make_docset {
         cd "$1"
