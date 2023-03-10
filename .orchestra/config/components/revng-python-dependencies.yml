@@ -41,6 +41,7 @@ requirements: |-
   jsonschema
   networkx
   pefile
+  pycparser
   pydot
   pyelftools
 
