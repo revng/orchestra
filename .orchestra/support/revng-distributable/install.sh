@@ -123,5 +123,5 @@ if [ "$RUN_TESTS" -eq 1 ]; then
   # In order to launch self-test with as few environment variables as possible we:
   # * use `env -i` to start with no environment variables
   # * use `bash --login` to restore the ones provided at login (e.g. PATH)
-  env -i -C "$DESTDIR/$ORCHESTRA_ROOT/revng" bash --login -c "set -e; ./revng daemon-self-test \"$TEST_BINARY\""
+  env -i -C "$DESTDIR/$ORCHESTRA_ROOT/revng" bash --login -c "set -e; ./revng daemon-self-test --revng-c \"$TEST_BINARY\""
 fi
