@@ -86,6 +86,14 @@ def parse_packages(directories: List[str]):
 PACKAGES = parse_packages(sys.argv[2:])
 
 
+def find_file(filename: str) -> Path | None:
+    for directory in sys.argv[2:]:
+        possible_path = Path(directory) / filename
+        if possible_path.is_file():
+            return possible_path
+    return None
+
+
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):  # noqa: N802
         if match := re.match(r"\/(?P<package>[^/]*)$", self.path):
@@ -100,17 +108,19 @@ class Handler(BaseHTTPRequestHandler):
                 self.path,
             )
         ):
-            self.send_response(200)
-            self.send_header("Content-type", "application/octet-stream")
-            self.end_headers()
             filename = match["filename"]
             if "prefix" in match.groupdict() and match["prefix"]:
                 filename = f"{match['prefix']}-{filename}"
-            for directory in sys.argv[2:]:
-                if (Path(directory) / filename).is_file():
-                    with open(f"{directory}/{filename}", "rb") as f:
-                        copyfileobj(f, self.wfile)
-                    break
+
+            file_path = find_file(filename)
+            if file_path is not None:
+                self.send_response(200)
+                self.send_header("Content-type", "application/octet-stream")
+                self.end_headers()
+                with open(file_path, "rb") as f:
+                    copyfileobj(f, self.wfile)
+            else:
+                self.send_response(404)
         else:
             self.send_error(404)
 
