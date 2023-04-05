@@ -31,6 +31,7 @@
     -DLLVM_ENABLE_ZLIB=ON \
     -DLLVM_ENABLE_LIBEDIT=ON \
     -DLLVM_ENABLE_LIBXML2=OFF \
+    -DLLVM_ENABLE_ZSTD=OFF \
     (@= expand_args(additional_cmake_options) @) \
     -Wno-dev
 #@ end
