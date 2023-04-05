@@ -36,9 +36,14 @@ builds:
       cd "$BUILD_DIR"
       cp -a "$SOURCE_DIR/"package{,-lock}.json .
       "$ORCHESTRA_DOTDIR"/support/fetch-js-dependencies npm -o cache/
+      sha256sum package-lock.json > package-lock.json.sha256
 
     install: |
       cd "$BUILD_DIR"
+      if ! sha256sum --quiet -c package-lock.json.sha256; then
+        echo "The package-lock.json has changed, please clean or reconfigure" > /dev/stderr
+        exit 1
+      fi
 
       function do_install() {
         cd "$BUILD_DIR"

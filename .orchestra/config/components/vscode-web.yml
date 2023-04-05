@@ -25,17 +25,36 @@ builds:
         --exclude-from=<(git -C "$SOURCE_DIR" ls-files --exclude-standard -oi --directory) \
         "$SOURCE_DIR/" .
 
-      find . -type f -name yarn.lock -printf '%h\n' | \
+      true > "$BUILD_DIR/yarn-cat-lock"
+      find . -type f -name yarn.lock ! -path '*/node_modules/*' -printf '%h\n' | sort | \
       while IFS= read -r directory; do
         pushd "$directory" &> /dev/null
+        cat yarn.lock >> "$BUILD_DIR/yarn-cat-lock"
         "$ORCHESTRA_DOTDIR"/support/fetch-js-dependencies yarn
         popd &> /dev/null
       done
+
+      cd "$BUILD_DIR"
+      sha256sum yarn-cat-lock > yarn-cat-lock.sha256
+
     install: |
       cd "$BUILD_DIR/vscode"
       rsync -aq \
         --exclude-from=<(git -C "$SOURCE_DIR" ls-files --exclude-standard -oi --directory) \
         "$SOURCE_DIR/" .
+
+      true > "$BUILD_DIR/yarn-cat-lock"
+      find . -type f -name yarn.lock ! -path '*/node_modules/*' -printf '%h\n' | sort | \
+      while IFS= read -r directory; do
+        cat "$directory/yarn.lock" >> "$BUILD_DIR/yarn-cat-lock"
+      done
+
+      pushd "$BUILD_DIR" &> /dev/null
+      if ! sha256sum --quiet -c yarn-cat-lock.sha256; then
+        echo "One or more package locks have changed since configure, please reconfigure or clean" > /dev/stderr
+        exit 1
+      fi
+      popd &> /dev/null
 
       # Install dependencies, this process is mostly offline with the following exceptions
       # (to the best of our knowledge):
