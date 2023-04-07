@@ -34,8 +34,7 @@ grep -vE \
   -e '^share/terminfo/' | \
 rsync \
   --archive \
-  --verbose \
-  --progress \
+  --quiet \
   --files-from=- \
   "$ORCHESTRA_ROOT/." \
   "${DESTDIR}${ORCHESTRA_ROOT}/revng/root/."
@@ -107,6 +106,10 @@ for IDX in share/orchestra/*.idx; do
 done
 rm "$TMP_IDX"
 
+# Copying x86_64-calc for smoke tests
+TEST_BINARY=$(echo "$ORCHESTRA_ROOT/share/revng/test/tests/runtime/calc-x86-64-static-revng-qa.compiled-stripped-"*)
+cp -a "$TEST_BINARY" share/revng/calc-x86-64-static
+
 echo "Generating checksums"
 cd "$DESTDIR/$ORCHESTRA_ROOT/revng"
 find root -type f -print0 | xargs -0 -P"$JOBS" -n100 sha256sum > checksums.sha256
@@ -118,7 +121,6 @@ find . -not -type d -not -path './revng/*' -delete
 find . -type d -empty -delete
 
 if [ "$RUN_TESTS" -eq 1 ]; then
-  TEST_BINARY=$(echo "$ORCHESTRA_ROOT/share/revng/test/tests/runtime/calc-x86-64-static-revng-qa.compiled-stripped-"*)
   # Orchestra adds quite a few environment variables, which we want to avoid to use when doing self-test
   # In order to launch self-test with as few environment variables as possible we:
   # * use `env -i` to start with no environment variables
