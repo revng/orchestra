@@ -21,7 +21,7 @@ else
 fi
 
 if test "$EUID" -ne 0; then
-    if which sudo >& /dev/null; then
+    if command -v sudo &> /dev/null; then
         ASROOT_PREFIX="sudo"
     elif test "$PRETEND" -eq 0; then
         fail "Not running as root and no sudo available"

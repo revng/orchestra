@@ -103,7 +103,7 @@ PACKAGES+=(ripgrep)
 
 apt-get -qq install --no-install-recommends --yes "${PACKAGES[@]}"
 
-if ! which git-lfs &> /dev/null; then
+if ! command -v git-lfs &> /dev/null; then
   curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash
   apt-get -qq install --no-install-recommends --yes git-lfs
 fi
