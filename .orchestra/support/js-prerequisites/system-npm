@@ -4,7 +4,7 @@ set -euo pipefail
 SCRIPT_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
 REAL_ROOT=$(dirname "$(realpath "$ORCHESTRA_ROOT")")
 
-for executable in $(which -a npm); do
+for executable in $(type -a npm | grep -Po '(?<=is ).*$'); do
     EXECUTABLE_DIR=$( dirname "$(realpath "$executable")")
     if [[ "$EXECUTABLE_DIR" != "$SCRIPT_DIR" && "$EXECUTABLE_DIR" != "$REAL_ROOT"* ]]; then
         SYSTEM_NPM="$executable"

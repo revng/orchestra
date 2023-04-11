@@ -34,7 +34,7 @@ builds:
           --disable-smartcard-nss \
           --disable-uuid \
           --disable-cap-ng \
-          --python="$(which python2)" \
+          --python="$(command -v python2)" \
           (@ if build_type == "Debug": @)--enable-debug (@ end @)\
           --extra-cflags="(@= cflags @)"
       install: |

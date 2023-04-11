@@ -120,7 +120,7 @@ fi
 
 # Make sure we can run orchestra
 export PATH="$HOME/.local/bin:$PATH"
-which orc >/dev/null
+command -v orc > /dev/null
 
 #
 # Prepare the user_options.yml file

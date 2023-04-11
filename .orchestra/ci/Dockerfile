@@ -2,7 +2,6 @@ FROM ubuntu:22.04
 
 COPY install-dependencies.sh \
      install-system-dependencies.sh \
-     install-node-dependencies.sh \
      /
 
 RUN /install-dependencies.sh \

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -euo pipefail
 
 export DEBIAN_FRONTEND=noninteractive
 
@@ -103,7 +103,10 @@ PACKAGES+=(ripgrep)
 
 apt-get -qq install --no-install-recommends --yes "${PACKAGES[@]}"
 
-if ! which git-lfs &> /dev/null; then
-  curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash
-  apt-get -qq install --no-install-recommends --yes git-lfs
+if ! command -v git-lfs &> /dev/null; then
+  LFS_URL="https://github.com/git-lfs/git-lfs/releases/download/v3.3.0/git-lfs-linux-amd64-v3.3.0.tar.gz"
+  curl -sL "$LFS_URL" | tar -xzf - -C'/usr/local/bin' --strip-components=1 'git-lfs-3.3.0/git-lfs'
+  echo "8c86bfbedd644e7b5d26c58bb858bc4478c5672b974d4a94cbc88cada4926b05 /usr/local/bin/git-lfs" | \
+    sha256sum --quiet -c -
+  git lfs install --skip-repo --system &> /dev/null
 fi
