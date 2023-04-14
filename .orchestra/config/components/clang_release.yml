@@ -52,7 +52,7 @@ dependencies:
 
 ---
 #@ def cmake_profiling_data_opts():
-- -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;libcxxabi;libcxx;clang-tools-extra;lld"
+- -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;clang-tools-extra;lld"
 - -DBUILD_SHARED_LIBS=OFF
 - -DCOMPILER_RT_INCLUDE_TESTS=OFF
 - -DLLVM_ENABLE_LTO=Thin
@@ -63,7 +63,6 @@ dependencies:
 - -DCMAKE_RANLIB=$ORCHESTRA_ROOT/clang-vanilla/bin/llvm-ranlib
 - -DCMAKE_C_COMPILER=$ORCHESTRA_ROOT/clang-vanilla/wrapped-bin/clang
 - -DCMAKE_CXX_COMPILER=$ORCHESTRA_ROOT/clang-vanilla/wrapped-bin/clang++
-- -DLIBCXXABI_HAS_CXA_THREAD_ATEXIT_IMPL=0
 - -DLLVM_TARGETS_TO_BUILD=X86
 #@ end
 
