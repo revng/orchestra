@@ -55,7 +55,6 @@ dependencies:
 - -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;clang-tools-extra;lld"
 - -DBUILD_SHARED_LIBS=OFF
 - -DCOMPILER_RT_INCLUDE_TESTS=OFF
-- -DLLVM_ENABLE_LTO=Thin
 - -DLLVM_USE_LINKER=lld
 - -DLLVM_BUILD_INSTRUMENTED=IR
 - -DLLVM_BUILD_RUNTIME=No
@@ -132,7 +131,6 @@ dependencies:
 - -DCMAKE_INSTALL_RPATH="$RPATH_PLACEHOLDER/lib/llvm/clang-release/lib:$RPATH_PLACEHOLDER/lib"
 - -DCOMPILER_RT_INCLUDE_TESTS=OFF
 #@ if llvm_enable_pgo_lto:
-- -DLLVM_ENABLE_LTO=Thin
 - -DLLVM_USE_LINKER=lld
 - -DCMAKE_AR=$ORCHESTRA_ROOT/clang-vanilla/bin/llvm-ar
 - -DCMAKE_RANLIB=$ORCHESTRA_ROOT/clang-vanilla/bin/llvm-ranlib
