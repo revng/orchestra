@@ -21,7 +21,6 @@ grep -vE \
   -e 'node_modules' \
   -e 'node_cache' \
   -e 'man/' \
-  -e '^lib64/llvm/clang-release/' \
   -e '^lib64/pkgconfig/' \
   -e '^link-only/' \
   -e '^share/aclocal/' \
