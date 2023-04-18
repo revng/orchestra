@@ -20,6 +20,8 @@ dependencies:
   - revng-python-dependencies
   - toolchain/host/binutils
   - revng-js-prerequisites
+  - glibc
+  - gcc-runtime
 use_asan: false
 post_install_script: |
   if [ "$RUN_TESTS" -eq 1 ]; then
