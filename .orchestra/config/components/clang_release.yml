@@ -168,7 +168,7 @@ install: |
   export HARD_FLAGS_C_CLANG="-w"
   export HARD_FLAGS_CXX_CLANG="-w"
   if test "$RUN_TESTS" -eq 1; then
-    (@= ninja @) check-all
+    timeout -v $((2 * 60 * 60)) (@= ninja @) check-all
   fi
 
   # Symlink to /lib/llvm/clang-release/bin/* to /bin
