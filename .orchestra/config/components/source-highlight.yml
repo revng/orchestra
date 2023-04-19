@@ -1,6 +1,6 @@
 #@ load("@ytt:data", "data")
 #@ load("@ytt:overlay", "overlay")
-#@ load("/lib/create_component.lib.yml", "single_build_component")
+#@ load("/lib/create-component.lib.yml", "single_build_component")
 
 #@ source_url = "https://ftp.gnu.org/gnu/src-highlite/source-highlight-3.1.9.tar.gz"
 

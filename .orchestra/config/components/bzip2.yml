@@ -1,6 +1,6 @@
 #@ load("@ytt:data", "data")
 #@ load("@ytt:overlay", "overlay")
-#@ load("/lib/create_component.lib.yml", "single_build_component")
+#@ load("/lib/create-component.lib.yml", "single_build_component")
 #@ load("/lib/make.lib.yml", "make")
 
 #@ bzip2_ver = "1.0.8"

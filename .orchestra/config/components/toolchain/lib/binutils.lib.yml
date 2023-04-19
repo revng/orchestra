@@ -1,6 +1,6 @@
 #@ load("@ytt:data", "data")
-#@ load("/lib/fn_args.lib.yml", "mandatory")
-#@ load("/lib/create_component.lib.yml", "single_build_component")
+#@ load("/lib/fn-args.lib.yml", "mandatory")
+#@ load("/lib/create-component.lib.yml", "single_build_component")
 #@ load("/lib/shell.lib.yml", "expand_args")
 
 #@yaml/text-templated-strings

@@ -75,7 +75,7 @@ Take `elfutils` for example:
 
 ```yaml
 #@ load("@ytt:overlay", "overlay")
-#@ load("/lib/create_component.lib.yml", "single_build_component")
+#@ load("/lib/create-component.lib.yml", "single_build_component")
 
 ---
 #@ def _elfutils_args():
@@ -103,5 +103,5 @@ components:
 
 ### Common optimization levels
 
-`.orchestra/config/lib/optimization_flavors.lib.yml`
+`.orchestra/config/lib/optimization-flavors.lib.yml`
 contains some common options useful for defining various builds.

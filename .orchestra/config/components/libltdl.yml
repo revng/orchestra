@@ -1,6 +1,6 @@
 #@ load("@ytt:data", "data")
 #@ load("@ytt:overlay", "overlay")
-#@ load("/lib/create_component.lib.yml", "single_build_component")
+#@ load("/lib/create-component.lib.yml", "single_build_component")
 
 #@ source_url = "https://mirror.kumi.systems/gnu/libtool/libtool-2.4.6.tar.gz"
 

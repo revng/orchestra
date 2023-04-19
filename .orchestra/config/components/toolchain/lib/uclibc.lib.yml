@@ -2,8 +2,8 @@
 #@ load("@ytt:overlay", "overlay")
 
 #@ load("/lib/make.lib.yml", "serial_make")
-#@ load("/lib/fn_args.lib.yml", "mandatory")
-#@ load("/lib/optimization_flavors.lib.yml", "libc_optimization_flavors")
+#@ load("/lib/fn-args.lib.yml", "mandatory")
+#@ load("/lib/optimization-flavors.lib.yml", "libc_optimization_flavors")
 #@ load("/components/toolchain/lib/common.lib.yml", "new_gcc_path", "binutils_path")
 
 #@yaml/text-templated-strings

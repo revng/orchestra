@@ -1,6 +1,6 @@
 #@ load("@ytt:data", "data")
 #@ load("@ytt:overlay", "overlay")
-#@ load("/lib/create_component.lib.yml", "single_build_component")
+#@ load("/lib/create-component.lib.yml", "single_build_component")
 #@ load("/lib/ninja.lib.yml", "ninja")
 
 #@ source_url = "https://download.gnome.org/sources/glib/2.64/glib-2.64.5.tar.xz"

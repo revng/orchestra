@@ -1,6 +1,6 @@
 #@ load("@ytt:data", "data")
 #@ load("@ytt:overlay", "overlay")
-#@ load("/lib/create_component.lib.yml", "single_build_component")
+#@ load("/lib/create-component.lib.yml", "single_build_component")
 
 #@ source_url = "https://download.savannah.nongnu.org/releases/libunwind/libunwind-1.6.2.tar.gz"
 

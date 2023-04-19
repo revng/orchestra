@@ -1,5 +1,5 @@
 #@ load("@ytt:data", "data")
-#@ load("/lib/create_component.lib.yml", "single_build_component")
+#@ load("/lib/create-component.lib.yml", "single_build_component")
 #@ load("/lib/make.lib.yml", "make")
 
 #@yaml/text-templated-strings

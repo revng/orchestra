@@ -1,7 +1,7 @@
 #@ load("@ytt:data", "data")
 #@ load("@ytt:overlay", "overlay")
-#@ load("/components/llvm_common.lib.yml", "configure_llvm")
-#@ load("/lib/create_component.lib.yml", "single_build_component")
+#@ load("/components/llvm-common.lib.yml", "configure_llvm")
+#@ load("/lib/create-component.lib.yml", "single_build_component")
 #@ load("/lib/ninja.lib.yml", "ninja")
 
 #! This should always point to the `clang-release` tag

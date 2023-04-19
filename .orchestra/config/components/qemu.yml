@@ -1,7 +1,7 @@
 #@ load("@ytt:data", "data")
 #@ load("@ytt:overlay", "overlay")
 #@ load("/lib/make.lib.yml", "make")
-#@ load("/lib/optimization_flavors.lib.yml", "typical_project_flavors")
+#@ load("/lib/optimization-flavors.lib.yml", "typical_project_flavors")
 
 #@yaml/text-templated-strings
 ---

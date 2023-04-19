@@ -46,7 +46,7 @@ builds:
         (@= make @)
         find "$2.docset/Contents/Resources/Documents" -iname "*.html" | xargs -n 10 sed -i -s 's/ inherit / /'
 
-        download_file.sh "$2.docset/Contents/Resources/Documents" \
+        download-file.sh "$2.docset/Contents/Resources/Documents" \
                          "https://opensource.apple.com/source/lldb/lldb-310.2.36/www/cpp_reference/html" \
                          "dynsections.js"
       }

@@ -1,8 +1,8 @@
 #@ load("@ytt:data", "data")
 #@ load("@ytt:overlay", "overlay")
-#@ load("/components/llvm_common.lib.yml", "configure_llvm")
-#@ load("/lib/optimization_flavors.lib.yml", "typical_project_flavors")
-#@ load("/lib/fn_args.lib.yml", "mandatory")
+#@ load("/components/llvm-common.lib.yml", "configure_llvm")
+#@ load("/lib/optimization-flavors.lib.yml", "typical_project_flavors")
+#@ load("/lib/fn-args.lib.yml", "mandatory")
 #@ load("/lib/ninja.lib.yml", "ninja")
 
 #@yaml/text-templated-strings

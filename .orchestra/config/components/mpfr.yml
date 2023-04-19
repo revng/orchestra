@@ -1,6 +1,6 @@
 #@ load("@ytt:data", "data")
 #@ load("@ytt:overlay", "overlay")
-#@ load("/lib/create_component.lib.yml", "single_build_component")
+#@ load("/lib/create-component.lib.yml", "single_build_component")
 
 #@ mpfr_version = "4.1.0"
 #@ source_url = "https://www.mpfr.org/mpfr-" + mpfr_version + "/mpfr-" + mpfr_version + ".tar.xz"

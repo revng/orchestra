@@ -1,8 +1,8 @@
 #@ load("@ytt:template", "template")
 
-#@ load("/lib/fn_args.lib.yml", "mandatory")
+#@ load("/lib/fn-args.lib.yml", "mandatory")
 
-#@ load("/components/toolchain/lib/linux_headers.lib.yml", "create_linux_headers_component")
+#@ load("/components/toolchain/lib/linux-headers.lib.yml", "create_linux_headers_component")
 #@ load("/components/toolchain/lib/binutils.lib.yml", "create_binutils_component")
 #@ load("/components/toolchain/lib/gdb.lib.yml", "create_gdb_component")
 #@ load("/components/toolchain/lib/gcc.lib.yml", "create_gcc_component")

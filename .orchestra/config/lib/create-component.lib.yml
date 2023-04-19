@@ -1,6 +1,6 @@
 #@ load("@ytt:template", "template")
 
-#@ load("/lib/fn_args.lib.yml", "mandatory")
+#@ load("/lib/fn-args.lib.yml", "mandatory")
 #@ load("/lib/assert.lib.yml", "fail")
 #@ load("/lib/make.lib.yml", "make")
 #@ load("/lib/ninja.lib.yml", "ninja")

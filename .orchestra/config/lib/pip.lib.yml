@@ -1,6 +1,6 @@
 #@ load("@ytt:data", "data")
 
-#@ load("/lib/fn_args.lib.yml", "mandatory")
+#@ load("/lib/fn-args.lib.yml", "mandatory")
 #@ load("/lib/util.lib.yml", "datavalue")
 
 #@yaml/text-templated-strings

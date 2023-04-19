@@ -1,4 +1,4 @@
-#@ load("/lib/fn_args.lib.yml", "mandatory")
+#@ load("/lib/fn-args.lib.yml", "mandatory")
 #@ load("@ytt:overlay", "overlay")
 
 #@ architectures = ["arm", "x86-64", "i386", "s390x", "aarch64", "mips", "mipsel", "native"]

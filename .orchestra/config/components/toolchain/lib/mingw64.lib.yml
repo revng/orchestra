@@ -1,7 +1,7 @@
 #@ load("@ytt:template", "template")
 
 #@ load("/lib/make.lib.yml", "make")
-#@ load("/lib/fn_args.lib.yml", "mandatory")
+#@ load("/lib/fn-args.lib.yml", "mandatory")
 #@ load("/lib/assert.lib.yml", "assert")
 
 #@ load("/components/toolchain/lib/common.lib.yml", "new_gcc_path")

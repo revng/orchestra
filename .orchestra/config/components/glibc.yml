@@ -1,5 +1,5 @@
 #@ load("@ytt:overlay", "overlay")
-#@ load("/lib/create_component.lib.yml", "single_build_component")
+#@ load("/lib/create-component.lib.yml", "single_build_component")
 #@ load("/lib/make.lib.yml", "make")
 
 #@ source_url = "https://ftp.gnu.org/gnu/glibc/glibc-2.13.tar.xz"

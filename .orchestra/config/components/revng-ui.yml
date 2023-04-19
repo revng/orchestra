@@ -1,6 +1,6 @@
 #@ load("@ytt:data", "data")
 #@ load("@ytt:overlay", "overlay")
-#@ load("/lib/vscode_extension.lib.yml", "vscode_extension")
+#@ load("/lib/vscode-extension.lib.yml", "vscode_extension")
 
 #@yaml/text-templated-strings
 ---
