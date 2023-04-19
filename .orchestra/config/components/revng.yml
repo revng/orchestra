@@ -1,11 +1,14 @@
 #@ load("@ytt:overlay", "overlay")
 #@ load("@ytt:data", "data")
 #@ load("/lib/cmake.lib.yml", "cmake_boost_configuration", "typical_cmake_builds")
+#@ load("@ytt:template", "template")
 
 ---
 #@ def build_args():
 test: true
-extra_cmake_args: #@ cmake_boost_configuration
+extra_cmake_args:
+  - #@ template.replace(cmake_boost_configuration)
+  - "-DLLVM_DIR=$ORCHESTRA_ROOT/lib64/llvm/llvm/lib/cmake/llvm"
 extra_compiler_flags: #@ data.values.revng_extra_compiler_flags
 build_dependencies:
   - host-cxx-toolchain
@@ -17,6 +20,8 @@ dependencies:
   - revng-python-dependencies
   - toolchain/host/binutils
   - revng-js-prerequisites
+  - glibc
+  - gcc-runtime
 use_asan: false
 post_install_script: |
   if [ "$RUN_TESTS" -eq 1 ]; then

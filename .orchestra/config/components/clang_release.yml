@@ -5,7 +5,7 @@
 #@ load("/lib/ninja.lib.yml", "ninja")
 
 #! This should always point to the `clang-release` tag
-#@ source_url = "https://github.com/revng/llvm-project/archive/de75a69.tar.gz"
+#@ source_url = "https://github.com/revng/llvm-project/archive/40999c8.tar.gz"
 
 #! Disable this to facilitate LLVM update
 #@ llvm_enable_pgo_lto = True
@@ -17,6 +17,7 @@
 - -DBUILD_SHARED_LIBS=OFF
 - -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT/clang-vanilla"
 - -DLLVM_TARGETS_TO_BUILD="X86"
+- -DCOMPILER_RT_INCLUDE_TESTS=OFF
 #@ end
 
 #@yaml/text-templated-strings
@@ -39,6 +40,7 @@ install: |
   cp -a "$COMPILER_WRAPPER" clang++
   cp -a "$COMPILER_WRAPPER" clang-tidy
 build_dependencies:
+  - glibc
   - cmake
   - ninja
 dependencies:
@@ -50,9 +52,9 @@ dependencies:
 
 ---
 #@ def cmake_profiling_data_opts():
-- -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;libcxxabi;libcxx;clang-tools-extra;lld"
+- -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;clang-tools-extra;lld"
 - -DBUILD_SHARED_LIBS=OFF
-- -DLLVM_ENABLE_LTO=Thin
+- -DCOMPILER_RT_INCLUDE_TESTS=OFF
 - -DLLVM_USE_LINKER=lld
 - -DLLVM_BUILD_INSTRUMENTED=IR
 - -DLLVM_BUILD_RUNTIME=No
@@ -60,7 +62,6 @@ dependencies:
 - -DCMAKE_RANLIB=$ORCHESTRA_ROOT/clang-vanilla/bin/llvm-ranlib
 - -DCMAKE_C_COMPILER=$ORCHESTRA_ROOT/clang-vanilla/wrapped-bin/clang
 - -DCMAKE_CXX_COMPILER=$ORCHESTRA_ROOT/clang-vanilla/wrapped-bin/clang++
-- -DLIBCXXABI_HAS_CXA_THREAD_ATEXIT_IMPL=0
 - -DLLVM_TARGETS_TO_BUILD=X86
 #@ end
 
@@ -101,7 +102,6 @@ install: |
     -DLLVM_ENABLE_TERMINFO=OFF \
     -DCMAKE_CXX_STANDARD=20 \
     -DLLVM_ENABLE_Z3_SOLVER=OFF \
-    -DLLVM_INCLUDE_GO_TESTS=OFF \
     -DLLVM_TARGETS_TO_BUILD=X86 \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo
   (@= ninja @)
@@ -110,6 +110,7 @@ install: |
   mkdir -p "$PROFDATA_DIR"
   llvm-profdata merge -output="$PROFDATA_DIR/clang-release.prof" $BUILD_DIR/profiles/*.profraw
 build_dependencies:
+  - glibc
   - cmake
   - ninja
   - clang-vanilla
@@ -124,13 +125,12 @@ dependencies:
 
 ---
 #@ def cmake_release_opts():
-- -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;libcxxabi;libcxx;clang-tools-extra;lld"
+- -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;clang-tools-extra;lld"
 - -DBUILD_SHARED_LIBS=ON
-- -DLIBCXXABI_HAS_CXA_THREAD_ATEXIT_IMPL=0
 - -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT/lib/llvm/clang-release"
 - -DCMAKE_INSTALL_RPATH="$RPATH_PLACEHOLDER/lib/llvm/clang-release/lib:$RPATH_PLACEHOLDER/lib"
+- -DCOMPILER_RT_INCLUDE_TESTS=OFF
 #@ if llvm_enable_pgo_lto:
-- -DLLVM_ENABLE_LTO=Thin
 - -DLLVM_USE_LINKER=lld
 - -DCMAKE_AR=$ORCHESTRA_ROOT/clang-vanilla/bin/llvm-ar
 - -DCMAKE_RANLIB=$ORCHESTRA_ROOT/clang-vanilla/bin/llvm-ranlib
@@ -146,11 +146,6 @@ dependencies:
 license: source/llvm/LICENSE.TXT
 configure: |
   extract.sh --into "$BUILD_DIR/source" "(@= source_url @)"
-
-  # compiler-rt tests fail abundantly (in the CI only)
-  find "$BUILD_DIR/source/compiler-rt/test" -name "lit.*" -type f | while read FILE; do
-    echo > "$FILE"
-  done
 
   sed -i 's|GIT_FOUND|FALSE|g' "$BUILD_DIR/source/llvm/cmake/modules/VersionFromVCS.cmake"
   (@ if llvm_enable_pgo_lto: @)
@@ -173,12 +168,8 @@ install: |
   export HARD_FLAGS_C_CLANG="-w"
   export HARD_FLAGS_CXX_CLANG="-w"
   if test "$RUN_TESTS" -eq 1; then
-    (@= ninja @) check-all
+    timeout -v $((2 * 60 * 60)) (@= ninja @) check-all
   fi
-
-  # Fix libc++
-  rm "${DESTDIR}${ORCHESTRA_ROOT}/lib/llvm/clang-release/lib/libc++.so" || true
-  echo 'INPUT(libc++.so.1 -lc++abi -lpthread)' > "${DESTDIR}${ORCHESTRA_ROOT}/lib/llvm/clang-release/lib/libc++.so"
 
   # Symlink to /lib/llvm/clang-release/bin/* to /bin
   for EXECUTABLE in "${DESTDIR}${ORCHESTRA_ROOT}/lib/llvm/clang-release/bin/"*; do
@@ -191,12 +182,6 @@ install: |
       ) \
       "${DESTDIR}${ORCHESTRA_ROOT}/bin"
   done
-
-  # Save libc++ files for later
-  "$ORCHESTRA_DOTDIR"/support/save-for-later \
-    -i "${DESTDIR}${ORCHESTRA_ROOT}/lib/llvm/clang-release" \
-    clang-runtime \
-    '^lib\/libc\+\+[^/]*$'
 
   # Leave `opt`, `llvm-config` and `llvm-symbolizer` to the `llvm` component
   rm -f "${DESTDIR}${ORCHESTRA_ROOT}/bin/opt"*
@@ -212,6 +197,7 @@ install: |
   cp -a "$COMPILER_WRAPPER" clang-tidy
 
 build_dependencies:
+  - glibc
   - cmake
   - ninja
 #@ if llvm_enable_pgo_lto:
@@ -225,6 +211,56 @@ dependencies:
   - zlib
 #@ end
 
+#@yaml/text-templated-strings
+---
+#@ def cmake_runtime_opts():
+- -DCMAKE_C_COMPILER="(@= data.values.regular_c_compiler @)"
+- -DCMAKE_CXX_COMPILER="(@= data.values.regular_cxx_compiler @)"
+- -DLLVM_ENABLE_RUNTIMES="libcxxabi;libcxx"
+- -DBUILD_SHARED_LIBS=ON
+- -DLIBCXXABI_HAS_CXA_THREAD_ATEXIT_IMPL=0
+- -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT/lib/llvm/clang-release"
+- -DCMAKE_INSTALL_RPATH="$RPATH_PLACEHOLDER/lib/llvm/clang-release/lib:$RPATH_PLACEHOLDER/lib"
+#@ end
+
+#@yaml/text-templated-strings
+---
+#@ def clang_runtime_args():
+license: source/llvm/LICENSE.TXT
+configure: |
+  extract.sh --into "$BUILD_DIR/source" "(@= source_url @)"
+
+  sed -i 's|GIT_FOUND|FALSE|g' "$BUILD_DIR/source/llvm/cmake/modules/VersionFromVCS.cmake"
+  export HARD_FLAGS_CXX_CLANG=""
+  (@= configure_llvm(cmake_build_type="Release", cflags="-pthread", additional_cmake_options=cmake_runtime_opts(), source_dir="$BUILD_DIR/source") @)
+install: |
+  export HARD_FLAGS_CXX_CLANG=""
+
+  cd "$BUILD_DIR"
+
+  # Build
+  (@= ninja @) -v runtimes
+  (@= ninja @) -v install-runtimes
+
+  # Run tests
+  if test "$RUN_TESTS" -eq 1; then
+    (@= ninja @) check-runtimes
+  fi
+
+  # Fix libc++
+  LIBCXX="${DESTDIR}${ORCHESTRA_ROOT}/lib/llvm/clang-release/lib/x86_64-unknown-linux-gnu/libc++.so"
+  rm "${LIBCXX}"
+  echo 'INPUT(libc++.so.1 -lc++abi -lpthread)' > "${LIBCXX}"
+build_dependencies:
+  - glibc
+  - cmake
+  - ninja
+  - clang-release
+  - gcc-host-toolchain
+dependencies:
+  - libunwind
+#@ end
+
 #@overlay/match by=overlay.all, expects=1
 #@overlay/match-child-defaults missing_ok=True
 ---
@@ -234,3 +270,4 @@ components:
   clang-profiling-data: #@ single_build_component(**clang_profiling_data_args())
 #@ end
   clang-release: #@ single_build_component(**clang_release_args())
+  clang-runtime: #@ single_build_component(**clang_runtime_args())

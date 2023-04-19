@@ -64,6 +64,7 @@ PACKAGES+=(python3-dev)
 # llvm-documentation dependencies
 #
 PACKAGES+=(doxygen)
+PACKAGES+=(graphviz)
 
 #
 # qemu dependencies

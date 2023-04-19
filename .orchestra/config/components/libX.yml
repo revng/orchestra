@@ -6,8 +6,8 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def x_args(source_url, extra_args="", dependencies=[], build_dependencies=[]):
-license: COPYING
+#@ def x_args(source_url, extra_args="", dependencies=[], build_dependencies=[], license="COPYING"):
+license: (@= license @)
 configure: |
   mkdir -p "$BUILD_DIR"
   extract.sh --into "$BUILD_DIR" "(@= source_url @)"
@@ -32,23 +32,14 @@ dependencies: #@ dependencies
 x11/xcb-proto:
   source_url: "https://xorg.freedesktop.org/archive/individual/proto/xcb-proto-1.15.tar.xz"
   build_dependencies: ["python"]
-x11/xproto:
-  source_url: "https://xorg.freedesktop.org/archive/individual/proto/xproto-7.0.31.tar.bz2"
-  extra_args: "--without-xmlto --without-fop --without-xsltproc --disable-specs"
-x11/xextproto:
-  source_url: "https://xorg.freedesktop.org/archive/individual/proto/xextproto-7.3.0.tar.bz2"
-  extra_args: "--without-xmlto --without-fop --without-xsltproc --disable-specs"
-x11/kbproto:
-  source_url: "https://xorg.freedesktop.org/archive/individual/proto/kbproto-1.0.7.tar.bz2"
-  extra_args: "--without-xmlto --without-fop --without-xsltproc --disable-specs"
-x11/inputproto:
-  source_url: "https://xorg.freedesktop.org/archive/individual/proto/inputproto-2.3.tar.bz2"
-  extra_args: "--without-xmlto --without-fop --without-xsltproc --disable-specs"
+x11/xorg-proto:
+  source_url: "https://xorg.freedesktop.org/archive/individual/proto/xorgproto-2022.2.tar.xz"
+  license: COPYING-x11proto
 xtrans:
   source_url: "https://xorg.freedesktop.org/releases/individual/lib/xtrans-1.4.0.tar.bz2"
 libxau:
   source_url: "https://xorg.freedesktop.org/releases/individual/lib/libXau-1.0.11.tar.xz"
-  dependencies: ["x11/xproto"]
+  dependencies: ["x11/xorg-proto"]
 libxcb:
   source_url: "https://xorg.freedesktop.org/archive/individual/lib/libxcb-1.15.tar.xz"
   extra_args: "--disable-devel-docs --disable-selinux"
@@ -57,7 +48,7 @@ libxcb:
 libx11:
   source_url: "https://www.x.org/releases/individual/lib/libX11-1.8.4.tar.xz"
   extra_args: "--without-xmlto --without-fop --without-xsltproc --disable-specs --enable-ipv6"
-  dependencies: ["libxcb", "xtrans", "x11/xproto", "x11/xextproto", "x11/kbproto", "x11/inputproto"]
+  dependencies: ["libxcb", "xtrans", "x11/xorg-proto"]
 libxkbfile:
   source_url: "https://www.x.org/releases/individual/lib/libxkbfile-1.1.2.tar.xz"
   dependencies: ["libx11"]

@@ -36,6 +36,8 @@
       install: |-
         cd "$BUILD_DIR"
         export HARD_FLAGS_COMPILE="-I"$("${ORCHESTRA_DOTDIR}/support/get-python-path" include)" $HARD_FLAGS_COMPILE"
+        export HARD_ALLOWED_INCLUDE_PATH="$HARD_ALLOWED_INCLUDE_PATH:/tmp"
+        export HARD_ALLOWED_LIBRARY_PATH="$HARD_ALLOWED_LIBRARY_PATH:/tmp"
         python \
           -m pip \
           --disable-pip-version-check \

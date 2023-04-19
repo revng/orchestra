@@ -8,7 +8,7 @@ dependencies:
 - python-base-packages
 requirements: |-
   # lit version should always match clang-release and llvm version
-  lit==12.0.0
+  lit==16.0.0
 #@ end
 
 #@overlay/match by=overlay.all, expects=1
