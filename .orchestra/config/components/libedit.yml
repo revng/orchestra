@@ -19,6 +19,8 @@ configure: |
     --prefix="$ORCHESTRA_ROOT" \
     CFLAGS="-I$ORCHESTRA_ROOT/include/ncursesw"
 build_system: make
+post_install: |
+  rm "$DESTDIR$ORCHESTRA_ROOT/share/man/man3/history.3"
 build_dependencies:
   - gcc-host-toolchain
   - glibc
