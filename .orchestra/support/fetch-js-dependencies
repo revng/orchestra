@@ -37,7 +37,11 @@ def decode_hash(string: str) -> str:
 
 def parse_npm_dependencies(lockfile) -> List[PackageInfo]:
     info = []
-    for name, dep_info in lockfile["dependencies"].items():
+    for raw_name, dep_info in lockfile["packages"].items():
+        if raw_name == "":
+            continue
+
+        name = raw_name.rsplit("node_modules/", 1)[-1]
         if dep_info.get("resolved") is not None:
             dep_url = dep_info["resolved"]
             dep_hash = decode_hash(dep_info["integrity"])
@@ -49,8 +53,6 @@ def parse_npm_dependencies(lockfile) -> List[PackageInfo]:
             pass
         else:
             raise ValueError(f"Dependency {name} does not have a download url")
-        if "dependencies" in dep_info:
-            info.extend(parse_npm_dependencies(dep_info))
     return info
 
 
