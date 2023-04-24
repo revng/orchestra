@@ -6,16 +6,9 @@ export DEBIAN_FRONTEND=noninteractive
 
 source /etc/os-release
 
-apt-get -qq update
-apt-get -qq install --no-install-recommends --yes ca-certificates curl gpg
-
 # Wine
 dpkg --add-architecture i386
 
-# Node
-curl -fsSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | gpg --dearmor > /usr/share/keyrings/nodesource.gpg
-echo "deb [signed-by=/usr/share/keyrings/nodesource.gpg] https://deb.nodesource.com/node_18.x $VERSION_CODENAME main" \
-  > /etc/apt/sources.list.d/nodesource.list
 apt-get -qq update
 
 PACKAGES=()
@@ -23,6 +16,8 @@ PACKAGES=()
 #
 # Base system tools
 #
+PACKAGES+=(curl)
+PACKAGES+=(ca-certificates)
 PACKAGES+=(python3)
 PACKAGES+=(python3-pip)
 PACKAGES+=(python3-setuptools)
@@ -76,7 +71,6 @@ PACKAGES+=(python2)
 #
 PACKAGES+=(doxygen)
 PACKAGES+=(shellcheck)
-PACKAGES+=(nodejs)
 
 #
 # repackage-apple-sdk dependencies
