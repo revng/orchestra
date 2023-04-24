@@ -1,61 +1,44 @@
 #@ load("@ytt:overlay", "overlay")
 #@ load("/lib/create-component.lib.yml", "single_build_component")
 
-#@ package_json_sha = "fcb10a1055a762b77f844baf8348212fe7478d06c45427d70c2c2abd53d70229"
+#@ package_json_sha = "a31a0c08070213c1e625c78a7bd791c74dbade4d46da0b68dfd026df55b20d00"
 
 #@yaml/text-templated-strings
 ---
 #@ def js_prerequisites_args():
+dependencies:
+  - nodejs
+build_dependencies:
+  - nodejs-support
 configure: |
-  JS_DIR="$ORCHESTRA_DOTDIR/support/js-prerequisites"
   mkdir -p "$BUILD_DIR"
   cd "$BUILD_DIR"
-  cp -a "$JS_DIR/package.json" .
+  cp -a "$ORCHESTRA_DOTDIR/support/revng-js-prerequisites-package.json" package.json
 
   # check that package.json has the right hash, this is to trigger a rebuild in orchestra
   # whenever we change the file
   echo '(@= package_json_sha @) package.json' | sha256sum -c -
 
   # Generate package lock
-  "$ORCHESTRA_DOTDIR"/support/js-prerequisites/system-npm install --package-lock-only --silent
-
-  # NOTE: until we install this component fetch-js-dependencies will only work with npm lockfiles
-  #       due to yarn lockfiles needing the `@yarnpkg/lockfile` dependency installed to be read
-  "$ORCHESTRA_DOTDIR"/support/fetch-js-dependencies npm -o ./.cache
+  npm.original install --package-lock-only --silent
+  # Populate cache
+  fetch-js-dependencies npm -o ./.cache
 install: |
-  JS_DIR="$ORCHESTRA_DOTDIR/support/js-prerequisites"
-
   cd "$BUILD_DIR"
-  mkdir "${DESTDIR}${ORCHESTRA_ROOT}/share/node_cache"
 
   # copy all download packages to node_cache
+  mkdir -p "${DESTDIR}${ORCHESTRA_ROOT}/share/node_cache"
   cp -a .cache/*.tgz "${DESTDIR}${ORCHESTRA_ROOT}/share/node_cache"
-
-  # copy the npm_static_repository tool
-  cp -a "$JS_DIR/static-npm-registry" "${DESTDIR}${ORCHESTRA_ROOT}/libexec"
-  cp -a "$JS_DIR/npm" "$JS_DIR/system-npm" \
-    "${DESTDIR}${ORCHESTRA_ROOT}/bin"
-
-  # Create npmrc
-  cat - > "${DESTDIR}${ORCHESTRA_ROOT}/share/npmrc" << EOF
-  EOF
 
   # Install packages needed for building
   export ORCHESTRA_NODE_CACHE="$BUILD_DIR/.cache:$ORCHESTRA_NODE_CACHE"
 
-  # TODO: once we import node in orchestra, outline in its own component
   npm --global \
       --prefix="${DESTDIR}${ORCHESTRA_ROOT}" \
       install \
-        yarn @yarnpkg/lockfile \
         prettier eslint lint-staged gts \
         eslint-plugin-node eslint-plugin-prettier \
         @typescript-eslint/eslint-plugin @typescript-eslint/parser
-
-  # Overwrite yarn with our wrapper
-  rm "${DESTDIR}${ORCHESTRA_ROOT}/bin/"{yarn,yarnpkg}
-  cp -a "$JS_DIR/yarn" "${DESTDIR}${ORCHESTRA_ROOT}/bin/yarn"
-  ln -s "yarn" "${DESTDIR}${ORCHESTRA_ROOT}/bin/yarnpkg"
 #@ end
 
 #@overlay/match by=overlay.all, expects=1
