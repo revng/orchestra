@@ -15,7 +15,7 @@ builds:
     - revng-js-prerequisites
     - libxkbfile
     - libx11
-    - nodejs
+    - nodejs-support
     configure: |
       rm -rf "$BUILD_DIR/vscode"
       mkdir -p "$BUILD_DIR/vscode"

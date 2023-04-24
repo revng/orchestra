@@ -29,6 +29,7 @@ builds:
   (@= flavor @):
     build_dependencies:
     - revng-js-prerequisites
+    - nodejs-support
     - #@ template.replace(build_dependencies)
 
     configure: |

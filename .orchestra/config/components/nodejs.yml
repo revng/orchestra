@@ -32,6 +32,7 @@ install: |
   fi
 
   (@= make @) install DESTDIR="$DESTDIR"
+  mv "$DESTDIR$ORCHESTRA_ROOT/bin/npm"{,.original}
 build_dependencies:
   - host-cxx-toolchain
   - ninja
