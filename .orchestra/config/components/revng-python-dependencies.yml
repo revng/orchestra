@@ -64,11 +64,11 @@ requirements: |-
   psutil
 
   # uvicorn[standard] but without watchfiles (since it requires rust)
-  uvicorn==0.18.3
+  uvicorn==0.21.1
   httptools>=0.5.0
   python-dotenv>=0.13
-  uvloop>=0.14.0,!=0.15.0,!=0.15.1
-  websockets>=10.0
+  uvloop>=0.15.2
+  websockets>=10.4
 
   xdg
 #@ end
