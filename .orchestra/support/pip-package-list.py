@@ -28,7 +28,7 @@ def run_yaml(argv):
     return yaml.safe_load(run(argv))
 
 
-def compute_dependencies(component):
+def compute_dependencies(component_name):
     result = set()
 
     # Get hash mateiral
@@ -36,7 +36,7 @@ def compute_dependencies(component):
                               "inspect",
                               "component",
                               "hash-material",
-                              component])
+                              component_name])
 
     # Extract all dependencies
     for component in hash_material:
@@ -46,19 +46,22 @@ def compute_dependencies(component):
 
     return result
 
-def inspect_installation():
+
+def inspect_installation(component, dependencies):
     to_exclude = set()
     banned = set()
-    root = os.environ["ORCHESTRA_ROOT"]
-    pattern = f"{root}share/orchestra/python-packages/*.txt"
-    for path in map(Path, glob(pattern)):
-        component_name = path.name[:-len(path.suffix)]
+    packages_dir = Path(os.environ["ORCHESTRA_ROOT"]) / "share/orchestra/python-packages"
+    for path in map(Path, glob(f"{packages_dir}/*.txt")):
+        component_name = path.stem
+        if component_name == component:
+            continue
+
         package_set = set(path.read_text().strip().split("\n"))
 
         if component_name in dependencies:
-            to_exclude += package_set
+            to_exclude.update(package_set)
         else:
-            banned += package_set
+            banned.update(package_set)
 
     return to_exclude, banned
 
@@ -83,14 +86,13 @@ def compute_packages(argv):
 
     return result
 
+
 def main():
     component = sys.argv[1]
     pip_arguments = sys.argv[2:]
 
     dependencies = compute_dependencies(component)
-
-    to_exclude, banned = inspect_installation()
-
+    to_exclude, banned = inspect_installation(component, dependencies)
     all_packages = compute_packages(pip_arguments)
 
     to_install = {
@@ -100,12 +102,10 @@ def main():
         if name not in to_exclude
     }
 
-    bad = banned & set(to_install)
-    if bad:
+    bad = banned & set(to_install.keys())
+    if len(bad) > 0:
         log("The following packages are also installed by a non-dependency:")
-        for name in bad:
-            log(f"  {name}")
-
+        log("\n".join(f"  {name}" for name in bad))
         return 1
 
     print("\n".join([f"{name},{url}"
