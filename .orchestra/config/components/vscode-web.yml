@@ -15,7 +15,7 @@ builds:
     - revng-js-prerequisites
     - libxkbfile
     - libx11
-    - nodejs
+    - nodejs-support
     configure: |
       rm -rf "$BUILD_DIR/vscode"
       mkdir -p "$BUILD_DIR/vscode"
@@ -57,15 +57,12 @@ builds:
       fi
       popd &> /dev/null
 
-      export HARD_FLAGS_COMPILE="-I${ORCHESTRA_ROOT}/include/node $HARD_FLAGS_COMPILE"
-
       # Install dependencies, this process is mostly offline with the following exceptions
       # (to the best of our knowledge):
-      # * node-gyp downloading header tarballs to compile native modules for node and electron
-      #   (This can be fixed once node is within orchestra)
       # * vscode-web, when building electron targets, will download the prebuilt electron for the
       #   target to bundle with the build js files (this will be accounted for when building
       #   targets using electron)
+      npm_config_nodedir="$ORCHESTRA_ROOT" \
       ELECTRON_SKIP_BINARY_DOWNLOAD=1 \
       PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
         yarn

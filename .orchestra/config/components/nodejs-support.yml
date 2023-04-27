@@ -1,0 +1,61 @@
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/create-component.lib.yml", "single_build_component")
+
+#@ package_json_sha = "90b2d254cf140b7a95d81028a8f21272430786afda6eb54e1f508e59ce21bd6b"
+
+#@yaml/text-templated-strings
+---
+#@ def nodejs_support_args():
+dependencies:
+  - nodejs
+configure: |
+  JS_DIR="$ORCHESTRA_DOTDIR/support/nodejs-support"
+  mkdir -p "$BUILD_DIR"
+  cd "$BUILD_DIR"
+  cp -a "$JS_DIR/package.json" .
+
+  # check that package.json has the right hash, this is to trigger a rebuild in orchestra
+  # whenever we change the file
+  echo '(@= package_json_sha @) package.json' | sha256sum -c -
+
+  # Generate package lock
+  npm.original install --package-lock-only --silent
+
+  # NOTE: until we install this component fetch-js-dependencies will only work with npm lockfiles
+  #       due to yarn lockfiles needing the `@yarnpkg/lockfile` dependency installed to be read
+  fetch-js-dependencies npm -o ./.cache
+install: |
+  JS_DIR="$ORCHESTRA_DOTDIR/support/nodejs-support"
+
+  cd "$BUILD_DIR"
+  mkdir "${DESTDIR}${ORCHESTRA_ROOT}/share/node_cache"
+
+  # copy all download packages to node_cache
+  cp -a .cache/*.tgz "${DESTDIR}${ORCHESTRA_ROOT}/share/node_cache"
+
+  # copy the npm_static_repository tool
+  cp -a "$JS_DIR/static-npm-registry" "${DESTDIR}${ORCHESTRA_ROOT}/libexec"
+  cp -a "$JS_DIR/npm" "${DESTDIR}${ORCHESTRA_ROOT}/bin"
+
+  # Create npmrc
+  cat - > "${DESTDIR}${ORCHESTRA_ROOT}/share/npmrc" << EOF
+  EOF
+
+  # Install packages needed for building
+  export ORCHESTRA_NODE_CACHE="$BUILD_DIR/.cache:$ORCHESTRA_NODE_CACHE"
+
+  npm --global \
+      --prefix="${DESTDIR}${ORCHESTRA_ROOT}" \
+      install yarn @yarnpkg/lockfile
+
+  # Overwrite yarn with our wrapper
+  rm "${DESTDIR}${ORCHESTRA_ROOT}/bin/"{yarn,yarnpkg}
+  cp -a "$JS_DIR/yarn" "${DESTDIR}${ORCHESTRA_ROOT}/bin/yarn"
+  ln -s "yarn" "${DESTDIR}${ORCHESTRA_ROOT}/bin/yarnpkg"
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  nodejs-support: #@ single_build_component(**nodejs_support_args())

@@ -1,0 +1,8 @@
+{
+    "license": "MIT",
+    "__license": "See LICENSE.md for details.",
+    "dependencies": {
+        "@yarnpkg/lockfile": "1.1.0",
+        "yarn": "1.22.19"
+    }
+}
