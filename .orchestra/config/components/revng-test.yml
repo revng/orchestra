@@ -18,6 +18,9 @@ builds:
         --install-path "$ORCHESTRA_ROOT/share/revng/test" \
         --destination . \
         (@= options["configure_args"] @)
+
+      export REVNG_OPTIONS="--debug-log=verify"
+        
       ninja run-all
       ninja install
     build_dependencies: #@ options["build_dependencies"]
