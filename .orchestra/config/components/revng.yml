@@ -12,6 +12,7 @@ extra_cmake_args:
 extra_compiler_flags: #@ data.values.revng_extra_compiler_flags
 build_dependencies:
   - host-cxx-toolchain
+  - nodejs-support
 dependencies:
   - boost
   - host-libcxx
