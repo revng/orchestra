@@ -14,6 +14,7 @@
         "workbench.startupEditor": "none",
         "window.menuBarVisibility": "classic",
         "editor.foldingMaximumRegions": 65000,
+        "files.autoSave": "off",
         "editor.colorTheme": "revng",
         "workbench.colorTheme": "revng",
         "revng.general.profiles": [
