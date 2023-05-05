@@ -14,6 +14,7 @@ configure: |
   cd "$BUILD_DIR"
   cmake "$BUILD_DIR/source" \
     -GNinja \
+    -DCMAKE_INSTALL_MESSAGE=NEVER \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=On \
     -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT"    

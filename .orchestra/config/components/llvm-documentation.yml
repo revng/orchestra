@@ -24,6 +24,7 @@ builds:
       cd "$BUILD_DIR/build";
       cmake "$BUILD_DIR/llvm" \
         -GNinja \
+        -DCMAKE_INSTALL_MESSAGE=NEVER \
         -DCMAKE_BUILD_TYPE="Debug" \
         -DLLVM_BUILD_DOCS=ON \
         -DLLVM_ENABLE_DOXYGEN=ON \
