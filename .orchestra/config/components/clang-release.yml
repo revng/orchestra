@@ -248,9 +248,12 @@ install: |
   fi
 
   # Fix libc++
-  LIBCXX="${DESTDIR}${ORCHESTRA_ROOT}/lib/llvm/clang-release/lib/x86_64-unknown-linux-gnu/libc++.so"
+  LIBDIR="${DESTDIR}${ORCHESTRA_ROOT}/lib/llvm/clang-release/lib/x86_64-unknown-linux-gnu/"
+  LIBCXX="${LIBDIR}/libc++.so"
   rm "${LIBCXX}"
   echo 'INPUT(libc++.so.1 -lc++abi -lpthread)' > "${LIBCXX}"
+
+  chmod +x "${LIBDIR}"/lib*.so*
 build_dependencies:
   - glibc
   - cmake
