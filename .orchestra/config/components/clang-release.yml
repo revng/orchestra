@@ -97,6 +97,7 @@ install: |
   cmake \
     "$BUILD_DIR/source/llvm" \
     -GNinja \
+    -DCMAKE_INSTALL_MESSAGE=NEVER \
     -DCMAKE_C_COMPILER="$BUILD_DIR/bin/clang" \
     -DCMAKE_CXX_COMPILER="$BUILD_DIR/bin/clang++" \
     -DLLVM_ENABLE_TERMINFO=OFF \
