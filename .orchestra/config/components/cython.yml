@@ -4,8 +4,6 @@
 
 #@ def params():
 name: cython
-dependencies:
-- python-base-packages
 requirements: |-
   Cython==0.29.32
 #@ end

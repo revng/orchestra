@@ -4,8 +4,6 @@
 
 #@ def params():
 name: lit
-dependencies:
-- python-base-packages
 requirements: |-
   # lit version should always match clang-release and llvm version
   lit==16.0.0

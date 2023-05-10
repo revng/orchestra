@@ -5,7 +5,6 @@
 #@ def params():
 name: revng-python-dependencies
 dependencies:
-- python-base-packages
 #! TODO: Fix problem with python package using common dependecies and causing
 #! conflicts
 - revng-qa-python-dependencies
