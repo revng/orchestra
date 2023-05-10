@@ -1,28 +1,32 @@
 #@ load("/lib/fn-args.lib.yml", "mandatory")
 #@ load("@ytt:overlay", "overlay")
+#@ load("@ytt:template", "template")
 
 #@ architectures = ["arm", "x86-64", "i386", "s390x", "aarch64", "mips", "mipsel", "native"]
 
 #@yaml/text-templated-strings
 ---
-#@ def revng_test_component(options=mandatory):
-builds:
-  default:
-    configure: |
-      mkdir -p "$BUILD_DIR"
-    install: |
-      cd "$BUILD_DIR"
-      rm -rf *
-      "$ORCHESTRA_ROOT/libexec/revng/revng-test-configure" \
-        "$ORCHESTRA_ROOT/share/revng/test/configuration"/**/*.yml \
-        --install-path "$ORCHESTRA_ROOT/share/revng/test" \
-        --destination . \
-        (@= options["configure_args"] @)
+#@ def revng_test_component(name=mandatory, options=mandatory):
+(@= name @):
+  builds:
+    default:
+      configure: |
+        mkdir -p "$BUILD_DIR"
+      install: |
+        cd "$BUILD_DIR"
+        rm -rf *
+        "$ORCHESTRA_ROOT/libexec/revng/revng-test-configure" \
+          (@ for test_name in [name] + [dependency for dependency in options["build_dependencies"] if dependency.startswith("test/")]: -@)
+          "$ORCHESTRA_ROOT/share/revng/test/configuration"/(@= test_name.replace("test/", "") @)/*.yml \
+          (@ end -@)
+          --install-path "$ORCHESTRA_ROOT" \
+          --destination . \
+          (@= options["configure_args"] @)
 
-      export REVNG_OPTIONS="--debug-log=verify"
+        export REVNG_OPTIONS="--debug-log=verify"
 
-      ninja install
-    build_dependencies: #@ options["build_dependencies"]
+        ninja install
+      build_dependencies: #@ options["build_dependencies"]
 #@ end
 
 #@ def revng_qa_test():
@@ -63,6 +67,6 @@ build_dependencies:
 ---
 #@yaml/text-templated-strings
 components:
-  test/revng-qa: #@ revng_test_component(revng_qa_test())
-  test/revng: #@ revng_test_component(revng_test())
-  test/revng-c: #@ revng_test_component(revng_c_test())
+  _: #@ template.replace(revng_test_component("test/revng-qa", revng_qa_test()))
+  _: #@ template.replace(revng_test_component("test/revng", revng_test()))
+  _: #@ template.replace(revng_test_component("test/revng-c", revng_c_test()))
