@@ -5,7 +5,6 @@
 #@ def params():
 name: revng-python-dependencies
 dependencies:
-- python-base-packages
 #! TODO: Fix problem with python package using common dependecies and causing
 #! conflicts
 - revng-qa-python-dependencies
@@ -23,7 +22,8 @@ requirements: |-
   flake8-simplify>=0.19.3,<1.0
   pep8-naming>=0.13.3,<1.0
   isort>=5.11.4,<6.0
-  mypy==0.982
+  codespell>=2.2.2,<3.0
+  mypy==1.2.0
 
   # Python types, needed for mypy to work correctly
   types-backports
@@ -65,11 +65,11 @@ requirements: |-
   psutil
 
   # uvicorn[standard] but without watchfiles (since it requires rust)
-  uvicorn==0.18.3
+  uvicorn==0.21.1
   httptools>=0.5.0
   python-dotenv>=0.13
-  uvloop>=0.14.0,!=0.15.0,!=0.15.1
-  websockets>=10.0
+  uvloop>=0.15.2
+  websockets>=10.4
 
   xdg
 #@ end

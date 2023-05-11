@@ -4,8 +4,6 @@
 
 #@ def params():
 name: meson
-dependencies:
-- python-base-packages
 requirements: |-
   meson==0.56.2
 #@ end

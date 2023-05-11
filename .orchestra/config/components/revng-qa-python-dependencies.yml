@@ -6,7 +6,6 @@
 name: revng-qa-python-dependencies
 dependencies:
 - pyyaml
-- python-base-packages
 requirements: |-
   expandvars
   jinja2

@@ -1,4 +1,5 @@
 #@ load("@ytt:data", "data")
+#@ load("@ytt:template", "template")
 
 #@ load("/lib/fn-args.lib.yml", "mandatory")
 #@ load("/lib/util.lib.yml", "datavalue")
@@ -8,13 +9,17 @@
 #@ def pip_package(
 #@        name=mandatory,
 #@        requirements=mandatory,
-#@        dependencies=mandatory
+#@        dependencies=[]
 #@  ):
 (@= name @):
   builds:
     default:
-      #@ if/end dependencies:
-      dependencies: #@ dependencies
+      dependencies:
+      #@ if name != "python-base-packages":
+      - python-base-packages
+      #@ end
+      - host-c-toolchain
+      - #@ template.replace(dependencies)
       configure: |-
         mkdir -p "$BUILD_DIR"
         cd "$BUILD_DIR"
