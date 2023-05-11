@@ -18,8 +18,9 @@
       #@ if name != "python-base-packages":
       - python-base-packages
       #@ end
-      - host-c-toolchain
       - #@ template.replace(dependencies)
+      build_dependencies:
+      - host-c-toolchain
       configure: |-
         mkdir -p "$BUILD_DIR"
         cd "$BUILD_DIR"
