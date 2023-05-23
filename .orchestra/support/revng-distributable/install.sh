@@ -45,7 +45,7 @@ cp -a "$ORCHESTRA_DOTDIR/support/revng-distributable/environment" environment
 
 # shellcheck disable=SC2094
 {
-  orchestra environment | grep -E "^export (PATH|REVNG_TRANSLATE_LDFLAGS)"
+  orchestra environment | grep -E "^export (PATH|REVNG_TRANSLATE_LDFLAGS|LLVM_SYMBOLIZER)"
   cat <<EOF
 unset ORCHESTRA_DOTDIR
 unset ORCHESTRA_ROOT
