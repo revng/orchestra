@@ -18,7 +18,7 @@ environment:
   - HARD_FLAGS_YARN: "--non-interactive --no-progress --frozen-lockfile --offline"
   - TERMINFO: $ORCHESTRA_ROOT/share/terminfo
   - WINEPREFIX: $ORCHESTRA_DOTDIR/wine-prefix
-  - LLVM_SYMBOLIZER: $ORCHESTRA_ROOT/lib/llvm/llvm/bin/llvm-symbolizer
+  - LLVM_SYMBOLIZER_PATH: $ORCHESTRA_ROOT/lib/llvm/llvm/bin/llvm-symbolizer
   - HARD_FLAGS_COMPILE: #@ str(datavalue("hard_flags_compile"))
   - HARD_FLAGS_CXX_CLANG: #@ str(datavalue("hard_flags_cxx_clang"))
   - HARD_FLAGS_CLANG: #@ str(datavalue("hard_flags_clang"))
