@@ -64,7 +64,7 @@ builds:
       ZEAL_PATH="\${XDG_DATA_HOME:-\$HOME/.local/share}/Zeal/Zeal/docsets/"
       ln -s \$(realpath -m --relative-to "\$ZEAL_PATH" \$ORCHESTRA_ROOT/share/doc/llvm/llvm.docset) "\$ZEAL_PATH"
       ln -s \$(realpath -m --relative-to "\$ZEAL_PATH" \$ORCHESTRA_ROOT/share/doc/clang/clang.docset) "\$ZEAL_PATH"
-      ln -s \$(realpath -m --relative-to "\$ZEAL_PATH" \$ORCHESTRA_ROOT/share/doc/clang/mlir.docset) "\$ZEAL_PATH"
+      ln -s \$(realpath -m --relative-to "\$ZEAL_PATH" \$ORCHESTRA_ROOT/share/doc/mlir/mlir.docset) "\$ZEAL_PATH"
       EOF
 #@ end
 
