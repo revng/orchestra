@@ -106,7 +106,7 @@ done
 rm "$TMP_IDX"
 
 # Copying x86_64-calc for smoke tests
-TEST_BINARY=$(echo "$ORCHESTRA_ROOT/share/revng/test/tests/runtime/calc-x86-64-static-revng-qa.compiled-stripped-"*)
+TEST_BINARY=$(echo "$ORCHESTRA_ROOT/share/revng/test/tests/runtime/calc-x86-64-static-revng-qa.compiled-with-debug-info-"*)
 cp -a "$TEST_BINARY" share/revng/calc-x86-64-static
 
 echo "Generating checksums"
