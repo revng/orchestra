@@ -37,6 +37,6 @@ components:
     test_triggers:
       - test/revng-c
     check_branch:
-      - revng check-conventions --force-format --HEAD
+      - revng check-conventions --force-format --HEAD --check-commit
       - orc shell -c revng-c cmake . && orc install revng-c
     builds: #@ typical_cmake_builds(**build_args())
