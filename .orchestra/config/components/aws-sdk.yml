@@ -1,0 +1,63 @@
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/ninja.lib.yml", "ninja")
+#@ load("/lib/create-component.lib.yml", "single_build_component")
+
+#@yaml/text-templated-strings
+---
+#@ def aws_sdk_args():
+#@ version = "1.11.130"
+#@ source_url = "https://github.com/aws/aws-sdk-cpp/archive/refs/tags/" + version + ".tar.gz"
+license: source/LICENSE
+configure: |
+  mkdir -p "$BUILD_DIR"
+  cd "$BUILD_DIR"
+
+  extract.sh --into "$BUILD_DIR/source" --save-as "aws-sdk-(@= version @).tar.gz" "(@= source_url @)"
+
+  pushd source &> /dev/null
+  patch -p1 < "${ORCHESTRA_DOTDIR}/patches/aws-sdk-force-shared.patch"
+
+  function curl() {
+      if [[ $# != 3 || $2 != "--output" ]]; then
+          return 1
+      fi
+
+      FILENAME="$(basename "$1")"
+      "${ORCHESTRA_DOTDIR}/support/fetch.sh" "$1"
+      mv "$FILENAME" "$3"
+  }
+
+  export UNZIP="-qq"
+  source ./prefetch_crt_dependency.sh
+  popd &> /dev/null
+
+  cmake ./source \
+    -GNinja \
+    -DCMAKE_INSTALL_MESSAGE=NEVER \
+    -DCMAKE_C_COMPILER=clang \
+    -DCMAKE_CXX_COMPILER=clang++ \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIBS=ON \
+    -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT" \
+    -DFORCE_CURL=ON \
+    -DBUILD_ONLY="s3" \
+    -DENABLE_UNITY_BUILD=OFF \
+    -DENABLE_RTTI=OFF \
+    -DCPP_STANDARD=20 \
+    -DENABLE_TESTING=OFF
+build_system: ninja
+build_dependencies:
+  - cmake
+  - host-cxx-toolchain
+dependencies:
+  - host-libcxx
+  - curl
+  - openssl
+  - zlib
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  aws-sdk: #@ single_build_component(**aws_sdk_args())
