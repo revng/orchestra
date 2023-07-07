@@ -1,7 +1,7 @@
 #@ load("@ytt:overlay", "overlay")
 #@ load("/lib/create-component.lib.yml", "single_build_component")
 
-#@ package_json_sha = "20188d4beff04aa2f801ac6f527474c2422db1eb8d652b983d6f4fca6686936a"
+#@ package_json_sha = "44ed422c03d4396436a7e1de5d097abde391f2816dca91dad9ba871c0a9f1962"
 
 #@yaml/text-templated-strings
 ---
@@ -36,6 +36,7 @@ install: |
   npm --global \
       --prefix="${DESTDIR}${ORCHESTRA_ROOT}" \
       install \
+        s3rver \
         prettier eslint lint-staged gts \
         eslint-plugin-node eslint-plugin-prettier \
         @typescript-eslint/eslint-plugin @typescript-eslint/parser
