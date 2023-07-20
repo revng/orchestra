@@ -41,7 +41,7 @@ requirements: |-
   Jinja2
   gql[aiohttp]
   grandiso
-  jsonschema
+  jsonschema>=4.17.3,<4.18.0
   networkx
   pefile
   pycparser
