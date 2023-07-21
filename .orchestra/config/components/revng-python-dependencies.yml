@@ -23,7 +23,7 @@ requirements: |-
   pep8-naming>=0.13.3,<1.0
   isort>=5.11.4,<6.0
   codespell>=2.2.2,<3.0
-  mypy==1.2.0
+  mypy==1.4.1
 
   # Python types, needed for mypy to work correctly
   types-backports
@@ -35,13 +35,12 @@ requirements: |-
   cmakelang
 
   # Applications/Script dependencies
-  aiodataloader
-  ariadne[asgi-file-uploads]>=0.16
+  ariadne[asgi-file-uploads]>=0.20.1
   cffi
   Jinja2
   gql[aiohttp]
   grandiso
-  jsonschema
+  jsonschema>=4.17.3,<4.18.0
   networkx
   pefile
   pycparser
@@ -65,7 +64,7 @@ requirements: |-
   psutil
 
   # uvicorn[standard] but without watchfiles (since it requires rust)
-  uvicorn==0.21.1
+  uvicorn==0.22.0
   httptools>=0.5.0
   python-dotenv>=0.13
   uvloop>=0.15.2
