@@ -1,0 +1,43 @@
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/create-component.lib.yml", "single_build_component")
+
+#@yaml/text-templated-strings
+---
+#@ def libarchive_args():
+#@ version = "3.7.1"
+#@ source_url = "https://github.com/libarchive/libarchive/releases/download/v" + version + "/libarchive-" + version + ".tar.xz"
+license: COPYING
+configure: |
+  mkdir -p "$BUILD_DIR"
+  extract.sh --into "$BUILD_DIR" (@= source_url @)
+
+  cd "$BUILD_DIR"
+  ./configure \
+    --disable-static \
+    --enable-shared \
+    --prefix="$ORCHESTRA_ROOT" \
+    --with-zlib \
+    --with-bz2lib \
+    --with-libb2 \
+    --with-lzma \
+    --without-xml2 \
+    --without-expat \
+    --disable-bsdtar \
+    --disable-bsdcat \
+    --disable-bsdcpio \
+    --disable-bsdunzip
+build_system: make
+build_dependencies:
+  - host-c-toolchain
+dependencies:
+  - libb2
+  - zlib
+  - bzip2
+  - xz
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  libarchive: #@ single_build_component(**libarchive_args())
