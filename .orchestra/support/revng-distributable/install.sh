@@ -120,9 +120,18 @@ find . -not -type d -not -path './revng/*' -delete
 find . -type d -empty -delete
 
 if [ "$RUN_TESTS" -eq 1 ]; then
+  TEST_CMD=(
+    ./revng
+    graphql
+    --analyses-list=revng-initial-auto-analysis
+    --analyses-list=revng-c-initial-auto-analysis
+    --produce-artifacts
+    "$TEST_BINARY"
+  )
+
   # Orchestra adds quite a few environment variables, which we want to avoid to use when doing self-test
   # In order to launch self-test with as few environment variables as possible we:
   # * use `env -i` to start with no environment variables
   # * use `bash --login` to restore the ones provided at login (e.g. PATH)
-  env -i -C "$DESTDIR/$ORCHESTRA_ROOT/revng" bash --login -c "set -e; ./revng daemon-self-test --revng-c \"$TEST_BINARY\""
+  env -i -C "$DESTDIR/$ORCHESTRA_ROOT/revng" bash --login -c "set -e; ${TEST_CMD[*]}"
 fi
