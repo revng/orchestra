@@ -16,6 +16,7 @@ PACKAGES=()
 #
 # Base system tools
 #
+PACKAGES+=(aria2)
 PACKAGES+=(curl)
 PACKAGES+=(ca-certificates)
 PACKAGES+=(python3)
@@ -90,6 +91,7 @@ PACKAGES+=(p7zip-full)
 PACKAGES+=(winbind)
 PACKAGES+=(wine)
 PACKAGES+=(wine32)
+PACKAGES+=(wine64)
 
 #
 # vscode-web runtime dependencies
