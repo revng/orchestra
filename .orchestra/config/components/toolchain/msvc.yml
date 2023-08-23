@@ -6,8 +6,9 @@
 #! link.exe version 6.00.8168
 #! Visual C++ from Visual Studio 6 (1998)
 #! SDK version 5.0.1636.1
+#! 32-bit host, 32-bit target
 name: win32-vc12
-triple: x86_64-winsdk-vc12
+triple: i386-winsdk-vc12
 debug_info: true
 extract: |
   fetch.sh \
@@ -34,8 +35,9 @@ lib:
 #! link.exe version 7.10.3077
 #! Visual C++ from Visual Studio 7.1 (.NET 2003)
 #! Unknown SDK version, probably around 5.1 or 5.2
+#! 32-bit host, 32-bit target
 name: win32-vc13
-triple: x86_64-winsdk-vc13
+triple: i386-winsdk-vc13
 debug_info: false
 extract: |
   fetch.sh \
@@ -70,8 +72,9 @@ lib:
 #! link.exe version 10.00.30319.01
 #! Visual C++ from Visual Studio 10.0 (2010)
 #! SDK version 6.1.7600.16385 (7.0a)
+#! 32-bit host, 32-bit target
 name: win32-vc16
-triple: x86_64-winsdk-vc16
+triple: i386-winsdk-vc16
 debug_info: true
 extract: |
   fetch.sh \
