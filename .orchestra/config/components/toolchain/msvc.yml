@@ -195,13 +195,7 @@ toolchain/(@= name @)/vc:
         sleep 0.2
 
         # Run cl.exe, suppress its output in case of success
-        if wine "$SCRIPT_DIR"/(@= bin @)/cl.ex*e "$@" >& "$OUTPUT"; then
-            :
-        else
-            RESULT="$?"
-            cat "$OUTPUT"
-            exit "$RESULT"
-        fi
+        wine "$SCRIPT_DIR"/(@= bin @)/cl.ex*e "$@"
 
         EOF
 
