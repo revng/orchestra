@@ -90,6 +90,7 @@ PACKAGES+=(p7zip-full)
 PACKAGES+=(winbind)
 PACKAGES+=(wine)
 PACKAGES+=(wine32)
+PACKAGES+=(wine64)
 
 #
 # vscode-web runtime dependencies

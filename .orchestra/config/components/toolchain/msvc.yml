@@ -1,5 +1,6 @@
 #@ load("@ytt:template", "template")
 #@ load("@ytt:overlay", "overlay")
+#@ load("/lib/fn-args.lib.yml", "mandatory")
 
 #@ def vc12_params():
 #! cl.exe version 12.00.8168
@@ -133,6 +134,141 @@ lib:
 - sdk-70a/Lib
 #@ end
 
+#@yaml/text-templated-strings
+---
+#@ def vs_17_params(name=mandatory, is_64=mandatory, vc_package=mandatory, sdk_package=mandatory, vc_path=mandatory, sdk_package_directory=mandatory, sdk_version=mandatory, sdk_path=mandatory):
+name: (@= name @)
+triple: (@= "x86_64" if is_64 else "i386" @)-winsdk-vc19
+debug_info: true
+extract: |
+  fetch.sh \
+    --no-copy \
+    'https://aka.ms/vs/17/release/channel' \
+    --save-as visual-studio-17-release-channel.json
+
+  URL="$(cat "${SOURCE_ARCHIVES}/visual-studio-17-release-channel.json" | \
+    jq -r '.channelItems | .[] | select(.id | contains("Microsoft.VisualStudio.Manifests.VisualStudio")).payloads[0].url')"
+
+  fetch.sh \
+    --no-copy \
+    "$URL" \
+    --save-as visual-studio-17-packages.json
+
+  # Fetch MSVC and the SDK
+  cat "${SOURCE_ARCHIVES}/visual-studio-17-packages.json" | \
+    "$ORCHESTRA_DOTDIR"/support/parse-vs17-json.py \
+    (@= vc_package @) \
+    (@= sdk_package @) \
+    > to-fetch.csv
+
+  mkdir -p downloads
+  while IFS="," read -r DIR NAME SHA256 URL; do
+      DESTINATION="downloads/$DIR/$NAME"
+      if ! test -e "$DESTINATION"; then
+          mkdir -p "$(dirname $DESTINATION)"
+          echo "Downloading $DESTINATION"
+          while ! curl -s -L "$URL" > "$DESTINATION"; do
+              echo "Retrying" < /dev/stderr
+          done
+      fi
+
+      if ! echo "$SHA256 $DESTINATION" | sha256sum --check --status; then
+        echo "Wrong hash for $(readlink -f $DESTINATION)" > /dev/stderr
+        exit 1
+      fi
+
+  done < <(tail -n +2 to-fetch.csv)
+
+  rm -f to-fetch.csv
+
+  # Extract all the *.vsix files
+  rm -rf extracted-vsix
+  mkdir extracted-vsix
+  cd extracted-vsix
+  yes S | find ../downloads/ -name "*.vsix" -type f -exec 7z x {} \; || true
+  cd ..
+
+  rm -rf VC
+  mv extracted-vsix/(@= vc_path @) VC
+  rm -rf extracted-vsix
+
+  # Extract all the *.cab of the SDK
+  rm -rf extracted-cabs
+  mkdir extracted-cabs
+  cd extracted-cabs
+  for CAB in ../downloads/(@= sdk_package_directory @)/Installers/*.cab; do
+      yes S | 7z x "$CAB" || true
+  done
+
+  # Extract meta-information from MSI installsers
+  rm -f all-dirs.csv all-file.csv all-component.csv
+  for MSI in ../downloads/(@= sdk_package_directory @)/Installers/*.msi; do
+      msiinfo export "$MSI" Directory | sed 's/\t/,/g' > dirs.csv
+      msiinfo export "$MSI" File | sed 's/\t/,/g' > file.csv
+      msiinfo export "$MSI" Component | sed 's/\t/,/g' > component.csv
+
+      if test -e all-dirs.csv; then
+          cat dirs.csv | tail -n +2 >> all-dirs.csv
+          cat file.csv | tail -n +2 >> all-file.csv
+          cat component.csv | tail -n +2 >> all-component.csv
+          rm dirs.csv file.csv component.csv
+      else
+          mv dirs.csv all-dirs.csv
+          mv file.csv all-file.csv
+          mv component.csv all-component.csv
+      fi
+  done
+
+  # Rename files
+  "$ORCHESTRA_DOTDIR"/support/vs10-create-directories.py \
+    --create-directories \
+    all-dirs.csv \
+    all-file.csv \
+    all-component.csv | \
+    while IFS=, read -r TARGET_NAME TARGET_PATH; do
+        if ! test -e "$TARGET_NAME"; then
+            echo "Warning: $TARGET_NAME not found" > /dev/stderr
+            continue
+        fi
+
+        mv "$TARGET_NAME" "./$TARGET_PATH"
+    done
+
+  cd ..
+
+  mv 'extracted-cabs/(@= sdk_path @)' windows-sdk
+
+  rm -rf extracted-cabs/ downloads/
+
+#@ target = "x64" if is_64 else "x86"
+bin: VC/bin/Hostx86/(@= target @)/
+include:
+- VC/include
+- windows-sdk/Include/(@= sdk_version @)/ucrt
+lib:
+- VC/lib/(@= target @)
+- windows-sdk/Lib/(@= sdk_version @)/um/(@= target @)
+- windows-sdk/Lib/(@= sdk_version @)/ucrt/(@= target @)
+#@ end
+
+#@ def vc19_32_params():
+#! cl.exe version 19.37.32822
+#! link.exe version 14.37.32822.0
+#! Visual C++ v143 from Visual Studio 2022
+#! SDK version 10.0.22621 (Windows 11)
+#! 32-bit host, 32-bit target
+#@ return vs_17_params("win32-vc19", False, "Microsoft.VisualStudio.Component.VC.14.37.17.7.x86.x64", "Microsoft.VisualStudio.Component.Windows11SDK.22621", "Contents/VC/Tools/MSVC/14.37.32822", "Win11SDK_10.0.22621", "10.0.22621.0", "SourceDir/Windows Kits/10")
+#@ end
+
+#@ def vc19_64_params():
+#! cl.exe version 19.37.32822
+#! link.exe version 14.37.32822.0
+#! Visual C++ v143 from Visual Studio 2022
+#! SDK version 10.0.22621 (Windows 11)
+#! 32-bit host, 64-bit target
+#@ return vs_17_params("win64-vc19", True, "Microsoft.VisualStudio.Component.VC.14.37.17.7.x86.x64", "Microsoft.VisualStudio.Component.Windows11SDK.22621", "Contents/VC/Tools/MSVC/14.37.32822", "Win11SDK_10.0.22621", "10.0.22621.0", "SourceDir/Windows Kits/10")
+#@ end
+
 
 #@yaml/text-templated-strings
 ---
@@ -171,16 +307,13 @@ toolchain/(@= name @)/vc:
         export INCLUDE="(@= ";".join(["$SCRIPT_DIR/" + path for path in include]) @)"
         export LIB="(@= ";".join(["$SCRIPT_DIR/" + path for path in lib]) @)"
 
-        OUTPUT="$(mktemp tmp.msvc-cl.exe.XXXXXXXXXX)";
-        trap 'rm -f -- "$OUTPUT"' EXIT;
-
         # Suppress wine debug information
         export WINEDEBUG="-all"
 
         # Disable .Net and mshtml
         export WINEDLLOVERRIDES="mscoree,mshtml="
 
-        # Run one dedicated mspdbsrv.exe per instance of cl.exe
+        # Run one dedicated mspdbsrv.exe per instance of the executable
         export _MSPDBSRV_ENDPOINT_="$(python3 -c 'import uuid; print(uuid.uuid4())')"
         wine "$SCRIPT_DIR"/(@= bin @)/mspdbsrv.ex*e -start -spawn &
         MSPDBSRV_PID="$!"
@@ -194,12 +327,23 @@ toolchain/(@= name @)/vc:
         done
         sleep 0.2
 
-        # Run cl.exe, suppress its output in case of success
-        wine "$SCRIPT_DIR"/(@= bin @)/cl.ex*e "$@"
+        PROGRAM_NAME="$(basename $0)"
+        (@ if triple.startswith("x86_64-"): @)
+        if [[ "${PROGRAM_NAME}" =~ ^ml.exe$ ]]; then
+            PROGRAM_NAME="ml64.exe"
+        fi
+        (@ end @)
+
+        wine "$SCRIPT_DIR"/(@= bin @)/$PROGRAM_NAME "$@"
 
         EOF
 
+        cp cl.exe dumpbin.exe
+        cp cl.exe ml.exe
+
         chmod +x cl.exe
+        chmod +x dumpbin.exe
+        chmod +x ml.exe
 
         cd "$BUILD_DIR"
         mkdir -p bin
@@ -209,12 +353,18 @@ toolchain/(@= name @)/vc:
 
         SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}"; )" &> /dev/null && pwd 2> /dev/null; )";
 
-        PROGRAM_NAME="$(basename $0)"
-        TRIPLE="${PROGRAM_NAME%-cl}"
-
-        exec "$SCRIPT_DIR/../lib/vc/$TRIPLE/cl.exe" "$@"
+        FILE_NAME="$(basename $0)"
+        TRIPLE="${FILE_NAME%-*}"
+        PROGRAM_NAME="${FILE_NAME##*-}"
+        exec "$SCRIPT_DIR/../lib/vc/$TRIPLE/$PROGRAM_NAME.exe" "$@"
         EOF
+
+        cp bin/(@= triple @)-cl bin/(@= triple @)-dumpbin
+        cp bin/(@= triple @)-cl bin/(@= triple @)-ml
+
         chmod +x bin/(@= triple @)-cl
+        chmod +x bin/(@= triple @)-dumpbin
+        chmod +x bin/(@= triple @)-ml
 
       install: |
         cd "$BUILD_DIR"
@@ -228,16 +378,23 @@ toolchain/(@= name @)/vc:
         }
         EOF
 
+          WINE_TMP_DIRECTORY_32="$(mktemp --tmpdir tmp.wine-prefix.XXXXXXXXXX -d)"
+          trap 'rm -rf "$WINE_TMP_DIRECTORY_32"' EXIT
+
           (@ if debug_info: @)
-          ./bin/(@= triple @)-cl test.c /DEBUG:FASTLINK /Zi
+          WINEPREFIX="$WINE_TMP_DIRECTORY_32" ./bin/(@= triple @)-cl test.c -nologo /DEBUG:FASTLINK /Zi
           (@ else: @)
-          ./bin/(@= triple @)-cl test.c
+          WINEPREFIX="$WINE_TMP_DIRECTORY_32" ./bin/(@= triple @)-cl test.c -nologo 
           (@ end @)
           export WINEDEBUG=-all
-          rm -rf temporary-wineprefix
-          WINEPREFIX="$PWD/temporary-wineprefix" wine(@= "64" if triple.startswith("x86_64") else "" @) test.exe
 
-          rm -rf test.* temporary-wineprefix
+          if [[ "(@= triple @)" =~ ^x86_64- ]]; then
+            WINE_TMP_DIRECTORY_64="$(mktemp --tmpdir tmp.wine-prefix.XXXXXXXXXX -d)"
+            trap 'rm -rf "$WINE_TMP_DIRECTORY_64"' EXIT
+            WINEPREFIX="$WINE_TMP_DIRECTORY_64" wine64 test.exe
+          else
+            WINEPREFIX="$WINE_TMP_DIRECTORY_32" wine test.exe
+          fi
         fi
 
         cp -far --reflink=auto "$BUILD_DIR/"* "${DESTDIR}${ORCHESTRA_ROOT}/"
@@ -250,3 +407,5 @@ components:
   _: #@ template.replace(create_vc_component(**vc12_params()))
   _: #@ template.replace(create_vc_component(**vc13_params()))
   _: #@ template.replace(create_vc_component(**vc16_params()))
+  _: #@ template.replace(create_vc_component(**vc19_32_params()))
+  _: #@ template.replace(create_vc_component(**vc19_64_params()))
