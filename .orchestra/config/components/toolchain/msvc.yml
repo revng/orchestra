@@ -234,9 +234,10 @@ toolchain/(@= name @)/vc:
           ./bin/(@= triple @)-cl test.c
           (@ end @)
           export WINEDEBUG=-all
-          wine test.exe
+          rm -rf temporary-wineprefix
+          WINEPREFIX="$PWD/temporary-wineprefix" wine(@= "64" if triple.startswith("x86_64") else "" @) test.exe
 
-          rm test.*
+          rm -rf test.* temporary-wineprefix
         fi
 
         cp -far --reflink=auto "$BUILD_DIR/"* "${DESTDIR}${ORCHESTRA_ROOT}/"
