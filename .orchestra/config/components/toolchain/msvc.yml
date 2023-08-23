@@ -153,8 +153,8 @@ toolchain/(@= name @)/vc:
         INSTALL_PATH="lib/vc/(@= triple @)"
         mkdir -p "$BUILD_DIR"
         cd "$BUILD_DIR"
-        mkdir lib64
-        ln -s lib64 lib
+        mkdir -p lib64
+        test -e lib || ln -s lib64 lib
         mkdir -p "$BUILD_DIR/$INSTALL_PATH"
         cd "$BUILD_DIR/$INSTALL_PATH"
 
@@ -208,7 +208,7 @@ toolchain/(@= name @)/vc:
         chmod +x cl.exe
 
         cd "$BUILD_DIR"
-        mkdir bin
+        mkdir -p bin
 
         cat > bin/(@= triple @)-cl <<'EOF'
         #!/bin/bash
