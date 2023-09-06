@@ -14,6 +14,7 @@ build_dependencies:
   - host-cxx-toolchain
   - nodejs-support
 dependencies:
+  - aws-sdk
   - boost
   - host-libcxx
   - llvm
@@ -23,6 +24,7 @@ dependencies:
   - revng-js-prerequisites
   - glibc
   - gcc-runtime
+  - libarchive
 use_asan: false
 post_install_script: |
   if [ "$RUN_TESTS" -eq 1 ]; then

@@ -1,0 +1,48 @@
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/create-component.lib.yml", "single_build_component")
+
+#@yaml/text-templated-strings
+---
+#@ def curl_args():
+#@ curl_version = "8.2.0"
+#@ source_url = "https://github.com/curl/curl/releases/download/curl-" + curl_version.replace(".", "_") + "/curl-" + curl_version + ".tar.xz"
+license: COPYING
+configure: |
+  mkdir -p "$BUILD_DIR"
+  extract.sh --into "$BUILD_DIR" (@= source_url @)
+
+  cd "$BUILD_DIR"
+
+  ./configure \
+    --prefix="$ORCHESTRA_ROOT" \
+    --disable-static \
+    --disable-ldap \
+    --disable-ldaps \
+    --disable-dict \
+    --disable-mqtt \
+    --disable-gopher \
+    --disable-rtsp \
+    --disable-imap \
+    --disable-pop3 \
+    --disable-smtp \
+    --disable-smb \
+    --disable-manual \
+    --disable-ntlm \
+    --enable-ipv6 \
+    --with-openssl \
+    --with-nghttp2 \
+    --enable-openssl-auto-load-config
+build_system: make
+build_dependencies:
+  - host-c-toolchain
+dependencies:
+  - nghttp2
+  - openssl
+  - zlib
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  curl: #@ single_build_component(**curl_args())
