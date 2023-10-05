@@ -13,6 +13,11 @@ extra_compiler_flags: #@ data.values.revng_extra_compiler_flags
 build_dependencies:
   - host-cxx-toolchain
   - nodejs-support
+  #! Note: we need this dependency for well-known-model binaries, which is a
+  #! build-time dependency of revng.
+  #! It would be possible to split off test/revng-qa to make it only build those
+  #! binaries, but the benefits are not too big.
+  - test/revng-qa
 dependencies:
   - aws-sdk
   - boost
