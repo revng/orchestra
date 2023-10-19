@@ -62,6 +62,7 @@ requirements: |-
   requests-toolbelt
   rich
   psutil
+  build
 
   # uvicorn[standard] but without watchfiles (since it requires rust)
   uvicorn==0.22.0
