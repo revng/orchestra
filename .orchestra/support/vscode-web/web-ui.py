@@ -1,5 +1,4 @@
 import json
-import os
 import signal
 import sys
 import webbrowser
@@ -27,7 +26,7 @@ def log(msg: str):
 
 class VSCodeWebCommand(Command):
     def __init__(self):
-        super().__init__(("web-ui",), "Start rev.ng's web ui")
+        super().__init__(("web-ui",), "Start rev.ng's Web UI")
         self.process = None
         self.app = Starlette(
             routes=[
@@ -66,11 +65,7 @@ class VSCodeWebCommand(Command):
         self.args = options.parsed_args
         port = options.parsed_args.port
         if options.parsed_args.daemon:
-            env = {
-                **os.environ,
-                "REVNG_ORIGINS": f"vscode-file://vscode-app,http://127.0.0.1:{port}",
-            }
-            self.process = Popen(["revng", "daemon"], env=env)
+            self.process = Popen(["revng", "daemon"])
         uvicorn.run(self.app, host="127.0.0.1", port=port, log_level="info", access_log=False)
 
 
