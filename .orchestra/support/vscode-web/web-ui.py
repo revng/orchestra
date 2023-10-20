@@ -1,3 +1,4 @@
+import json
 import os
 import signal
 import sys
@@ -6,7 +7,9 @@ from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from subprocess import Popen
 
 from starlette.applications import Starlette
-from starlette.routing import Mount
+from starlette.requests import Request
+from starlette.responses import JSONResponse
+from starlette.routing import Mount, Route
 from starlette.staticfiles import StaticFiles
 
 import uvicorn
@@ -14,7 +17,7 @@ import uvicorn
 from revng.cli.commands_registry import Command, CommandsRegistry, Options
 from revng.support import get_root
 
-ROOT = str((get_root() / "share/vscode-web").resolve())
+ROOT = (get_root() / "share/vscode-web").resolve()
 
 
 def log(msg: str):
@@ -27,10 +30,20 @@ class VSCodeWebCommand(Command):
         super().__init__(("web-ui",), "Start rev.ng's web ui")
         self.process = None
         self.app = Starlette(
-            routes=[Mount("/", app=StaticFiles(directory=ROOT, html=True))],
+            routes=[
+                Route("/product.json", self.product),
+                Mount("/", app=StaticFiles(directory=str(ROOT), html=True)),
+            ],
             on_startup=[self.startup],
             on_shutdown=[self.shutdown],
         )
+
+    async def product(self, request: Request):
+        with open(ROOT / "product.json") as f:
+            data = json.load(f)
+
+        data["webviewEndpoint"] = f"http://127.0.0.1:{self.args.port}" + data["webviewEndpoint"]
+        return JSONResponse(data)
 
     def startup(self):
         log(f"serving at vscode web at 127.0.0.1:{self.args.port}")
