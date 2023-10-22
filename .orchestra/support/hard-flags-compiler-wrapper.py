@@ -147,7 +147,7 @@ def main():
     sys.argv = replace_argv0(sys.argv)
 
     disable_wrapper = int(os.environ.get("HARD_FLAGS_IGNORE", "0")) != 0
-    if disable_wrapper or "-S" in sys.argv:
+    if disable_wrapper:
         exec(other(sys.argv))
 
     sys.argv = filter_disallowed_paths(sys.argv, "HARD_ALLOWED_INCLUDE_PATH", "-I")
@@ -192,6 +192,7 @@ def main():
     # Are we linking or compiling an individual translation unit?
     is_linking = (has_inputs
                   and ("-c" not in sys.argv
+                       and "-S" not in sys.argv
                        and "-E" not in sys.argv))
 
     if is_clang_tidy:
