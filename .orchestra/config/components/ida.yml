@@ -11,6 +11,7 @@ components:
        default:
         dependencies:
           - ncurses
+          - gcc-runtime
         configure: |
           mkdir -p "$BUILD_DIR"
           cd "$BUILD_DIR"
@@ -49,7 +50,8 @@ components:
           cp -a "${SOURCE_ARCHIVES}/ida.reg" "$IDA_INSTALL_DIR"
 
           # Create a symlink to ncurses
-          ln -s ../../lib64/libcurses.so "$IDA_INSTALL_DIR/libcurses.so"
+          ln -s ../../lib64/libcurses.so "$IDA_INSTALL_DIR/"
+          ln -s ../../lib64/libstdc++.so.6 "$IDA_INSTALL_DIR/"
 
           # Copy the license to the build directory
           mkdir -p "$BUILD_DIR"
