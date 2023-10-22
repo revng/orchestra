@@ -165,7 +165,9 @@ install: |
     fi
 
     mkdir -p "${DESTDIR}${ORCHESTRA_ROOT}/link-only/bin"
-    cp "${ORCHESTRA_DOTDIR}/support/hard-flags-compiler-wrapper.py" "${DESTDIR}${ORCHESTRA_ROOT}/link-only/bin/gcc"
+    COMPILER_WRAPPER="${ORCHESTRA_DOTDIR}/support/hard-flags-compiler-wrapper.py"
+    echo "25da6081a2325995b8e668072c23387428d8561cfc6e932876fd449b57aaa862 ${COMPILER_WRAPPER}" | sha256sum -c -
+    cp "${COMPILER_WRAPPER}" "${DESTDIR}${ORCHESTRA_ROOT}/link-only/bin/gcc"
     ln -s gcc "${DESTDIR}${ORCHESTRA_ROOT}/link-only/bin/cc"
     ln -s gcc "${DESTDIR}${ORCHESTRA_ROOT}/link-only/bin/x86_64-pc-linux-gnu-cc"
     ln -s gcc "${DESTDIR}${ORCHESTRA_ROOT}/link-only/bin/x86_64-pc-linux-gnu-gcc"
