@@ -16,7 +16,7 @@ configure: |
   mkdir -p "$BUILD_DIR"
 install: |
   PYTHON_PACKAGE_BASE=$("${ORCHESTRA_DOTDIR}/support/get-python-path" purelib)
-  COMMANDS_DIR="${DESTDIR}${PYTHON_PACKAGE_BASE}/revng/cli/_commands"
+  COMMANDS_DIR="${DESTDIR}${PYTHON_PACKAGE_BASE}/revng/internal/cli/_commands"
   mkdir -p "$COMMANDS_DIR"
   cp -a "${ORCHESTRA_DOTDIR}/support/vscode-web/web-ui.py" \
         "$COMMANDS_DIR"
