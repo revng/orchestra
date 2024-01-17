@@ -36,6 +36,7 @@
     "extensionsPrefix": "/static/extensions",
     "builtinExtensions": [
         "configuration-editing",
+        "cpp",
         "diff",
         "html",
         "image-preview",
