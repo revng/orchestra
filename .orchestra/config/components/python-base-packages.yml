@@ -9,6 +9,7 @@ dependencies:
 requirements: |-
   wheel
   no-manylinux
+  setuptools
 #@ end
 
 #@overlay/match by=overlay.all, expects=1
