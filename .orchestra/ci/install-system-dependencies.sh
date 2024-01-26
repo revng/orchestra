@@ -49,7 +49,7 @@ PACKAGES+=(gettext)
 PACKAGES+=(libc-dev)
 PACKAGES+=(libtool)
 PACKAGES+=(m4)
-PACKAGES+=(pkg-config)
+PACKAGES+=(pkgconf)
 PACKAGES+=(texinfo)
 PACKAGES+=(zlib1g-dev)
 
