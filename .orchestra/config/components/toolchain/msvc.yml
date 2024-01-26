@@ -327,19 +327,21 @@ toolchain/(@= name @)/vc:
         # Disable .Net and mshtml
         export WINEDLLOVERRIDES="mscoree,mshtml="
 
-        # Run one dedicated mspdbsrv.exe per instance of the executable
-        export _MSPDBSRV_ENDPOINT_="$(python3 -c 'import uuid; print(uuid.uuid4())')"
-        wine "$SCRIPT_DIR"/(@= bin @)/mspdbsrv.ex*e -start -spawn &
-        MSPDBSRV_PID="$!"
+        (@ if not triple.endswith("-vc12") and not triple.endswith("-vc13"): @)
+            # Run one dedicated mspdbsrv.exe per instance of the executable
+            export _MSPDBSRV_ENDPOINT_="$(python3 -c 'import uuid; print(uuid.uuid4())')"
+            wine "$SCRIPT_DIR"/(@= bin @)/mspdbsrv.ex*e -start -spawn &
+            MSPDBSRV_PID="$!"
 
-        # Stop mspdbsrv.exe upon exit
-        trap 'wine "$SCRIPT_DIR"/(@= bin @)/mspdbsrv.ex*e -stop' EXIT;
+            # Stop mspdbsrv.exe upon exit
+            trap 'wine "$SCRIPT_DIR"/(@= bin @)/mspdbsrv.ex*e -stop' EXIT;
 
-        # Wait for mspdbsrv.exe to be up and running
-        while ! [[ "$(readlink -f "/proc/$MSPDBSRV_PID/exe")" == *"wine"* ]]; do
+            # Wait for mspdbsrv.exe to be up and running
+            while ! [[ "$(readlink -f "/proc/$MSPDBSRV_PID/exe")" == *"wine"* ]]; do
+                sleep 0.2
+            done
             sleep 0.2
-        done
-        sleep 0.2
+        (@ end @)
 
         PROGRAM_NAME="$(basename $0)"
         (@ if triple.startswith("x86_64-"): @)
