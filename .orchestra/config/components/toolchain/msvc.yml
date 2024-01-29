@@ -383,6 +383,9 @@ toolchain/(@= name @)/vc:
 
       install: |
         cd "$BUILD_DIR"
+
+        cp -far --reflink=auto "$BUILD_DIR/"* "${DESTDIR}${ORCHESTRA_ROOT}/"
+
         if test "$RUN_TESTS" -eq 1; then
           cat > test.c <<'EOF'
         #include <stdio.h>
@@ -412,7 +415,6 @@ toolchain/(@= name @)/vc:
           fi
         fi
 
-        cp -far --reflink=auto "$BUILD_DIR/"* "${DESTDIR}${ORCHESTRA_ROOT}/"
 #@ end
 
 #@overlay/match by=overlay.all, expects=1
