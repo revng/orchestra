@@ -19,7 +19,9 @@ configure: |
     --prefix="$ORCHESTRA_ROOT" \
     --ninja \
     --with-intl=system-icu \
+    --shared-libuv \
     --shared-openssl \
+    --shared-nghttp2 \
     --shared-zlib
 
 install: |
@@ -40,6 +42,8 @@ build_dependencies:
 dependencies:
   - host-libcxx
   - icu
+  - libuv
+  - nghttp2
   - openssl
   - zlib
 #@ end
