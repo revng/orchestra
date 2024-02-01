@@ -85,7 +85,8 @@ extract: |
     aria2c \
       -q \
       --seed-time=0 \
-      'https://archive.org/download/vs2010_202102/vs2010_202102_archive.torrent'
+      'https://archive.org/download/vs2010_202102/vs2010_202102_archive.torrent' \
+      'https://archive.org/download/vs2010_202102/vs2010.zip'
     mkdir -p "${SOURCE_ARCHIVES}"
     mv vs2010_202102/vs2010.zip "${SOURCE_FILE}"
     cd ..
