@@ -50,6 +50,7 @@
           --no-python-version-warning \
           install \
           --compile \
+          --no-deps \
           --no-index \
           --no-build-isolation \
           --no-warn-script-location \
