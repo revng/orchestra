@@ -1,0 +1,20 @@
+#@ load("@ytt:overlay", "overlay")
+#@ load("@ytt:data", "data")
+#@ load("/lib/cmake.lib.yml", "cmake_boost_configuration", "typical_cmake_builds")
+#@ load("@ytt:template", "template")
+
+---
+#@ def build_args():
+source_url: "https://github.com/rui314/mold/archive/refs/tags/v2.4.0.tar.gz"
+extra_cmake_args:
+- -DCMAKE_C_COMPILER="gcc"
+- -DCMAKE_CXX_COMPILER="g++"
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  mold:
+    license: source/LICENSE
+    builds: #@ typical_cmake_builds(**build_args())

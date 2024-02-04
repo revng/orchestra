@@ -49,6 +49,7 @@ dependencies:
   - libunwind
   - libedit
   - zlib
+  - mold
 #@ end
 
 ---
@@ -56,7 +57,7 @@ dependencies:
 - -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;clang-tools-extra;lld"
 - -DBUILD_SHARED_LIBS=OFF
 - -DCOMPILER_RT_INCLUDE_TESTS=OFF
-- -DLLVM_USE_LINKER=lld
+- -DLLVM_USE_LINKER=mold
 - -DLLVM_BUILD_INSTRUMENTED=IR
 - -DLLVM_BUILD_RUNTIME=No
 - -DCMAKE_AR=$ORCHESTRA_ROOT/clang-vanilla/bin/llvm-ar
@@ -121,6 +122,7 @@ dependencies:
   - libunwind
   - libedit
   - zlib
+  - mold
 #@ end
 
 #@ end
@@ -133,7 +135,7 @@ dependencies:
 - -DCMAKE_INSTALL_RPATH="$RPATH_PLACEHOLDER/lib/llvm/clang-release/lib:$RPATH_PLACEHOLDER/lib"
 - -DCOMPILER_RT_INCLUDE_TESTS=OFF
 #@ if llvm_enable_pgo_lto:
-- -DLLVM_USE_LINKER=lld
+- -DLLVM_USE_LINKER=mold
 - -DCMAKE_AR=$ORCHESTRA_ROOT/clang-vanilla/bin/llvm-ar
 - -DCMAKE_RANLIB=$ORCHESTRA_ROOT/clang-vanilla/bin/llvm-ranlib
 - -DCMAKE_C_COMPILER=$ORCHESTRA_ROOT/clang-vanilla/wrapped-bin/clang
@@ -211,6 +213,7 @@ dependencies:
   - libunwind
   - libedit
   - zlib
+  - mold
 #@ end
 
 #@yaml/text-templated-strings
@@ -264,6 +267,7 @@ build_dependencies:
   - gcc-host-toolchain
 dependencies:
   - libunwind
+  - mold
 #@ end
 
 #@overlay/match by=overlay.all, expects=1
