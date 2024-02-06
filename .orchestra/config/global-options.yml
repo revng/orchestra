@@ -30,7 +30,7 @@ hard_flags_link: -L$INSTALL_LINK_ONLY_PATH/lib -L$ORCHESTRA_ROOT/lib -lrt --sysr
 hard_flags_link_late: -Wl,-rpath,$RPATH_PLACEHOLDER/lib -Wl,-rpath,$RPATH_PLACEHOLDER/lib64/llvm/clang-release/lib/clang/16/lib/x86_64-unknown-linux-gnu/ -Wl,-rpath,$RPATH_PLACEHOLDER/lib64/llvm/clang-release/lib/x86_64-unknown-linux-gnu/ -Wl,-rpath,$RPATH_PLACEHOLDER/lib64/llvm/llvm/lib/
 hard_flags_link_gold: -Wl,--gdb-index
 hard_flags_clangtidy: --extra-arg-before=-nostdinc++ --extra-arg-before=-nostdinc --extra-arg-before=-idirafter --extra-arg-before=$ORCHESTRA_ROOT/lib64/llvm/clang-release/include/c++/v1 --extra-arg-before=-idirafter --extra-arg-before=$ORCHESTRA_ROOT/lib/clang/(@= clang_release_version @)/include --extra-arg-before=-idirafter --extra-arg-before=$ORCHESTRA_ROOT/link-only/include
-revng_extra_compiler_flags: -fplugin=libclangTidyPlugin.so -Wl,--no-undefined -Wno-unused-command-line-argument -stdlib=libc++ -fuse-ld=lld
+revng_extra_compiler_flags: -fplugin=libclangTidyPlugin.so -Wl,--no-undefined -Wno-unused-command-line-argument -stdlib=libc++ -fuse-ld=mold
 
 parallelism: $(nproc)
 build_from_source: []
