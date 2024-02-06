@@ -72,6 +72,11 @@ requirements: |-
   websockets>=10.4
 
   xdg
+
+  marko
+  mkdocs
+  mkdocs-graphviz
+  mkdocs-material
 #@ end
 
 #@overlay/match by=overlay.all, expects=1
