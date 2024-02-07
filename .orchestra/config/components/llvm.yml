@@ -14,6 +14,7 @@
 - -DCMAKE_CXX_COMPILER="(@= data.values.regular_cxx_compiler @)"
 - -DLLVM_ENABLE_OCAMLDOC=OFF
 - -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT/lib/llvm/llvm"
+- -DLLVM_USE_LINKER=mold
 #@ end
 
 #@yaml/text-templated-strings
