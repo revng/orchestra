@@ -9,6 +9,10 @@ source_url: "https://github.com/rui314/mold/archive/refs/tags/v2.4.0.tar.gz"
 extra_cmake_args:
 - -DCMAKE_C_COMPILER="gcc"
 - -DCMAKE_CXX_COMPILER="g++"
+build_dependencies:
+- glibc
+dependencies:
+- gcc-host-toolchain
 #@ end
 
 #@overlay/match by=overlay.all, expects=1
