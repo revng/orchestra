@@ -267,7 +267,6 @@ build_dependencies:
   - gcc-host-toolchain
 dependencies:
   - libunwind
-  - mold
 #@ end
 
 #@overlay/match by=overlay.all, expects=1
