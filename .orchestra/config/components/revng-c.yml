@@ -34,7 +34,6 @@ components:
     repository: revng-c
     license: LICENSE.md
     default_build: optimized
-    binary_archives: private
     test_triggers:
       - test/revng-c
     check_branch:
