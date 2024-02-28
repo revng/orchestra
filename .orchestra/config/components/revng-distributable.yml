@@ -1,25 +1,21 @@
 #@ load("@ytt:overlay", "overlay")
 #@ load("@ytt:template", "template")
 #@ load("/lib/create-component.lib.yml", "single_build_component")
-
----
-#@ def distributable_components():
-- revng-c
-#@ end
+#@ load("/lib/fn-args.lib.yml", "mandatory")
 
 #@yaml/text-templated-strings
 ---
-#@ def revng_distributable():
+#@ def revng_distributable(name=mandatory, components=mandatory):
 configure: |
   mkdir -p "$BUILD_DIR"
 install: |
   INSTALLER="$ORCHESTRA_DOTDIR/support/revng-distributable/install.sh"
-  echo "29ecaf8022306405e346c8036a88f48d89c9cd9455c82abea902f8d1b4f54dd8 $INSTALLER" | \
+  echo "489f0f677d5f886f49de4eef18213534ee97c3605d2e5c29ad03ca1b81833d43 $INSTALLER" | \
     sha256sum --quiet -c -
-  "$INSTALLER" (@= " ".join(distributable_components()) @)
+  "$INSTALLER" "(@= name @)" "(@= "\" \"".join(components) @)"
 build_dependencies:
   - test/revng-qa
-  - #@ template.replace(distributable_components())
+  - #@ template.replace(components)
 skip_post_install: true
 #@ end
 
@@ -27,4 +23,5 @@ skip_post_install: true
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  revng-distributable: #@ single_build_component(**revng_distributable())
+  revng-distributable: #@ single_build_component(**revng_distributable("revng", ["revng-c"]))
+  revng-distributable-public-demo: #@ single_build_component(**revng_distributable("revng-public-demo", ["revng-c", "toolchain/host/gcc"]))

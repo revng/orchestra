@@ -25,7 +25,7 @@ def main():
 
     # Print the list of installed packages
     script_dir = os.path.dirname(os.path.realpath(__file__))
-    orchestra_share = os.path.join(script_dir, "..", "share", "orchestra")
+    orchestra_share = os.path.join(script_dir, "..", "..", "share", "orchestra")
 
     if os.path.isdir(orchestra_share):
         print("Installed components:")
@@ -41,7 +41,7 @@ def main():
     print()
 
     # Print revng-distributable information
-    config_json_path = os.path.join(script_dir, "..", "..", "config.json")
+    config_json_path = os.path.join(script_dir, "..", "..", "..", "config.json")
     success = False
     if os.path.exists(config_json_path):
         try:

@@ -54,7 +54,7 @@ class RevertableMoves:
 
 def main():
     updater_dir = os.path.dirname(__file__)
-    revng_dir = os.path.join(updater_dir, "..", "..")
+    revng_dir = os.path.join(updater_dir, "..", "..", "..")
     revng_dir = os.path.realpath(revng_dir)
     config_path = os.path.join(revng_dir, "config.json")
 
@@ -115,15 +115,15 @@ def main():
     if args.check:
         return 1
 
-    with tempfile.TemporaryDirectory(dir=revng_dir) as tmp_dir_path:
-        log("Using temporary directory {}".format(tmp_dir_path))
+    with tempfile.TemporaryDirectory(dir=revng_dir) as new_revng_install:
+        log("Using temporary directory {}".format(new_revng_install))
 
         opener = build_opener(auth_handler)
         r = opener.open(update_url)
         size = int(r.headers.get("Content-Length"))
         log("Downloading update ({} MB)...".format(int(size / (1024 ** 2))))
 
-        save_to = os.path.join(tmp_dir_path, latest_version_tar_name)
+        save_to = os.path.join(new_revng_install, latest_version_tar_name)
         with open(save_to, "wb") as local_file:
             written = 0
             chunk_size = 1024 ** 2
@@ -138,18 +138,17 @@ def main():
                 data = r.read(chunk_size)
 
         log("Extracting update...")
-        subprocess.check_call(["tar", "--extract", "--file", save_to],
-                              cwd=tmp_dir_path)
+        subprocess.check_call(["tar", "--strip-components=1", "--extract", "--file", save_to],
+                              cwd=new_revng_install)
 
-        # We should have a `revng` subdirectory
-        new_revng_install = os.path.join(tmp_dir_path, "revng")
-        assert os.path.isdir(new_revng_install)
+        # Drop the archive
+        os.unlink(save_to)
 
         # We're going to move files around, if anything goes wrong, revert all
         # the moves
         with RevertableMoves() as mover:
             log("Moving old files into temporary directory...")
-            backup_path = os.path.join(tmp_dir_path, "backup")
+            backup_path = os.path.join(new_revng_install, "backup")
             os.mkdir(backup_path)
             for top_level_file in configuration["top-level-files"]:
                 source = os.path.join(revng_dir, top_level_file)
@@ -174,7 +173,7 @@ def main():
                                                 "share",
                                                 "revng-distributable",
                                                 "post-update"),
-                                   tmp_dir_path])
+                                   new_revng_install])
 
             # Update and save the configuration
             log("Committing new config.json...")

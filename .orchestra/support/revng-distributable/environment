@@ -20,8 +20,10 @@ fi
 
 ORCHESTRA_ROOT="$(realpath -s "$(dirname "$SCRIPT")")/root"
 ORCHESTRA_DOTDIR="/nonexistent_directory_ignore_this"
+BUILDS_DIR="/nonexistent_directory_ignore_this"
+SOURCES_DIR="/nonexistent_directory_ignore_this"
 
 unset SCRIPT
 
 export PS1="[orchestra] ${PS1:-}"
-INSTALL_LINK_ONLY_PATH=/
+INSTALL_LINK_ONLY_PATH="$ORCHESTRA_ROOT/link-only"
