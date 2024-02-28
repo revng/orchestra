@@ -10,7 +10,6 @@
 #@yaml/text-templated-strings
 ---
 #@ def revng_distributable():
-binary_archives: private
 configure: |
   mkdir -p "$BUILD_DIR"
 install: |
