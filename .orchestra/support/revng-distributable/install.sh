@@ -26,6 +26,7 @@ while IFS= read -r component; do
   orc inspect component installed-files "${component}"
 done | \
 grep -vP '^include/(?!revng/PipelineC/(Prototypes|ForwardDeclarationsC)\.h)' | \
+grep -vP '^share/doc/(?!revng)' | \
 grep -vE \
   -e 'cmake' \
   -e 'node_modules' \
@@ -34,7 +35,6 @@ grep -vE \
   -e '^lib64/pkgconfig/' \
   -e '^share/aclocal/' \
   -e '^share/bash-completion/' \
-  -e '^share/doc/' \
   -e '^share/gcc-data/' \
   -e '^share/orchestra/save_for_later' \
   -e '^share/qemu/' \
