@@ -2,67 +2,37 @@ This document will introduce you to some basic things you can try out with this 
 
 # Installing dependencies
 
-The following command will print the commands you need to run in order to install rev.ng's dependencies:
-
-```sh
-./root/bin/install-revng-dependencies --pretend
-```
-
-Remove `--pretend` in order to run the commands.
-
-Many Linux distributions are supported out of the box.
-If you use Ubuntu derivatives, you can pretend the be on Ubuntu 20.04 as follows:
-
-```sh
-./root/bin/install-revng-dependencies --pretend ubuntu 20.04
-```
+The binary distribution of rev.ng basically has no dependencies, we ship them all.
+If you have been able to fetch and extract this archive, you should be good.
 
 # How to update
 
-Please consider this an unstable release and make sure you're always running the latest version.
+Please consider this an unstable release and make sure you're always running the latest version, in particular before reporting problems.
 In order to update, simply run:
 
 ```sh
 ./revng update
 ```
 
-# Lifting for decompilation
+This command will attempt to fetch the latest available binary distribution.
+In case of failure, every attempted change should be rolled back.
 
-To lift an exectutable and pre-process it:
+# Running `revng`
 
-```sh
-./revng \
-  lift \
-  -g ll \
-  root/share/revng/qa/tests/runtime/x86_64/compiled/calc \
-  /tmp/calc.ll
-
-./revng \
-  opt \
-  -S \
-  --detect-abi \
-  --isolate \
-  --disable-enforce-abi-safety-checks \
-  --enforce-abi \
-  /tmp/calc.ll \
-  -o /tmp/calc.for-decompilation.ll
-```
-
-In future releases we will provide handier command line tools.
-
-# Translating for re-execution
-
-To test the static binary translator use `revng-translate`.
+You can run any `revng` command either doing:
 
 ```sh
-./revng \
-  translate \
-  -i \
-  root/share/revng/qa/tests/runtime/x86_64/compiled/calc \
-  -o /tmp/calc.translated
-
-/tmp/calc.translated '(+ 3 5)'
+./revng [SUBCOMMAND] [ARGS...]
 ```
+
+or:
+
+```sh
+source ./environment
+revng [SUBCOMMAND] [ARGS...]
+```
+
+See [the docs](https://docs.rev.ng/) for information about using rev.ng.
 
 # License
 

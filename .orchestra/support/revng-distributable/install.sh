@@ -1,9 +1,20 @@
 #!/bin/bash
+
 set -euo pipefail
 
+if test "$#" -lt 2; then
+    echo "Usage: $0 [COMPONENT_NAME] [DEPENDENCY [DEPENDENCY ...]]" > /dev/stderr
+    exit 1
+fi
+
+COMPONENT_NAME="$1"
+shift
+
+DISTRIBUTABLE_PATH="${DESTDIR}${ORCHESTRA_ROOT}/${COMPONENT_NAME}"
+
 echo "Copying root"
-rm -rf "${DESTDIR}${ORCHESTRA_ROOT}/revng/root"
-mkdir -p "${DESTDIR}${ORCHESTRA_ROOT}/revng/root"
+rm -rf "${DISTRIBUTABLE_PATH}/root"
+mkdir -p "${DISTRIBUTABLE_PATH}/root"
 
 cd "$ORCHESTRA_ROOT"
 
@@ -11,7 +22,6 @@ for component in "$@"; do
   echo "$component"
   orc inspect component dependencies --installed --runtime "$component"
 done | sort | uniq | \
-grep -v '^glibc$' | \
 while IFS= read -r component; do
   orc inspect component installed-files "${component}"
 done | \
@@ -22,7 +32,6 @@ grep -vE \
   -e 'node_cache' \
   -e 'man/' \
   -e '^lib64/pkgconfig/' \
-  -e '^link-only/' \
   -e '^share/aclocal/' \
   -e '^share/bash-completion/' \
   -e '^share/doc/' \
@@ -36,20 +45,19 @@ rsync \
   --quiet \
   --files-from=- \
   "$ORCHESTRA_ROOT/." \
-  "${DESTDIR}${ORCHESTRA_ROOT}/revng/root/."
+  "${DISTRIBUTABLE_PATH}/root/."
 
-cd "$DESTDIR/$ORCHESTRA_ROOT/revng"
+cd "${DISTRIBUTABLE_PATH}"
 
 echo "Creating environment"
 cp -a "$ORCHESTRA_DOTDIR/support/revng-distributable/environment" environment
 
 # shellcheck disable=SC2094
 {
-  orchestra environment | grep -E "^export (PATH|REVNG_TRANSLATE_LDFLAGS|LLVM_SYMBOLIZER_PATH|AWS_EC2_METADATA_DISABLED)"
+  orchestra environment | grep -E "^export (PATH|REVNG_TRANSLATE_LDFLAGS|LLVM_SYMBOLIZER_PATH|AWS_EC2_METADATA_DISABLED|HARD_|RPATH_PLACEHOLDER)"
   cat <<EOF
 unset ORCHESTRA_DOTDIR
 unset ORCHESTRA_ROOT
-export REVNG_TRANSLATE_LDFLAGS="\$REVNG_TRANSLATE_LDFLAGS -L/lib -L/usr/lib -L/usr/lib/x86_64-linux-gnu"
 EOF
 } >> environment
 
@@ -61,20 +69,26 @@ echo "Copying revng"
 cp -a "$ORCHESTRA_DOTDIR/support/revng-distributable/revng" revng
 
 
-cd "$DESTDIR/$ORCHESTRA_ROOT/revng/root"
+cd "${DISTRIBUTABLE_PATH}/root"
 
 echo "Copying revng-distributable scripts"
 cp -a \
   "$ORCHESTRA_DOTDIR/support/revng-distributable/revng-update" \
   "$ORCHESTRA_DOTDIR/support/revng-distributable/revng-system-info" \
-  bin/
-
-echo "Copying install-revng-dependencies"
-cp -a "$ORCHESTRA_DOTDIR/support/revng-distributable/dockers/install-revng-dependencies" bin/
+  libexec/revng/
 
 echo "revng-distributable updater info"
 mkdir -p share/revng-distributable
 echo 1 > share/revng-distributable/version
+
+cat > share/revng-distributable/post-update <<eof
+#!/usr/bin/env bash
+set -e
+./revng --help >& /dev/null
+./revng lift --help >& /dev/null
+echo "Update successful!"
+eof
+chmod +x share/revng-distributable/post-update
 
 ln -s lib64 lib
 
@@ -110,13 +124,13 @@ TEST_BINARY=$(echo "$ORCHESTRA_ROOT/share/revng/test/tests/runtime/calc-x86-64-s
 cp -a "$TEST_BINARY" share/revng/calc-x86-64-static
 
 echo "Generating checksums"
-cd "$DESTDIR/$ORCHESTRA_ROOT/revng"
+cd "${DISTRIBUTABLE_PATH}"
 find root -type f -print0 | xargs -0 -P"$JOBS" -n100 sha256sum > checksums.sha256
 sha256sum README.md environment revng >> checksums.sha256
 
 echo "Final cleanup"
-cd "${DESTDIR}${ORCHESTRA_ROOT}"
-find . -not -type d -not -path './revng/*' -delete
+cd "${DISTRIBUTABLE_PATH}/.."
+find . -not -type d -not -path './'"$COMPONENT_NAME"'/*' -delete
 find . -type d -empty -delete
 
 if [ "$RUN_TESTS" -eq 1 ]; then
@@ -133,5 +147,5 @@ if [ "$RUN_TESTS" -eq 1 ]; then
   # In order to launch self-test with as few environment variables as possible we:
   # * use `env -i` to start with no environment variables
   # * use `bash --login` to restore the ones provided at login (e.g. PATH)
-  env -i -C "$DESTDIR/$ORCHESTRA_ROOT/revng" bash --login -c "set -e; ${TEST_CMD[*]}"
+  env -i -C "${DISTRIBUTABLE_PATH}" bash --login -c "set -e; ${TEST_CMD[*]}"
 fi

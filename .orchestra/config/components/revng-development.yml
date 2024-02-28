@@ -13,5 +13,6 @@ components:
           - revng-vscode-web
           - llvm-documentation
           - revng-distributable
+          - revng-distributable-public-demo
         configure: mkdir -p "$BUILD_DIR"
         install: echo "Nothing to do"
