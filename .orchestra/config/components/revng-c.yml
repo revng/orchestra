@@ -32,7 +32,7 @@ post_install_script: |
 components:
   revng-c:
     repository: revng-c
-    license: LICENSE.md
+    license: LICENSE
     default_build: optimized
     test_triggers:
       - test/revng-c
