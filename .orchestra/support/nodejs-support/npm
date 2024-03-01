@@ -4,7 +4,6 @@
 #
 
 set -euo pipefail
-SCRIPT_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
 
 PORT_FILE=$(mktemp --tmpdir tmp.revng.port-file.XXXXXXXXXX)
 CACHE_FOLDER=$(mktemp -d --tmpdir tmp.revng.npm.XXXXXXXXXX)
@@ -24,4 +23,4 @@ REPO_PID=$!
 
 while [ -z "$(cat "$PORT_FILE")" ]; do sleep 0.1s; done
 PORT=$(cat "$PORT_FILE")
-"$SCRIPT_DIR/npm.original" --registry="http://127.0.0.1:$PORT" --cache="$CACHE_FOLDER" "$@"
+npm.original --registry="http://127.0.0.1:$PORT" --cache="$CACHE_FOLDER" "$@"
