@@ -399,7 +399,7 @@ toolchain/(@= name @)/vc:
         EOF
 
           WINE_TMP_DIRECTORY_32="$(mktemp --tmpdir tmp.wine-prefix.XXXXXXXXXX -d)"
-          trap 'rm -rf "$WINE_TMP_DIRECTORY_32"' EXIT
+          trap 'WINEPREFIX="$WINE_TMP_DIRECTORY_32" wineserver -k && rm -rf "$WINE_TMP_DIRECTORY_32"' EXIT
 
           (@ if debug_info: @)
           WINEPREFIX="$WINE_TMP_DIRECTORY_32" ./bin/(@= triple @)-cl test.c -nologo /DEBUG:FASTLINK /Zi
@@ -410,7 +410,7 @@ toolchain/(@= name @)/vc:
 
           if [[ "(@= triple @)" =~ ^x86_64- ]]; then
             WINE_TMP_DIRECTORY_64="$(mktemp --tmpdir tmp.wine-prefix.XXXXXXXXXX -d)"
-            trap 'rm -rf "$WINE_TMP_DIRECTORY_64"' EXIT
+            trap 'WINEPREFIX="$WINE_TMP_DIRECTORY_64" wineserver -k && rm -rf "$WINE_TMP_DIRECTORY_64"' EXIT
             WINEPREFIX="$WINE_TMP_DIRECTORY_64" wine64 test.exe
           else
             WINEPREFIX="$WINE_TMP_DIRECTORY_32" wine test.exe
