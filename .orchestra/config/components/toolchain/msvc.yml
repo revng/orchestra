@@ -316,6 +316,7 @@ toolchain/(@= name @)/vc:
         SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}"; )" &> /dev/null && pwd 2> /dev/null; )";
 
         set -euo pipefail
+        set -x
 
         # Genius
         shopt -s nocaseglob
@@ -389,6 +390,7 @@ toolchain/(@= name @)/vc:
         cp -far --reflink=auto "$BUILD_DIR/"* "${DESTDIR}${ORCHESTRA_ROOT}/"
 
         if test "$RUN_TESTS" -eq 1; then
+          set -x
           cat > test.c <<'EOF'
         #include <stdio.h>
 
