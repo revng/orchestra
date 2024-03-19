@@ -324,7 +324,7 @@ toolchain/(@= name @)/vc:
         export LIB="(@= ";".join(["$SCRIPT_DIR/" + path for path in lib]) @)"
 
         # Suppress wine debug information
-        export WINEDEBUG="-all"
+        export WINEDEBUG=""
 
         # Disable .Net and mshtml
         export WINEDLLOVERRIDES="mscoree,mshtml="
