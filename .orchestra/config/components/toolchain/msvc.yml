@@ -336,7 +336,7 @@ toolchain/(@= name @)/vc:
             MSPDBSRV_PID="$!"
 
             # Stop mspdbsrv.exe upon exit
-            trap 'wine "$SCRIPT_DIR"/(@= bin @)/mspdbsrv.ex*e -stop' EXIT;
+            trap 'wine "$SCRIPT_DIR"/(@= bin @)/mspdbsrv.ex*e -stop || true' EXIT;
 
             # Wait for mspdbsrv.exe to be up and running
             while ! [[ "$(readlink -f "/proc/$MSPDBSRV_PID/exe")" == *"wine"* ]]; do
