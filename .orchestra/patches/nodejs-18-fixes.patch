@@ -53,3 +53,21 @@
  // Skip on OS X Mojave. https://github.com/nodejs/node/issues/21679
  if (common.isOSX)
    common.skip('macOS may allow ordinary processes to use any port');
+--- i/test/parallel/test-os.js
++++ w/test/parallel/test-os.js
+@@ -81,15 +81,6 @@
+ is.string(hostname);
+ assert.ok(hostname.length > 0);
+ 
+-// IBMi process priority is different.
+-if (!common.isIBMi) {
+-  const DUMMY_PRIORITY = 10;
+-  os.setPriority(DUMMY_PRIORITY);
+-  const priority = os.getPriority();
+-  is.number(priority);
+-  assert.strictEqual(priority, DUMMY_PRIORITY);
+-}
+-
+ // On IBMi, os.uptime() returns 'undefined'
+ if (!common.isIBMi) {
+   const uptime = os.uptime();

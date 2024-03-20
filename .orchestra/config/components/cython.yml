@@ -5,7 +5,7 @@
 #@ def params():
 name: cython
 requirements: |-
-  Cython==0.29.32
+  Cython==0.29.37
 #@ end
 
 #@overlay/match by=overlay.all, expects=1

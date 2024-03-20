@@ -1,0 +1,28 @@
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/create-component.lib.yml", "single_build_component")
+
+#@yaml/text-templated-strings
+---
+#@ def libuv_args():
+#@ libuv_version = "1.44.2"
+#@ source_url = "https://dist.libuv.org/dist/v" + libuv_version + "/libuv-v" + libuv_version + "-dist.tar.gz"
+license: LICENSE
+configure: |
+  mkdir -p "$BUILD_DIR"
+  extract.sh --into "$BUILD_DIR" (@= source_url @)
+
+  cd "$BUILD_DIR"
+
+  ./configure \
+    --prefix="$ORCHESTRA_ROOT" \
+    --disable-static
+build_system: make
+build_dependencies:
+  - host-c-toolchain
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  libuv: #@ single_build_component(**libuv_args())

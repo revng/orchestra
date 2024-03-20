@@ -6,7 +6,7 @@
 #@yaml/text-templated-strings
 ---
 #@ def python_component():
-#@ python_version = "3.11.0"
+#@ python_version = "3.12.2"
 #@ source_url = "https://www.python.org/ftp/python/" + python_version + "/Python-" + python_version + ".tar.xz"
 license: LICENSE
 builds:
@@ -49,6 +49,14 @@ builds:
       ln -s python3-config "${INSTALLDIR}"/bin/python-config
       ln -s idle3 "${INSTALLDIR}"/bin/idle
       ln -s pydoc3 "${INSTALLDIR}"/bin/pydoc
+
+      # Python installs pip alongside itself, this means that there will be
+      # some modules in `lib/python3.XX/site-packages` present due to this
+      # component. Account for them in the orchestra infrastructure.
+      mkdir -p "${INSTALLDIR}/share/orchestra/python-packages"
+      find "${INSTALLDIR}/lib/python3.12/site-packages" -maxdepth 1 -type d -printf '%f\n' | \
+        grep -P '^[A-Za-z][\w_]*$' > \
+          "${INSTALLDIR}/share/orchestra/python-packages/python.txt"
     build_dependencies:
       - host-c-toolchain
     dependencies:
