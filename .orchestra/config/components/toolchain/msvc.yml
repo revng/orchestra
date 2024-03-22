@@ -322,8 +322,11 @@ toolchain/(@= name @)/vc:
         export INCLUDE="(@= ";".join(["$SCRIPT_DIR/" + path for path in include]) @)"
         export LIB="(@= ";".join(["$SCRIPT_DIR/" + path for path in lib]) @)"
 
+        # Make sure we do not spawn any window (avoid lag)
+        export DISPLAY=
+
         # Suppress wine debug information
-        export WINEDEBUG="-all"
+        export WINEDEBUG="fixme-all,warn-all"
 
         # Disable .Net and mshtml
         export WINEDLLOVERRIDES="mscoree,mshtml="
