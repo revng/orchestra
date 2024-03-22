@@ -32,6 +32,9 @@ hard_flags_link_gold: -Wl,--gdb-index
 hard_flags_clangtidy: --extra-arg-before=-nostdinc++ --extra-arg-before=-nostdinc --extra-arg-before=-idirafter --extra-arg-before=$ORCHESTRA_ROOT/lib64/llvm/clang-release/include/c++/v1 --extra-arg-before=-idirafter --extra-arg-before=$ORCHESTRA_ROOT/lib/clang/(@= clang_release_version @)/include --extra-arg-before=-idirafter --extra-arg-before=$ORCHESTRA_ROOT/link-only/include
 revng_extra_compiler_flags: -fplugin=libclangTidyPlugin.so -Wl,--no-undefined -Wno-unused-command-line-argument -stdlib=libc++ -fuse-ld=mold
 
+#! Enable AddressSanitizer "globally" (i.e., for LLVM and our projects)
+use_asan: false
+
 parallelism: $(nproc)
 build_from_source: []
 branches:

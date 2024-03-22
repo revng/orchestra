@@ -17,7 +17,7 @@ o3: -ggdb3 -Wl,--gc-sections -ffunction-sections -O3
 #@yaml/text-templated-strings
 ---
 #@ def _typical_project_flavors(use_asan=False):
-#@   asan="-fsanitize=address" if use_asan else ""
+#@   asan="-fsanitize=address -shared-libasan" if use_asan else ""
 optimized:
   cmake_build_type: Debug
   extra_compiler_flags: (@= common_flags @) -O2 -fno-omit-frame-pointer (@= asan @)
@@ -40,7 +40,7 @@ release:
 #@yaml/text-templated-strings
 ---
 #@ def _typical_cmake_flavors(use_asan=False):
-#@   asan="-fsanitize=address" if use_asan else ""
+#@   asan="-fsanitize=address -shared-libasan" if use_asan else ""
 optimized:
   cmake_build_type: Debug
   extra_compiler_flags: (@= common_flags @) -O2 -fno-omit-frame-pointer (@= asan @)

@@ -2,6 +2,7 @@
 #@ load("@ytt:data", "data")
 #@ load("/lib/cmake.lib.yml", "cmake_boost_configuration", "typical_cmake_builds")
 #@ load("@ytt:template", "template")
+#@ load("/lib/util.lib.yml", "datavalue")
 
 ---
 #@ def build_args():
@@ -18,7 +19,7 @@ dependencies:
   - host-libcxx
   - revng
   - boost
-use_asan: false
+use_asan: #@ datavalue("use_asan")
 post_install_script: |
   if [ "$RUN_TESTS" -eq 1 ]; then
     cd "$SOURCE_DIR"
