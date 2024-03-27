@@ -5,7 +5,7 @@
 
 ---
 #@ def build_args():
-test: true
+test: false
 extra_cmake_args:
   - #@ template.replace(cmake_boost_configuration)
   - "-DLLVM_DIR=$ORCHESTRA_ROOT/lib64/llvm/llvm/lib/cmake/llvm"
