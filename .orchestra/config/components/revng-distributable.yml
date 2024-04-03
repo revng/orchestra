@@ -7,12 +7,17 @@
 ---
 #@ def revng_distributable(name=mandatory, components=mandatory):
 configure: |
+  set -x
   mkdir -p "$BUILD_DIR"
 install: |
+  set -x
+  echo asd
   INSTALLER="$ORCHESTRA_DOTDIR/support/revng-distributable/install.sh"
-  echo "60bff0d4dbc36788e93242302d2653745c923d56a0b50379d4dffe53235b2ba5 $INSTALLER" | \
+  echo "18b1d1953a71c851a64f9fd2c57ca079c4a93434a50edc5c417d590d6a7e9096 $INSTALLER" | \
     sha256sum --quiet -c -
-  "$INSTALLER" "(@= name @)" "(@= "\" \"".join(components) @)"
+  timeout 600 "$INSTALLER" "(@= name @)" "(@= "\" \"".join(components) @)" |& tail -n 10000 || true
+  df -h
+  exit 1
 build_dependencies:
   - test/revng-qa
   - #@ template.replace(components)

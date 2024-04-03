@@ -189,6 +189,8 @@ fi
 
 log "Target components: $TARGET_COMPONENTS"
 
+TARGET_COMPONENTS="revng-c"
+
 if test -z "$TARGET_COMPONENTS"; then
     log "Nothing to do!"
     exit 1

@@ -1,6 +1,9 @@
 #!/bin/bash
 
 set -euo pipefail
+set -x
+
+trap 'df -h' EXIT
 
 if test "$#" -lt 2; then
     echo "Usage: $0 [COMPONENT_NAME] [DEPENDENCY [DEPENDENCY ...]]" > /dev/stderr
@@ -147,5 +150,5 @@ if [ "$RUN_TESTS" -eq 1 ]; then
   # In order to launch self-test with as few environment variables as possible we:
   # * use `env -i` to start with no environment variables
   # * use `bash --login` to restore the ones provided at login (e.g. PATH)
-  env -i -C "${DISTRIBUTABLE_PATH}" bash --login -c "set -e; ${TEST_CMD[*]}"
+  timeout 600 env -i -C "${DISTRIBUTABLE_PATH}" bash --login -c "set -e; ${TEST_CMD[*]}"
 fi
