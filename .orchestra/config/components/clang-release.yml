@@ -13,11 +13,10 @@
 #@ if llvm_enable_pgo_lto:
 ---
 #@ def cmake_vanilla_opts():
-- -DLLVM_ENABLE_PROJECTS="clang;lld;compiler-rt"
+- -DLLVM_ENABLE_PROJECTS="clang;lld"
 - -DBUILD_SHARED_LIBS=OFF
 - -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT/clang-vanilla"
 - -DLLVM_TARGETS_TO_BUILD="X86"
-- -DCOMPILER_RT_INCLUDE_TESTS=OFF
 #@ end
 
 #@yaml/text-templated-strings
@@ -34,7 +33,7 @@ install: |
   (@= ninja @) install
 
   COMPILER_WRAPPER="${ORCHESTRA_DOTDIR}/support/hard-flags-compiler-wrapper.py"
-  echo "25da6081a2325995b8e668072c23387428d8561cfc6e932876fd449b57aaa862 ${COMPILER_WRAPPER}" | sha256sum -c -
+  echo "19b89d736203a9f5d0b0a81120dde7f9920bf117103b2b0d1243d2f1a139789d ${COMPILER_WRAPPER}" | sha256sum -c -
   mkdir -p "${DESTDIR}${ORCHESTRA_ROOT}/clang-vanilla/wrapped-bin"
   cd "${DESTDIR}${ORCHESTRA_ROOT}/clang-vanilla/wrapped-bin"
   cp -a "$COMPILER_WRAPPER" clang
@@ -54,9 +53,8 @@ dependencies:
 
 ---
 #@ def cmake_profiling_data_opts():
-- -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;clang-tools-extra;lld"
+- -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra;lld"
 - -DBUILD_SHARED_LIBS=OFF
-- -DCOMPILER_RT_INCLUDE_TESTS=OFF
 - -DLLVM_USE_LINKER=mold
 - -DLLVM_BUILD_INSTRUMENTED=IR
 - -DLLVM_BUILD_RUNTIME=No
@@ -129,11 +127,10 @@ dependencies:
 
 ---
 #@ def cmake_release_opts():
-- -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;clang-tools-extra;lld"
+- -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra;lld"
 - -DBUILD_SHARED_LIBS=ON
 - -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT/lib/llvm/clang-release"
 - -DCMAKE_INSTALL_RPATH="$RPATH_PLACEHOLDER/lib/llvm/clang-release/lib:$RPATH_PLACEHOLDER/lib"
-- -DCOMPILER_RT_INCLUDE_TESTS=OFF
 #@ if llvm_enable_pgo_lto:
 - -DLLVM_USE_LINKER=mold
 - -DCMAKE_AR=$ORCHESTRA_ROOT/clang-vanilla/bin/llvm-ar
@@ -221,11 +218,13 @@ dependencies:
 #@ def cmake_runtime_opts():
 - -DCMAKE_C_COMPILER="(@= data.values.regular_c_compiler @)"
 - -DCMAKE_CXX_COMPILER="(@= data.values.regular_cxx_compiler @)"
-- -DLLVM_ENABLE_RUNTIMES="libcxxabi;libcxx"
+- -DLLVM_ENABLE_PROJECTS="clang"
+- -DLLVM_ENABLE_RUNTIMES="libcxxabi;libcxx;compiler-rt"
 - -DBUILD_SHARED_LIBS=ON
 - -DLIBCXXABI_HAS_CXA_THREAD_ATEXIT_IMPL=0
 - -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT/lib/llvm/clang-release"
 - -DCMAKE_INSTALL_RPATH="$RPATH_PLACEHOLDER/lib/llvm/clang-release/lib:$RPATH_PLACEHOLDER/lib"
+- -DCOMPILER_RT_INCLUDE_TESTS=OFF
 #@ end
 
 #@yaml/text-templated-strings
