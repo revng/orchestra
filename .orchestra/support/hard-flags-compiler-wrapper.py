@@ -192,6 +192,7 @@ def main():
     # Are we linking or compiling an individual translation unit?
     is_linking = (has_inputs
                   and ("-c" not in sys.argv
+                       and "-r" not in sys.argv
                        and "-S" not in sys.argv
                        and "-E" not in sys.argv))
 
