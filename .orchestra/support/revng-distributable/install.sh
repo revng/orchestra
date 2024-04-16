@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -euo pipefail
+set +x
 
 if test "$#" -lt 2; then
     echo "Usage: $0 [COMPONENT_NAME] [DEPENDENCY [DEPENDENCY ...]]" > /dev/stderr
@@ -104,6 +105,7 @@ while read -r FILE; do
 done
 
 echo "Fix .idx"
+set +x
 ALL_FILES=$(find . -type f | sed 's;^\.\/;;g' | sort)
 TMP_IDX=$(mktemp -p "${BUILD_DIR}")
 # For each .idx remove from it any file that is missing from our stripped root
@@ -118,6 +120,8 @@ for IDX in share/orchestra/*.idx; do
   fi
 done
 rm "$TMP_IDX"
+
+set -x
 
 # Copying x86_64-calc for smoke tests
 TEST_BINARY=$(echo "$ORCHESTRA_ROOT/share/revng/test/tests/runtime/calc-x86-64-static-revng-qa.compiled-with-debug-info-"*)
@@ -134,6 +138,7 @@ find . -not -type d -not -path './'"$COMPONENT_NAME"'/*' -delete
 find . -type d -empty -delete
 
 if [ "$RUN_TESTS" -eq 1 ]; then
+    set -x
   TEST_CMD=(
     ./revng
     graphql
@@ -147,5 +152,5 @@ if [ "$RUN_TESTS" -eq 1 ]; then
   # In order to launch self-test with as few environment variables as possible we:
   # * use `env -i` to start with no environment variables
   # * use `bash --login` to restore the ones provided at login (e.g. PATH)
-  timeout 600 env -i -C "${DISTRIBUTABLE_PATH}" bash --login -c "set -e; ${TEST_CMD[*]}"
+  timeout 600 env -i -C "${DISTRIBUTABLE_PATH}" bash --login -c "set -e; set -x; ${TEST_CMD[*]}"
 fi
