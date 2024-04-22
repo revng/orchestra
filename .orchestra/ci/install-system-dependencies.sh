@@ -6,8 +6,11 @@ export DEBIAN_FRONTEND=noninteractive
 
 source /etc/os-release
 
-# Wine
+# For wine
 dpkg --add-architecture i386
+mkdir -pm755 /etc/apt/keyrings
+wget -O /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key
+wget -NP /etc/apt/sources.list.d/ "https://dl.winehq.org/wine-builds/ubuntu/dists/$UBUNTU_CODENAME/winehq-$UBUNTU_CODENAME.sources"
 
 apt-get -qq update
 
@@ -89,9 +92,10 @@ PACKAGES+=(p7zip-full)
 #     orc install --test toolchain/win32-vc16/vc
 #
 PACKAGES+=(winbind)
-PACKAGES+=(wine)
-PACKAGES+=(wine32)
-PACKAGES+=(wine64)
+PACKAGES+=("wine-devel-amd64=9.6~$UBUNTU_CODENAME-1")
+PACKAGES+=("wine-devel-i386=9.6~$UBUNTU_CODENAME-1")
+PACKAGES+=("wine-devel=9.6~$UBUNTU_CODENAME-1")
+PACKAGES+=("winehq-devel=9.6~$UBUNTU_CODENAME-1")
 
 #
 # vscode-web runtime dependencies
