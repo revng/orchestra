@@ -14,6 +14,13 @@
         mkdir -p "$BUILD_DIR"
       install: |
         cd "$BUILD_DIR"
+
+        # Pre-create the WINEPREFIX directory, in case we need it to avoid data
+        # races
+        if command -v wine >& /dev/null && test -n "$WINEPREFIX" && ! test -d "$WINEPREFIX"; then
+          wine cmd.exe /c exit
+        fi
+
         rm -rf *
         "$ORCHESTRA_ROOT/libexec/revng/revng-test-configure" \
           (@ for test_name in [name] + [dependency for dependency in options["build_dependencies"] if dependency.startswith("test/")]: -@)
