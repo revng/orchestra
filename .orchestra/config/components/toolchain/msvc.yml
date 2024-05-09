@@ -146,9 +146,9 @@ lib:
 
 #@yaml/text-templated-strings
 ---
-#@ def vs_17_params(name=mandatory, is_64=mandatory, vc_package=mandatory, sdk_package=mandatory, vc_path=mandatory, sdk_package_directory=mandatory, sdk_version=mandatory, sdk_path=mandatory):
+#@ def vs_17_params(name=mandatory, target_arch=mandatory, vc_package=mandatory, sdk_package=mandatory, vc_path=mandatory, sdk_package_directory=mandatory, sdk_version=mandatory, sdk_path=mandatory):
 name: (@= name @)
-triple: (@= "x86_64" if is_64 else "i386" @)-winsdk-vc19
+triple: (@= target_arch @)-winsdk-vc19
 debug_info: true
 extract: |
   fetch.sh \
@@ -252,15 +252,15 @@ extract: |
 
   rm -rf extracted-cabs/ downloads/
 
-#@ target = "x64" if is_64 else "x86"
-bin: VC/bin/Hostx86/(@= target @)/
+#@ target_path = "x64" if target_arch == "x86_64" else "x86" if target_arch == "i386" else "arm64"
+bin: VC/bin/Hostx86/(@= target_path @)/
 include:
 - VC/include
 - windows-sdk/Include/(@= sdk_version @)/ucrt
 lib:
-- VC/lib/(@= target @)
-- windows-sdk/Lib/(@= sdk_version @)/um/(@= target @)
-- windows-sdk/Lib/(@= sdk_version @)/ucrt/(@= target @)
+- VC/lib/(@= target_path @)
+- windows-sdk/Lib/(@= sdk_version @)/um/(@= target_path @)
+- windows-sdk/Lib/(@= sdk_version @)/ucrt/(@= target_path @)
 #@ end
 
 #@ def vc19_32_params():
@@ -269,7 +269,7 @@ lib:
 #! Visual C++ v143 from Visual Studio 2022
 #! SDK version 10.0.22621 (Windows 11)
 #! 32-bit host, 32-bit target
-#@ return vs_17_params("win32-vc19", False, "Microsoft.VisualStudio.Component.VC.14.37.17.7.x86.x64", "Microsoft.VisualStudio.Component.Windows11SDK.22621", "Contents/VC/Tools/MSVC/14.37.32822", "Win11SDK_10.0.22621", "10.0.22621.0", "SourceDir/Windows Kits/10")
+#@ return vs_17_params("win32-vc19", "i386", "Microsoft.VisualStudio.Component.VC.14.37.17.7.x86.x64", "Microsoft.VisualStudio.Component.Windows11SDK.22621", "Contents/VC/Tools/MSVC/14.37.32822", "Win11SDK_10.0.22621", "10.0.22621.0", "SourceDir/Windows Kits/10")
 #@ end
 
 #@ def vc19_64_params():
@@ -278,7 +278,16 @@ lib:
 #! Visual C++ v143 from Visual Studio 2022
 #! SDK version 10.0.22621 (Windows 11)
 #! 32-bit host, 64-bit target
-#@ return vs_17_params("win64-vc19", True, "Microsoft.VisualStudio.Component.VC.14.37.17.7.x86.x64", "Microsoft.VisualStudio.Component.Windows11SDK.22621", "Contents/VC/Tools/MSVC/14.37.32822", "Win11SDK_10.0.22621", "10.0.22621.0", "SourceDir/Windows Kits/10")
+#@ return vs_17_params("win64-vc19", "x86_64", "Microsoft.VisualStudio.Component.VC.14.37.17.7.x86.x64", "Microsoft.VisualStudio.Component.Windows11SDK.22621", "Contents/VC/Tools/MSVC/14.37.32822", "Win11SDK_10.0.22621", "10.0.22621.0", "SourceDir/Windows Kits/10")
+#@ end
+
+#@ def vc19_arm64_params():
+#! cl.exe version 19.37.32822
+#! link.exe version 14.37.32822.0
+#! Visual C++ v143 from Visual Studio 2022
+#! SDK version 10.0.22621 (Windows 11)
+#! 32-bit host, 64-bit arm target
+#@ return vs_17_params("win64-aarch64-vc19", "aarch64", "Microsoft.VisualStudio.Component.VC.14.37.17.7.ARM64", "Microsoft.VisualStudio.Component.Windows11SDK.22621", "Contents/VC/Tools/MSVC/14.37.32822", "Win11SDK_10.0.22621", "10.0.22621.0", "SourceDir/Windows Kits/10")
 #@ end
 
 
@@ -348,7 +357,7 @@ toolchain/(@= name @)/vc:
         (@ end @)
 
         PROGRAM_NAME="$(basename $0)"
-        (@ if triple.startswith("x86_64-"): @)
+        (@ if not triple.startswith("i386-"): @)
         if [[ "${PROGRAM_NAME}" =~ ^ml.exe$ ]]; then
             PROGRAM_NAME="ml64.exe"
         fi
@@ -391,6 +400,7 @@ toolchain/(@= name @)/vc:
 
         cp -far --reflink=auto "$BUILD_DIR/"* "${DESTDIR}${ORCHESTRA_ROOT}/"
 
+        (@ if not triple.startswith("aarch64-"): @)
         if test "$RUN_TESTS" -eq 1; then
           cat > test.c <<'EOF'
         #include <stdio.h>
@@ -411,14 +421,15 @@ toolchain/(@= name @)/vc:
           (@ end @)
           export WINEDEBUG=-all
 
-          if [[ "(@= triple @)" =~ ^x86_64- ]]; then
+          if [[ "(@= triple @)" =~ ^i386- ]]; then
+            WINEPREFIX="$WINE_TMP_DIRECTORY_32" wine test.exe
+          else
             WINE_TMP_DIRECTORY_64="$(mktemp --tmpdir tmp.wine-prefix.XXXXXXXXXX -d)"
             trap 'WINEPREFIX="$WINE_TMP_DIRECTORY_64" wineserver -k && rm -rf "$WINE_TMP_DIRECTORY_64"' EXIT
             WINEPREFIX="$WINE_TMP_DIRECTORY_64" wine64 test.exe
-          else
-            WINEPREFIX="$WINE_TMP_DIRECTORY_32" wine test.exe
           fi
         fi
+        (@ end @)
 
 #@ end
 
@@ -431,3 +442,4 @@ components:
   _: #@ template.replace(create_vc_component(**vc16_params()))
   _: #@ template.replace(create_vc_component(**vc19_32_params()))
   _: #@ template.replace(create_vc_component(**vc19_64_params()))
+  _: #@ template.replace(create_vc_component(**vc19_arm64_params()))
