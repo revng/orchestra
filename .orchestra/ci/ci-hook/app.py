@@ -167,6 +167,10 @@ def trigger_ci(username, repo_url, base_repo_url, ref, status_update_metadata: O
     if username == ci_user:
         return
 
+    # Ignore anonymous users (for now)
+    if username == default_user:
+        return
+
     admin_gl = gitlab.Gitlab(GITLAB_URL, private_token=ADMIN_TOKEN)
     admin_gl.auth()
 
