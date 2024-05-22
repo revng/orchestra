@@ -33,7 +33,7 @@ hard_flags_clangtidy: --extra-arg-before=-nostdinc++ --extra-arg-before=-nostdin
 revng_extra_compiler_flags: -fplugin=libclangTidyPlugin.so -Wl,--no-undefined -Wno-unused-command-line-argument -stdlib=libc++ -fuse-ld=mold
 
 #! Enable AddressSanitizer "globally" (i.e., for LLVM and our projects)
-use_asan: false
+use_asan: true
 
 parallelism: $(nproc)
 build_from_source: []
