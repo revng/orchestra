@@ -13,10 +13,11 @@
 #@ if llvm_enable_pgo_lto:
 ---
 #@ def cmake_vanilla_opts():
-- -DLLVM_ENABLE_PROJECTS="clang;lld"
+- -DLLVM_ENABLE_PROJECTS="clang;lld;compiler-rt"
 - -DBUILD_SHARED_LIBS=OFF
 - -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT/clang-vanilla"
 - -DLLVM_TARGETS_TO_BUILD="X86"
+- -DCOMPILER_RT_INCLUDE_TESTS=OFF
 #@ end
 
 #@yaml/text-templated-strings
