@@ -12,6 +12,8 @@
 #   orchestra config commit/branch to use.
 #   Normally set by Gitlab or whoever triggers the CI.
 
+set -euo pipefail
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 ORCHESTRA_DIR="$DIR/../.."
 
@@ -43,8 +45,6 @@ function log2() {
     echo "${2}" > /dev/stderr
 }
 
-set -e
-
 # Determine target branch
 #
 # PUSHED_REF contains the git ref that was pushed and triggered the CI.
@@ -54,7 +54,7 @@ set -e
 
 COMPONENT_TARGET_BRANCH=""
 
-if [[ -n "$PUSHED_REF" ]]; then
+if [[ -n "${PUSHED_REF:-}" ]]; then
     if [[ "$PUSHED_REF" = refs/heads/* ]]; then
         COMPONENT_TARGET_BRANCH="${PUSHED_REF#refs/heads/}"
     else
@@ -81,7 +81,7 @@ for B in "$COMPONENT_TARGET_BRANCH" next-develop develop next-master master; do
     fi
 done
 
-if [[ -z "$ORCHESTRA_TARGET_BRANCH" ]]; then
+if [[ -z "${ORCHESTRA_TARGET_BRANCH:-}" ]]; then
     log_err "All checkout attempts failed, aborting"
     exit 1
 fi

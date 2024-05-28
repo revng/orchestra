@@ -32,15 +32,15 @@
 # BUILD_ALL_FROM_SOURCE: if == 1 do not use binary archives and build everything
 # LFS_RETRIES: Number of times lfs pull/push operations are retried. Defaults to 3.
 
-set -e
+set -euo pipefail
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 ORCHESTRA_ROOT="$(realpath "$DIR/../..")"
 ORCHESTRA_DOTDIR="$ORCHESTRA_ROOT/.orchestra"
 USER_OPTIONS="$ORCHESTRA_DOTDIR/config/user_options.yml"
 
-PRIVATE_SOURCES_CLONE_URL="https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/revng-private"
-PRIVATE_BIN_ARCHIVES_CLONE_URL="https://gitlab-ci-token:${CI_JOB_TOKEN}@rev.ng/gitlab/revng-private/binary-archives.git"
+PRIVATE_SOURCES_CLONE_URL="https://gitlab-ci-token:${CI_JOB_TOKEN:-}@rev.ng/gitlab/revng-private"
+PRIVATE_BIN_ARCHIVES_CLONE_URL="https://gitlab-ci-token:${CI_JOB_TOKEN:-}@rev.ng/gitlab/revng-private/binary-archives.git"
 
 BOLD="\e[1m"
 RED="\e[31m"
@@ -61,7 +61,7 @@ function log_err() {
 PUSH_BINARY_ARCHIVE_EMAIL="${PUSH_BINARY_ARCHIVE_EMAIL:-sysadmin@rev.ng}"
 PUSH_BINARY_ARCHIVE_NAME="${PUSH_BINARY_ARCHIVE_NAME:-rev.ng CI}"
 
-if [[ "$BUILD_ALL_FROM_SOURCE" == 1 ]]; then
+if [[ "${BUILD_ALL_FROM_SOURCE:-}" == 1 ]]; then
     log "Build mode: building all components from source"
     BUILD_MODE="-B"
 else
@@ -81,7 +81,7 @@ cd "$DIR"
 #
 # Register deploy key, if any
 #
-if test -n "$SSH_PRIVATE_KEY"; then
+if test -n "${SSH_PRIVATE_KEY:-}"; then
     eval "$(ssh-agent -s)"
     echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
     unset SSH_PRIVATE_KEY
@@ -98,7 +98,7 @@ EOF
     fi
 
     # Change orchestra remote to ssh if we were given the URL
-    if [[ -n "$ORCHESTRA_CONFIG_REPO_SSH_URL" ]]; then
+    if [[ -n "${ORCHESTRA_CONFIG_REPO_SSH_URL:-}" ]]; then
         git -C "$ORCHESTRA_ROOT" remote set-url origin "$ORCHESTRA_CONFIG_REPO_SSH_URL"
     fi
 fi
@@ -106,7 +106,7 @@ fi
 #
 # Install orchestra
 #
-if test -n "$REVNG_ORCHESTRA_URL"; then
+if test -n "${REVNG_ORCHESTRA_URL:-}"; then
     # COMPONENT_TARGET_BRANCH is not quoted on purpose -- if empty it has to be ignored instead of being expanded to
     # and empty string
     for REVNG_ORCHESTRA_TARGET_BRANCH in $COMPONENT_TARGET_BRANCH next-develop develop next-master master; do
@@ -149,7 +149,7 @@ cat >> "$USER_OPTIONS" <<EOF
 branches:
 EOF
 
-if [[ -n "$COMPONENT_TARGET_BRANCH" ]] \
+if [[ -n "${COMPONENT_TARGET_BRANCH:-}" ]] \
     && ! [[ "$COMPONENT_TARGET_BRANCH" =~ ^(next-develop|develop|next-master|master)$ ]]; then
 
     echo "  - $COMPONENT_TARGET_BRANCH" >> "$USER_OPTIONS"
@@ -173,11 +173,11 @@ orc update --no-config
 
 # Register target components
 # shellcheck disable=SC2153
-if test -n "$TARGET_COMPONENTS_URL"; then
+if test -n "${TARGET_COMPONENTS_URL:-}"; then
     # Add components by repository URL
     for TARGET_COMPONENT_URL in $TARGET_COMPONENTS_URL; do
         NEW_COMPONENT="$(orc components --repository-url "$TARGET_COMPONENT_URL" \
-                         | grep '^Component' \
+                         | grep '^Component' || true \
                          | cut -d' ' -f2)"
         if test -z "$NEW_COMPONENT"; then
             log "Warning: ignoring URL $TARGET_COMPONENT_URL since it doesn't match any component"
@@ -189,12 +189,12 @@ fi
 
 log "Target components: $TARGET_COMPONENTS"
 
-if test -z "$TARGET_COMPONENTS"; then
+if test -z "${TARGET_COMPONENTS:-}"; then
     log "Nothing to do!"
     exit 1
 fi
 
-if [[ "$ORCHESTRA_DEBUG" == 1 ]]; then
+if [[ "${ORCHESTRA_DEBUG:-}" == 1 ]]; then
     # Print debugging information
     log "Complete dependency graph"
     orc graph "$BUILD_MODE"
@@ -217,7 +217,7 @@ orc clean --all
 # Actually run the build
 #
 ADDITIONAL_ORC_INSTALL_OPTIONS=()
-if [[ "$PUSH_BINARY_ARCHIVES" = 1 ]] || [[ "$PUSH_CHANGES" = 1 ]]; then
+if [[ "${PUSH_BINARY_ARCHIVES:-}" = 1 || "${PUSH_CHANGES:-}" = 1 ]]; then
     ADDITIONAL_ORC_INSTALL_OPTIONS+=(--create-binary-archives)
 fi
 
@@ -237,7 +237,7 @@ for TARGET_COMPONENT in $TARGET_COMPONENTS; do
     fi
 done
 
-if [[ "$PROMOTE_BRANCHES" = 1 ]] || [[ "$PUSH_CHANGES" = 1 ]]; then
+if [[ "${PROMOTE_BRANCHES:-}" = 1 || "${PUSH_CHANGES:-}" = 1 ]]; then
     #
     # Promote `next-*` branches to `*`
     #
@@ -270,10 +270,10 @@ if [[ "$PROMOTE_BRANCHES" = 1 ]] || [[ "$PUSH_CHANGES" = 1 ]]; then
         orc fix-binary-archives-symlinks
     fi
 else
-    log "Skipping branch promotion (PROMOTE_BRANCHES='$PROMOTE_BRANCHES', PUSH_CHANGES='$PUSH_CHANGES')"
+    log "Skipping branch promotion (PROMOTE_BRANCHES='${PROMOTE_BRANCHES:-}', PUSH_CHANGES='${PUSH_CHANGES:-}')"
 fi
 
-if [[ "$PUSH_BINARY_ARCHIVES" = 1 ]] || [[ "$PUSH_CHANGES" = 1 ]]; then
+if [[ "${PUSH_BINARY_ARCHIVES:-}" = 1 || "${PUSH_CHANGES:-}" = 1 ]]; then
         # Ensure we have git lfs
     git lfs >& /dev/null
 
@@ -348,7 +348,7 @@ COMPONENT_TARGET_BRANCH=$COMPONENT_TARGET_BRANCH"
 
     done
 else
-    log "Skipping binary archives push (PUSH_BINARY_ARCHIVES='$PUSH_BINARY_ARCHIVES', PUSH_CHANGES='$PUSH_CHANGES')"
+    log "Skipping binary archives push (PUSH_BINARY_ARCHIVES='${PUSH_BINARY_ARCHIVES:-}', PUSH_CHANGES='${PUSH_CHANGES:-}')"
 fi
 
 exit "$ERRORS"
