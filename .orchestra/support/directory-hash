@@ -13,24 +13,32 @@ def error(msg: str) -> NoReturn:
 
 
 def main():
-    if len(sys.argv) != 2:
-        error(f"{sys.argv[0]} [folder name]")
+    if len(sys.argv) < 2:
+        error(f"{sys.argv[0]} [folder/file name...]")
 
-    directory = sys.argv[1]
-    if not os.path.isdir(directory):
-        error("Directory does not exists")
-
-    os.chdir(directory)
     paths = []
-    with os.scandir() as scan:
-        for entry in scan:
-            if not entry.path.startswith("./.git") and entry.is_file():
-                paths.append(entry.path)
+    for argument in sys.argv[1:]:
+        path = Path(argument)
+        if path.is_file():
+            paths.append(path.resolve())
+
+        elif path.is_dir():
+            for dirpath, _, filenames in os.walk(path):
+                path_dirpath = Path(dirpath)
+                for filename in filenames:
+                    entry = path_dirpath / filename
+                    # Exclude anything that's under the .git directory and it's
+                    # not a file, this is to allow consistent behaviour when
+                    # run with a git directory as a target
+                    if "/.git/" not in str(entry) and entry.is_file():
+                        paths.append(Path(entry))
+        else:
+            error(f"{argument} does not exists")
 
     hash_ = sha256()
-    for path in sorted(paths):
-        hash_.update(path.encode())
-        hash_.update(Path(path).read_bytes())
+    for path in sorted(p.resolve() for p in paths):
+        hash_.update(str(path).encode())
+        hash_.update(path.read_bytes())
     print(hash_.hexdigest())
 
 
