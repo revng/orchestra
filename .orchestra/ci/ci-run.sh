@@ -31,6 +31,9 @@
 # REVNG_ORCHESTRA_URL: orchestra git repo URL (must be git+ssh:// or git+https://)
 # BUILD_ALL_FROM_SOURCE: if == 1 do not use binary archives and build everything
 # LFS_RETRIES: Number of times lfs pull/push operations are retried. Defaults to 3.
+# PUSH_HOOK_SCRIPT:
+#   If present and there have been pushes to the binary archives, this script
+#   will be `eval`-ed.
 
 set -euo pipefail
 
@@ -273,6 +276,9 @@ else
     log "Skipping branch promotion (PROMOTE_BRANCHES='${PROMOTE_BRANCHES:-}', PUSH_CHANGES='${PUSH_CHANGES:-}')"
 fi
 
+# Variables for push hook
+BINARY_ARCHIVES_PATH_CHANGES=()
+
 if [[ "${PUSH_BINARY_ARCHIVES:-}" = 1 || "${PUSH_CHANGES:-}" = 1 ]]; then
         # Ensure we have git lfs
     git lfs >& /dev/null
@@ -341,6 +347,11 @@ COMPONENT_TARGET_BRANCH=$COMPONENT_TARGET_BRANCH"
             if [[ "$LFS_ERRORS" != 0 ]]; then
                 log_err "git lfs push failed $TRIES times, giving up"
                 ERRORS=1
+            else
+                BINARY_ARCHIVE_NAME=$(basename "$BINARY_ARCHIVE_PATH")
+                while IFS= read -r path; do
+                    BINARY_ARCHIVES_PATH_CHANGES+=("$BINARY_ARCHIVE_NAME/$path")
+                done < <(git diff --name-only HEAD^..HEAD)
             fi
         else
             log "No changes to push for $BINARY_ARCHIVE_PATH"
@@ -349,6 +360,14 @@ COMPONENT_TARGET_BRANCH=$COMPONENT_TARGET_BRANCH"
     done
 else
     log "Skipping binary archives push (PUSH_BINARY_ARCHIVES='${PUSH_BINARY_ARCHIVES:-}', PUSH_CHANGES='${PUSH_CHANGES:-}')"
+fi
+
+if [[ -n "${PUSH_HOOK_SCRIPT:-}" && "${#BINARY_ARCHIVES_PATH_CHANGES[@]}" -gt 0 ]]; then
+    PUSH_HOOK_RC=0
+    ( eval "$PUSH_HOOK_SCRIPT" ) || PUSH_HOOK_RC=$?
+    if [ "$PUSH_HOOK_RC" -ne 0 ]; then
+        ERRORS=1
+    fi
 fi
 
 exit "$ERRORS"
