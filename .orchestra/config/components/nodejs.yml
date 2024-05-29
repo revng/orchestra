@@ -3,7 +3,7 @@
 #@ load("/lib/create-component.lib.yml", "single_build_component")
 #@ load("/lib/make.lib.yml", "make")
 
-#@ source_url = "https://github.com/nodejs/node/archive/refs/tags/v18.16.0.tar.gz"
+#@ source_url = "https://github.com/nodejs/node/archive/refs/tags/v18.19.0.tar.gz"
 
 #@yaml/text-templated-strings
 ---
@@ -19,7 +19,9 @@ configure: |
     --prefix="$ORCHESTRA_ROOT" \
     --ninja \
     --with-intl=system-icu \
+    --shared-libuv \
     --shared-openssl \
+    --shared-nghttp2 \
     --shared-zlib
 
 install: |
@@ -40,6 +42,8 @@ build_dependencies:
 dependencies:
   - host-libcxx
   - icu
+  - libuv
+  - nghttp2
   - openssl
   - zlib
 #@ end
