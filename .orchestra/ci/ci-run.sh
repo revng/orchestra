@@ -180,7 +180,7 @@ if test -n "${TARGET_COMPONENTS_URL:-}"; then
     # Add components by repository URL
     for TARGET_COMPONENT_URL in $TARGET_COMPONENTS_URL; do
         NEW_COMPONENT="$(orc components --repository-url "$TARGET_COMPONENT_URL" \
-                         | grep '^Component' || true \
+                         | ( grep '^Component' || true ) \
                          | cut -d' ' -f2)"
         if test -z "$NEW_COMPONENT"; then
             log "Warning: ignoring URL $TARGET_COMPONENT_URL since it doesn't match any component"
