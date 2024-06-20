@@ -77,6 +77,8 @@ requirements: |-
   mkdocs
   mkdocs-graphviz
   mkdocs-material
+
+  yq
 #@ end
 
 #@overlay/match by=overlay.all, expects=1
