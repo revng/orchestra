@@ -1,0 +1,11 @@
+deb https://mirror.hetzner.com/ubuntu/packages jammy main restricted
+deb https://mirror.hetzner.com/ubuntu/packages jammy-updates main restricted
+deb https://mirror.hetzner.com/ubuntu/packages jammy universe
+deb https://mirror.hetzner.com/ubuntu/packages jammy-updates universe
+deb https://mirror.hetzner.com/ubuntu/packages jammy multiverse
+deb https://mirror.hetzner.com/ubuntu/packages jammy-updates multiverse
+deb https://mirror.hetzner.com/ubuntu/packages jammy-backports main restricted universe multiverse
+deb https://mirror.hetzner.com/ubuntu/security jammy-security main restricted
+deb https://mirror.hetzner.com/ubuntu/security jammy-security universe
+deb https://mirror.hetzner.com/ubuntu/security jammy-security multiverse
+
