@@ -1,0 +1,21 @@
+FROM docker.io/library/ubuntu:22.04
+
+ARG REVNG_BRANCH=master \
+    DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update -y && \
+    apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends \
+        # Recompile needs crt{1,i,n}.o (libc6-dev)
+        libc6-dev \
+        # For debugging
+        busybox curl bash \
+        # Needed otherwise we'd get errors when, for example, when we fetch debug symbols
+        ca-certificates \
+        # Used by 'install.sh' to unpack the tarball from binary archives
+        tar xz-utils && \
+    rm -rf /root/.cache /var/lib/apt/lists/* /var/log/* /var/cache/*
+
+RUN cd / && \
+    curl -L "https://rev.ng/downloads/revng-distributable/${REVNG_BRANCH}/install.sh" | bash
+ENV PATH="${PATH}:/revng"

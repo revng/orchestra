@@ -102,6 +102,12 @@ PACKAGES+=("winehq-devel=9.6~$UBUNTU_CODENAME-1")
 #
 PACKAGES+=(ripgrep)
 
+#
+# binary-archives-hook.sh dependencies
+#
+PACKAGES+=(s3cmd)
+PACKAGES+=(podman)
+
 apt-get -qq install --no-install-recommends --yes "${PACKAGES[@]}"
 
 if ! command -v git-lfs &> /dev/null; then

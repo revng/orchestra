@@ -31,9 +31,6 @@
 # REVNG_ORCHESTRA_URL: orchestra git repo URL (must be git+ssh:// or git+https://)
 # BUILD_ALL_FROM_SOURCE: if == 1 do not use binary archives and build everything
 # LFS_RETRIES: Number of times lfs pull/push operations are retried. Defaults to 3.
-# PUSH_HOOK_SCRIPT:
-#   If present and there have been pushes to the binary archives, this script
-#   will be `eval`-ed.
 
 set -euo pipefail
 
@@ -360,10 +357,11 @@ else
     log "Skipping binary archives push (PUSH_BINARY_ARCHIVES='${PUSH_BINARY_ARCHIVES:-}', PUSH_CHANGES='${PUSH_CHANGES:-}')"
 fi
 
-if [[ -n "${PUSH_HOOK_SCRIPT:-}" && "${#BINARY_ARCHIVES_PATH_CHANGES[@]}" -gt 0 ]]; then
-    PUSH_HOOK_RC=0
-    ( eval "$PUSH_HOOK_SCRIPT" ) || PUSH_HOOK_RC=$?
-    if [ "$PUSH_HOOK_RC" -ne 0 ]; then
+if [[ "${#BINARY_ARCHIVES_PATH_CHANGES[@]}" -gt 0 ]]; then
+    HOOK_RC=0
+    # This must be done this way since we can't pass arrays between processes
+    ( source "$DIR/binary-archives-hook.sh" ) || HOOK_RC=$?
+    if [ "$HOOK_RC" -ne 0 ]; then
         ERRORS=1
     fi
 fi
