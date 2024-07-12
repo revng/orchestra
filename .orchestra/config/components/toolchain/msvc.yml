@@ -369,10 +369,12 @@ toolchain/(@= name @)/vc:
 
         cp cl.exe dumpbin.exe
         cp cl.exe ml.exe
+        cp cl.exe link.exe
 
         chmod +x cl.exe
         chmod +x dumpbin.exe
         chmod +x ml.exe
+        chmod +x link.exe
 
         cd "$BUILD_DIR"
         mkdir -p bin
@@ -390,10 +392,12 @@ toolchain/(@= name @)/vc:
 
         cp bin/(@= triple @)-cl bin/(@= triple @)-dumpbin
         cp bin/(@= triple @)-cl bin/(@= triple @)-ml
+        cp bin/(@= triple @)-cl bin/(@= triple @)-link
 
         chmod +x bin/(@= triple @)-cl
         chmod +x bin/(@= triple @)-dumpbin
         chmod +x bin/(@= triple @)-ml
+        chmod +x bin/(@= triple @)-link
 
       install: |
         cd "$BUILD_DIR"
