@@ -30,6 +30,7 @@ dependencies:
   - glibc
   - gcc-runtime
   - libarchive
+  - flamegraph
 use_asan: false
 post_install_script: |
   if [ "$RUN_TESTS" -eq 1 ]; then
