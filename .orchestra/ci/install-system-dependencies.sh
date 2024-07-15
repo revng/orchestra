@@ -108,6 +108,11 @@ PACKAGES+=(podman)
 #
 PACKAGES+=(perl)
 
+#
+# Needed by `revng mass-testing test-harness`
+#
+PACKAGES+=(time)
+
 apt-get -qq install --no-install-recommends --yes "${PACKAGES[@]}"
 
 if ! command -v git-lfs &> /dev/null; then
