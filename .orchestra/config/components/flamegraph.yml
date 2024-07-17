@@ -1,0 +1,27 @@
+#@ load("@ytt:overlay", "overlay")
+#@ load("@ytt:template", "template")
+#@ load("/lib/create-component.lib.yml", "single_build_component")
+
+#@ commit = "cd9ee4c4449775a2f867acf31c84b7fe4b132ad5"
+#@ hash = "c5d180a54401074ee844009ff5fca2c003af992bc9735fc27aaf4722e21f9455"
+
+#@yaml/text-templated-strings
+---
+#@ def flamegraph():
+configure: |
+  mkdir -p "$BUILD_DIR"
+  cd "$BUILD_DIR"
+
+  fetch.sh \
+    --hash 'sha256-(@= hash @)' \
+    'https://raw.githubusercontent.com/brendangregg/FlameGraph/(@= commit @)/flamegraph.pl'
+install: |
+  cd "$BUILD_DIR"
+  install -m 755 flamegraph.pl "${DESTDIR}${ORCHESTRA_ROOT}/bin" 
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  flamegraph: #@ single_build_component(**flamegraph())

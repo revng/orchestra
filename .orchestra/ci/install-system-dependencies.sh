@@ -102,6 +102,11 @@ PACKAGES+=("winehq-devel=9.6~$UBUNTU_CODENAME-1")
 #
 PACKAGES+=(ripgrep)
 
+#
+# flamegraph.pl runtime dependencies
+#
+PACKAGES+=(perl)
+
 apt-get -qq install --no-install-recommends --yes "${PACKAGES[@]}"
 
 if ! command -v git-lfs &> /dev/null; then
