@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+INPUT="$1"
+shift
+
+perf script -i "$INPUT" | stackcollapse-perf.pl | flamegraph.pl "$@"

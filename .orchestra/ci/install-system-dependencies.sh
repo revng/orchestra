@@ -103,6 +103,11 @@ PACKAGES+=(ripgrep)
 PACKAGES+=(s3cmd)
 PACKAGES+=(podman)
 
+#
+# flamegraph.pl runtime dependencies
+#
+PACKAGES+=(perl)
+
 apt-get -qq install --no-install-recommends --yes "${PACKAGES[@]}"
 
 if ! command -v git-lfs &> /dev/null; then
