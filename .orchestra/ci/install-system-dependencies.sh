@@ -113,7 +113,7 @@ PACKAGES+=(perl)
 #
 PACKAGES+=(time)
 
-apt-get -qq install --no-install-recommends --yes "${PACKAGES[@]}"
+apt-get -qq install --no-install-recommends --yes --allow-downgrades "${PACKAGES[@]}"
 
 if ! command -v git-lfs &> /dev/null; then
   LFS_URL="https://github.com/git-lfs/git-lfs/releases/download/v3.3.0/git-lfs-linux-amd64-v3.3.0.tar.gz"
