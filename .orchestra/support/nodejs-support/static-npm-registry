@@ -32,10 +32,17 @@ def parse_tgz(path: str) -> Tuple[Dict, str]:
             raise ValueError(f"Cannot find package.json in {path}")
 
 
+def safe_int(value: str) -> int | str:
+    try:
+        return int(value)
+    except ValueError:
+        return value
+
+
 def find_last_package_version(packages):
     if len(packages) == 1:
         return packages[0]["version"]
-    sorted_packages = sorted(packages, key=lambda p: [int(v) for v in p["version"].split(".")])
+    sorted_packages = sorted(packages, key=lambda p: [safe_int(v) for v in p["version"].split(".")])
     return sorted_packages[-1]["version"]
 
 
