@@ -1,0 +1,11 @@
+#!/bin/bash
+set -euo pipefail
+
+OUTPUT="$1"
+
+cp -a "$ORCHESTRA_ROOT/share/revng/mass-testing-meta.yml" "$OUTPUT"
+
+echo -e '\nnotes: |' >> "$OUTPUT"
+for file in "$ORCHESTRA_ROOT/share/revng/component-hashes/"*; do
+  echo "  $(basename "$file") version: $(cat "$file")" >> meta.yml
+done
