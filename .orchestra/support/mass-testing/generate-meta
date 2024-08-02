@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo ''
+echo 'notes: |'
+for file in "$ORCHESTRA_ROOT/share/revng/component-hashes/"*; do
+    echo "  $(basename "$file") version: $(cat "$file")"
+done
+
+cat - <<EOF
+
+reproducer_prelude: |
+  if [ -z "\${ORCHESTRA_ROOT:-}" ]; then
+      echo "Please run this script via 'orc shell'" >&2
+      exit 1
+  fi
+EOF

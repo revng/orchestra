@@ -1,0 +1,19 @@
+#!/bin/bash
+set -euo pipefail
+
+INPUT_ISO="$1"
+OUTPUT_DIR="$2"
+export WIMLIB_IMAGEX_IGNORE_CASE=1
+
+7z x -o"$OUTPUT_DIR" "$INPUT_ISO"
+
+find "$OUTPUT_DIR" -type f -name "*.wim" | \
+while IFS= read -r wim_file; do
+    wiminfo "$wim_file" | grep '^Name: ' | sed 's/^Name:[ ]*//' | \
+    while IFS= read -r wim_image; do
+        WIM_DEST_DIR="${wim_file}_contents/${wim_image}"
+        mkdir -p "$WIM_DEST_DIR"
+        wimextract "$wim_file" "$wim_image" '*' \
+            --dest-dir "$WIM_DEST_DIR" --preserve-dir-structure
+    done
+done
