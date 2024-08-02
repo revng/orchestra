@@ -1,0 +1,334 @@
+#!/usr/bin/env python3
+
+#
+# This file is distributed under the MIT License. See LICENSE.md for details.
+#
+
+import argparse
+import atexit
+import os
+import queue
+import struct
+import sys
+from concurrent.futures import ThreadPoolExecutor
+from hashlib import file_digest
+from io import BufferedIOBase
+from pathlib import Path
+from shutil import copyfile, rmtree
+from subprocess import PIPE, run
+from tempfile import NamedTemporaryFile, mkdtemp
+from threading import Thread
+from typing import Callable
+
+import yaml
+from common import BinaryEntry, get_s3_client, hash_file
+from xdg import xdg_cache_home
+
+SCRIPT_DIR = Path(__file__).parent.resolve()
+
+
+def intbyte(x: int):
+    return struct.pack(">I", x)
+
+
+def swapbytes(x: bytes):
+    return bytes(reversed(x))
+
+
+#
+# Start of constants definitions
+#
+
+# PE constants
+MZ_MAGIC = b"MZ"
+PE_MAGIC = b"PE\x00\x00"
+
+# ELF constants
+ELF_MAGIC = b"\x7FELF"
+ELFDATA2LSB = b"\x01"
+ELFDATA2MSB = b"\x02"
+ET_EXEC = 2
+ET_DYN = 3
+
+# Mach-O constants
+MH_MAGIC = intbyte(0xfeedface)
+MH_CIGAM = swapbytes(MH_MAGIC)
+MH_MAGIC_64 = intbyte(0xfeedfacf)
+MH_CIGAM_64 = swapbytes(MH_MAGIC_64)
+FAT_MAGIC = intbyte(0xcafebabe)
+FAT_CIGAM = swapbytes(FAT_MAGIC)
+FAT_MAGIC_64 = intbyte(0xcafebabf)
+FAT_CIGAM_64 = swapbytes(FAT_MAGIC_64)
+MH_EXECUTE = 2
+MH_DYLIB = 6
+MH_BUNDLE = 8
+
+#
+# End of constant definitions
+#
+
+#
+# Start of filter definitions
+#
+
+
+def filter_pe(filename: Path):
+    with open(filename, "rb") as f:
+        mz_header = f.read(2)
+        if mz_header != MZ_MAGIC:
+            return False
+        f.seek(0x3C, os.SEEK_SET)  # 0x3C contains PE offset
+        pe_offset = struct.unpack("<i", f.read(4))[0]  # Offset is encoded as a little-endian int
+        f.seek(pe_offset, os.SEEK_SET)
+        return f.read(4) == PE_MAGIC
+
+
+def filter_elf(filename: Path):
+    with open(filename, "rb") as f:
+        data = f.read(18)
+    if data[:4] != ELF_MAGIC:
+        return False
+    endian = data[5:6]  # EI_DATA
+    if endian not in (ELFDATA2LSB, ELFDATA2MSB):
+        return False
+    if data[6:7] != b"\x01":  # EI_VERSION
+        return False
+    if endian == ELFDATA2LSB:
+        type_ = struct.unpack("<h", data[16:18])[0]  # e_type
+    else:
+        type_ = struct.unpack(">h", data[16:18])[0]  # e_type
+    return type_ in (ET_EXEC, ET_DYN)
+
+
+def _check_plain_macho(data: bytes) -> bool:
+    if data[:4] not in (MH_MAGIC, MH_CIGAM, MH_MAGIC_64, MH_CIGAM_64):
+        return False
+    if data[:4] in (MH_MAGIC, MH_MAGIC_64):
+        type_ = struct.unpack(">I", data[12:16])[0]
+    else:
+        type_ = struct.unpack("<I", data[12:16])[0]
+    return type_ in (MH_EXECUTE, MH_DYLIB, MH_BUNDLE)
+
+
+def _check_fat_macho(data: bytes) -> bool:
+    if data[:4] in (FAT_CIGAM, FAT_MAGIC_64, FAT_CIGAM_64):
+        return True
+    if data[:4] == FAT_MAGIC:
+        # CAFEBABE is also the magic for Java .class files, to distinguish them
+        # we use the same heuristic as `file`: check the short at 0x6 and see
+        # if it's less than 40. In .class files that's the Java major version,
+        # which starts from 43; whereas in fat Mach-O that's the number of
+        # architectures in the binary, which currently can be at most 18.
+        count = struct.unpack(">h", data[6:8])[0]
+        if count < 40:
+            return True
+    return False
+
+
+def _check_fat_macho_inner(file: BufferedIOBase):
+    file.seek(4, os.SEEK_SET)
+    count = struct.unpack(">I", file.read(4))[0]
+    for i in range(count):
+        # sizeof(fat_header) + sizeof(fat_arch) + offsetof(offset)
+        file.seek(8 + 20 * i + 8, os.SEEK_SET)
+        offset = struct.unpack(">I", file.read(4))[0]
+        file.seek(offset, os.SEEK_SET)
+        if _check_fat_macho(file.read(16)):
+            return True
+    return False
+
+
+def filter_macho(filename: Path):
+    with open(filename, "rb") as f:
+        data = f.read(16)
+        if _check_plain_macho(data):
+            return True
+        if _check_fat_macho(data):
+            return _check_fat_macho_inner(f)
+    return False
+
+
+def _filter_windows_filename(filename: Path):
+    suffix = filename.suffix
+    suffix_blacklist = (".msstyles", ".mun", ".rs", ".rll", ".vdm", ".odf", ".lex", ".FIL")
+    return not (suffix.startswith(".mui") or suffix in suffix_blacklist)
+
+
+def filter_windows(filename: Path):
+    return filter_pe(filename) and _filter_windows_filename(filename)
+
+
+FILTERS = {"pe": filter_pe, "elf": filter_elf, "macho": filter_macho, "windows": filter_windows}
+
+#
+# End of filter definitions
+#
+
+
+def process_path(path: Path, filter_function: Callable[[Path], bool], out_queue: queue.Queue):
+    if not filter_function(path):
+        return
+
+    with open(path, "rb") as f:
+        digest = file_digest(f, "sha256")
+        size = f.seek(0, os.SEEK_END)
+    out_queue.put(BinaryEntry("", size, 0, digest.hexdigest(), path.resolve()))
+
+
+def fix_entry(entry: BinaryEntry):
+    sorted_sources = sorted(entry.sources)
+    name = os.path.basename(sorted_sources[0]) + f"_{entry.hash[:8]}"
+    proc = run(
+        ["revng", "mass-testing", "dump-sections", "--text-size", str(entry._path)],
+        text=True,
+        stdout=PIPE,
+        check=True,
+    )
+    text_size = int(proc.stdout)
+    return BinaryEntry(name, entry.size, text_size, entry.hash, entry._path, sorted_sources)
+
+
+class EntryMergeThread(Thread):
+    def __init__(self, queue: queue.Queue, result_dict, root: Path):
+        super().__init__()
+        self.queue = queue
+        self.result_dict = result_dict
+        self.root = root
+
+    def run(self):
+        while True:
+            item = self.queue.get()
+            if item is None:
+                break
+
+            relative_path = str(item._path.relative_to(self.root))
+            if item.hash not in self.result_dict:
+                self.result_dict[item.hash] = item
+                item.sources.append(relative_path)
+            else:
+                self.result_dict[item.hash].sources.append(relative_path)
+
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--extractor", help="Extractor")
+    parser.add_argument("--filter", help="Filter")
+    parser.add_argument("--output-dir", type=Path, help="Directory where files will be unpacked")
+    parser.add_argument("--scratch-dir", type=Path, help="Scratch directory")
+    parser.add_argument("--no-upload", action="store_true", help="Do not upload")
+    parser.add_argument("-C", "--comment", help="Additional comment to leave in the output")
+    parser.add_argument("input", help="Input File/Directory/URL")
+    parser.add_argument("output", help="Output file")
+    return parser.parse_args()
+
+
+def main():
+    args = parse_args()
+
+    # Setup scratch dir
+    if args.scratch_dir is not None:
+        scratch_dir = args.scratch_dir.resolve()
+    else:
+        scratch_dir = xdg_cache_home() / "revng/mass-testing"
+    scratch_dir.mkdir(parents=True, exist_ok=True)
+
+    # Setup s3 unless --no-upload is provided
+    if not args.no_upload:
+        s3_client = get_s3_client()
+
+    # Download input, if necessary
+    if args.input.startswith("http://") or args.input.startswith("https://"):
+        temp_download = mkdtemp(dir=scratch_dir)
+        atexit.register(rmtree, temp_download, ignore_errors=True)
+        run(["wget", args.input], check=True, cwd=temp_download)
+        input_ = Path(temp_download) / os.path.basename(args.input)
+    else:
+        input_ = Path(args.input)
+
+    # Hash input if it is a file
+    if input_.is_file():
+        input_hash = hash_file(input_)
+    else:
+        input_hash = None
+
+    # Setup output-dir, make it so that it's deleted at the end unless the user
+    # specifies --no-upload
+    if args.output_dir is not None:
+        workdir = args.output_dir
+    else:
+        workdir = Path(mkdtemp(dir=scratch_dir))
+        atexit.register(rmtree, workdir, ignore_errors=True)
+
+    # Run the extractor is specified
+    if args.extractor is not None:
+        extractor = SCRIPT_DIR / f"extractors/{args.extractor}"
+        assert extractor.is_file(), "Extractor does not exist"
+        run([str(extractor), input_, str(workdir)], check=True)
+        target = workdir
+    else:
+        target = input_
+
+    # Setup filter function
+    if args.filter is not None:
+        assert args.filter in FILTERS, "Specified filter does not exist"
+        filter_ = FILTERS[args.filter]
+    else:
+
+        def filter_(path):
+            return True
+
+    assert target.is_dir(), "Target must be a directory"
+
+    result_raw = {}
+    result_queue = queue.Queue()
+    merge_thread = EntryMergeThread(result_queue, result_raw, target)
+    merge_thread.start()
+    with ThreadPoolExecutor() as executor:
+        for dirname, directories, filenames in os.walk(target):
+            dirname_path = Path(dirname)
+            for filename in filenames:
+                file_path = dirname_path / filename
+                if file_path.is_symlink():
+                    continue
+                executor.submit(process_path, file_path, filter_, result_queue)
+
+    result_queue.put(None)
+    merge_thread.join()
+
+    result = []
+    with ThreadPoolExecutor() as executor:
+        for value in executor.map(fix_entry, result_raw.values()):
+            result.append(value)
+
+    result.sort(key=lambda x: x.hash)
+
+    temp_file = NamedTemporaryFile("wt")
+    temp_file.write(f"# File generated by {os.path.basename(sys.argv[0])}\n")
+    temp_file.write(f"# Script hash: {hash_file(sys.argv[0])}\n")
+    if args.extractor is not None:
+        temp_file.write(f"# Extractor: {args.extractor}\n")
+        temp_file.write(f"# Extractor hash: {hash_file(extractor)}\n")
+    if args.filter is not None:
+        temp_file.write(f"# Filter: {args.filter}\n")
+    temp_file.write(f"# Input: {args.input}\n")
+    if input_hash is not None:
+        temp_file.write(f"# Input hash: {input_hash}\n")
+    if args.comment:
+        temp_file.write(f"# Comment: {args.comment}\n")
+    yaml.safe_dump([v.to_dict() for v in result], temp_file, width=float("inf"))
+    temp_file.flush()
+
+    if args.no_upload:
+        # With --no-upload the output is a local file
+        copyfile(temp_file.name, args.output)
+        return
+
+    s3_client.put_object(args.output, temp_file.name)
+    with ThreadPoolExecutor() as executor:
+        # force iterating on jobs so that if there's an exception it is raised
+        for _ in executor.map(lambda e: s3_client.put_object(e.hash, str(e._path), True), result):
+            pass
+
+
+if __name__ == "__main__":
+    main()

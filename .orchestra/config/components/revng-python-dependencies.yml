@@ -27,6 +27,7 @@ requirements: |-
   mypy==1.4.1
 
   # Python types, needed for mypy to work correctly
+  boto3-stubs[s3]
   types-backports
   types-PyYAML
   types-requests
@@ -37,6 +38,7 @@ requirements: |-
 
   # Applications/Script dependencies
   ariadne[asgi-file-uploads]>=0.20.1
+  boto3
   cffi
   Jinja2
   gql[aiohttp]
