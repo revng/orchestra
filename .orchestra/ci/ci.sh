@@ -99,7 +99,7 @@ log2 "Using orchestra config:" "${ORCHESTRA_TARGET_BRANCH} @ ${ORCHESTRA_CONFIG_
 log2 "Component:             " "${TARGET_COMPONENTS_URL:-[not set]}"
 log2 "Branch:                " "${PUSHED_REF:-[not set]}"
 
-if [[ "$PUSH_CHANGES" == 1 ]]; then
+if [[ "${PUSH_CHANGES:-}" == 1 ]]; then
     BRANCH_PROMOTION="yes"
 else
     BRANCH_PROMOTION="no"
