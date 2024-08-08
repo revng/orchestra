@@ -102,6 +102,21 @@ PACKAGES+=("winehq-devel=9.6~$UBUNTU_CODENAME-1")
 #
 PACKAGES+=(ripgrep)
 
+#
+# flamegraph.pl runtime dependencies
+#
+PACKAGES+=(perl)
+
+#
+# Needed by `revng mass-testing test-harness`
+#
+PACKAGES+=(time)
+
+#
+# Needed by `revng mass-testing generate-report` to convert .svg to .png
+#
+PACKAGES+=(inkscape)
+
 apt-get -qq install --no-install-recommends --yes "${PACKAGES[@]}"
 
 if ! command -v git-lfs &> /dev/null; then

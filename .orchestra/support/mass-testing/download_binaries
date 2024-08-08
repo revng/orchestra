@@ -1,0 +1,114 @@
+#!/usr/bin/env python3
+
+#
+# This file is distributed under the MIT License. See LICENSE.md for details.
+#
+
+import argparse
+import os
+import re
+from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Dict, Iterable, List, Tuple
+
+import yaml
+from common import BinaryEntry, get_s3_client, hash_file
+
+
+@dataclass
+class DownloadSpec:
+    sources: List[str] = field(default_factory=list)
+    include: List[re.Pattern] = field(default_factory=list)
+    exclude: List[re.Pattern] = field(default_factory=list)
+
+    @staticmethod
+    def from_dict(dict_: dict) -> "DownloadSpec":
+        includes = [re.compile(p) for p in dict_.get("include", [])]
+        excludes = [re.compile(p) for p in dict_.get("exclude", [])]
+        return DownloadSpec(dict_.get("sources", []), includes, excludes)
+
+    def merge_to(self, target: "DownloadSpec"):
+        target.sources.extend(self.sources)
+        target.include.extend(self.include)
+        target.exclude.extend(self.exclude)
+
+
+def match_rules(string: str, rules: Iterable[re.Pattern]) -> bool:
+    return any(rule.match(string) for rule in rules)
+
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dry-run", action="store_true", help="Dry run, do not download files")
+    parser.add_argument("output", help="Output directory")
+    parser.add_argument("input", nargs="+", help="Input files")
+    return parser.parse_args()
+
+
+def main():
+    args = parse_args()
+    s3_client = get_s3_client()
+
+    spec = DownloadSpec()
+    for file in args.input:
+        with open(file) as f:
+            partial_spec = DownloadSpec.from_dict(yaml.safe_load(f))
+        partial_spec.merge_to(spec)
+
+    output_dir = Path(args.output)
+    downloads_dict: Dict[Path, str] = {}
+    for file in spec.sources:
+        raw_data = s3_client.read_object(file)
+        data = [BinaryEntry.from_dict(e) for e in yaml.safe_load(raw_data)]
+
+        dir_name = Path(file).stem
+        for entry in data:
+            name = os.path.join(dir_name, entry.name)
+            if match_rules(name, spec.include) and not match_rules(name, spec.exclude):
+                downloads_dict[(output_dir / dir_name / f"{entry.name}.bin").resolve()] = entry.hash
+
+    if args.dry_run:
+        for entry in downloads_dict.items():
+            print(f"{entry[1]} -> {entry[0].relative_to(output_dir)}")
+        return
+
+    for directory in {e.parent for e in downloads_dict.keys()}:
+        directory.mkdir(parents=True, exist_ok=True)
+
+    # Walk the output_dir and:
+    # * Delete any files that we wouldn't download or which the hash mismatches
+    # * Remove from `download_dict` any file we downloaded with the correct hash
+    files_to_hash = []
+    for dirpath, _, filenames in os.walk(output_dir):
+        dirpath_path = Path(dirpath)
+        for filename in filenames:
+            file_path = (dirpath_path / filename).resolve()
+            dict_hash = downloads_dict.get(file_path)
+
+            # File not in the download list, delete
+            if dict_hash is None:
+                os.unlink(file_path)
+                continue
+
+            files_to_hash.append(file_path)
+
+    with ThreadPoolExecutor() as executor:
+        for file_path, actual_hash in executor.map(lambda e: [e, hash_file(e)], files_to_hash):
+            if downloads_dict[file_path] != actual_hash:
+                # Hash mismatch, delete
+                os.unlink(file_path)
+            else:
+                # File is present and with the right hash, skip download
+                del downloads_dict[file_path]
+
+    download_tasks: List[Tuple[str, Path]] = [(e[1], str(e[0])) for e in downloads_dict.items()]
+    with ThreadPoolExecutor() as executor:
+        jobs = executor.map(lambda e: s3_client.get_object(e[0], e[1]), download_tasks)
+        # force iterating on jobs so that if there's an exception it is raised
+        for job in jobs:
+            pass
+
+
+if __name__ == "__main__":
+    main()

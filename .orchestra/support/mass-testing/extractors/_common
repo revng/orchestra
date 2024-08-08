@@ -1,0 +1,13 @@
+# shellcheck shell=bash
+set -euo pipefail
+
+# Extract JARs in order to find libraries hidden inside applications
+function extract_jars() {
+    local base="$1"
+
+    find "$base" -type f -name "*.apk" -o -name "*.jar" -o -name "*.apex" | \
+    while read -r zip; do
+        mkdir "${zip}_contents"
+        unzip -d"${zip}_contents" "$zip"
+    done
+}

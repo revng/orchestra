@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+
+#
+# This file is distributed under the MIT License. See LICENSE.md for details.
+#
+
+import argparse
+
+from common import get_s3_client
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("command", choices=["get", "put"])
+    parser.add_argument("source")
+    parser.add_argument("destination")
+    args = parser.parse_args()
+
+    s3_client = get_s3_client()
+    if args.command == "get":
+        s3_client.get_object(args.source, args.destination)
+    elif args.command == "put":
+        s3_client.put_object(args.destination, args.source)
+    else:
+        raise ValueError(f"Invalid command: {args.command}")
+
+
+if __name__ == "__main__":
+    main()
