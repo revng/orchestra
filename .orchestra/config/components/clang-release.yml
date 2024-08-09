@@ -236,10 +236,14 @@ configure: |
   extract.sh --into "$BUILD_DIR/source" "(@= source_url @)"
 
   sed -i 's|GIT_FOUND|FALSE|g' "$BUILD_DIR/source/llvm/cmake/modules/VersionFromVCS.cmake"
+  # Disable clang-specific options, we're not ready yet
   export HARD_FLAGS_CXX_CLANG=""
+  export HARD_FLAGS_CLANG_LINK=""
   (@= configure_llvm(cmake_build_type="Release", cflags="-pthread", additional_cmake_options=cmake_runtime_opts(), source_dir="$BUILD_DIR/source") @)
 install: |
+  # Disable clang-specific options, we're not ready yet
   export HARD_FLAGS_CXX_CLANG=""
+  export HARD_FLAGS_CLANG_LINK=""
 
   cd "$BUILD_DIR"
 

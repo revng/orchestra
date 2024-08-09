@@ -11,6 +11,7 @@ components:
           - glibc
           - toolchain/host/binutils
           - clang-release
+          - jemalloc
         install: exit 0
         configure: mkdir -p "$BUILD_DIR"
 
@@ -18,10 +19,8 @@ components:
     builds:
       default:
         dependencies:
-          - glibc
-          - toolchain/host/binutils
+          - host-c-toolchain
           - clang-runtime
-          - clang-release
         install: exit 0
         configure: mkdir -p "$BUILD_DIR"
 

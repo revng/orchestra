@@ -23,6 +23,7 @@ environment:
   - HARD_FLAGS_CXX_CLANG: #@ str(datavalue("hard_flags_cxx_clang"))
   - HARD_FLAGS_CLANG: #@ str(datavalue("hard_flags_clang"))
   - HARD_FLAGS_LINK: #@ str(datavalue("hard_flags_link"))
+  - HARD_FLAGS_CLANG_LINK: #@ str(datavalue("hard_flags_clang_link"))
   - HARD_FLAGS_LINK_LATE: #@ str(datavalue("hard_flags_link_late"))
   - HARD_FLAGS_LINK_GOLD: #@ str(datavalue("hard_flags_link_gold"))
   - HARD_FLAGS_CLANGTIDY: #@ str(datavalue("hard_flags_clangtidy"))
