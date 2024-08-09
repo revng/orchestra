@@ -44,6 +44,7 @@ build_dependencies:
   - toolchain/win32-vc16/vc
   - toolchain/win32-vc19/vc
   - toolchain/win64-vc19/vc
+  - toolchain/win_arm64-vc19/vc
   #@ for architecture in architectures:
   - toolchain/(@= architecture if architecture != "native" else "host" @)/gcc
   #@ end
