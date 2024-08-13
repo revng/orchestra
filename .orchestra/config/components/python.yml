@@ -35,7 +35,8 @@ builds:
         --with-readline \
         --with-system-ffi \
         --with-system-expat \
-        --without-static-libpython
+        --without-static-libpython \
+        CC="gcc -ljemalloc"
 
       grep -v HAVE_SYS_AUXV_H pyconfig.h > pyconfig.h.tmp
       mv pyconfig.h.tmp pyconfig.h
