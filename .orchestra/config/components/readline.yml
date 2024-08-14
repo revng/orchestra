@@ -29,6 +29,7 @@ install: |
 
 dependencies:
   - ncurses
+  - host-libc
 
 build_dependencies:
   - host-c-toolchain

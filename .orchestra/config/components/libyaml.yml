@@ -22,6 +22,8 @@ build_system: ninja
 build_dependencies:
   - host-c-toolchain
   - cmake
+dependencies:
+  - host-libc
 #@ end
 
 #@overlay/match by=overlay.all, expects=1

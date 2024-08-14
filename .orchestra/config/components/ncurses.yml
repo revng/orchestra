@@ -70,6 +70,8 @@ install: |
 build_dependencies:
   - gcc-host-toolchain
   - glibc
+dependencies:
+  - host-libc
 #@ end
 
 #@overlay/match by=overlay.all, expects=1

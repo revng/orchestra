@@ -24,10 +24,21 @@ components:
         install: exit 0
         configure: mkdir -p "$BUILD_DIR"
 
+  #! This is not actually the C standard library, since the host OS should
+  #! provide it. This is just the C runtime in a larger sense.
+  host-libc:
+    builds:
+      default:
+        dependencies:
+          - jemalloc
+        install: exit 0
+        configure: mkdir -p "$BUILD_DIR"
+
   host-libcxx:
     builds:
       default:
         dependencies:
+          - host-libc
           - clang-runtime
           - gcc-runtime
         install: exit 0

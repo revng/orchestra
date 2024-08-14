@@ -45,6 +45,7 @@ builds:
       dependencies:
         - zlib
         - glib
+        - host-libc
       #@ if/end ndebug == False:
       ndebug: false
   #@ end

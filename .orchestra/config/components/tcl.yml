@@ -23,6 +23,8 @@ install: |
   ls "$DESTDIR$ORCHESTRA_ROOT/bin/tclsh"
 build_dependencies:
   - host-c-toolchain
+dependencies:
+  - host-libc
 #@ end
 
 #@overlay/match by=overlay.all, expects=1
