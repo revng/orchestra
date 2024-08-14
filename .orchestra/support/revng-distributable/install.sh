@@ -73,8 +73,8 @@ cd "${DISTRIBUTABLE_PATH}/root"
 
 echo "Copying revng-distributable scripts"
 cp -a \
-  "$ORCHESTRA_DOTDIR/support/revng-distributable/revng-update" \
-  "$ORCHESTRA_DOTDIR/support/revng-distributable/revng-system-info" \
+  "$ORCHESTRA_DOTDIR/support/revng-distributable/update" \
+  "$ORCHESTRA_DOTDIR/support/revng-distributable/system-info" \
   libexec/revng/
 
 echo "revng-distributable updater info"

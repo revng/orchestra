@@ -10,7 +10,7 @@ configure: |
   mkdir -p "$BUILD_DIR"
 install: |
   INSTALLER="$ORCHESTRA_DOTDIR/support/revng-distributable/install.sh"
-  echo "66ab31642b858146a91aedd440f78b19e1d9a60620d4dda72b7071d2698fc5a5 $INSTALLER" | \
+  echo "3862308159d22bfa980429c9bfac771d87bcc0af9c8ef2b232b6e3437e02a1bc $INSTALLER" | \
     sha256sum --quiet -c -
   "$INSTALLER" "(@= name @)" "(@= "\" \"".join(components) @)"
 build_dependencies:
