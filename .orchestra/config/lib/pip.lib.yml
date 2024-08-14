@@ -15,6 +15,7 @@
   builds:
     default:
       dependencies:
+      - host-libc
       #@ if name != "python-base-packages":
       - python-base-packages
       #@ end

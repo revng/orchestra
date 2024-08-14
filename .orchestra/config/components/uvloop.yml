@@ -23,6 +23,7 @@ dependencies:
 - python-base-packages
 - libuv
 - cython
+- host-libc
 build_dependencies:
 - host-c-toolchain
 #@ end

@@ -23,7 +23,9 @@ build_system: make
 build_dependencies:
   - host-c-toolchain
   - #@ template.replace(build_dependencies)
-dependencies: #@ dependencies
+dependencies:
+  - host-libc
+  - #@ template.replace(dependencies)
 #@ end
 
 #@yaml/text-templated-strings
