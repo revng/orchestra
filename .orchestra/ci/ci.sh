@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # rev.ng CI entrypoint script
 # This script checks out the correct configuration branch and initializes
