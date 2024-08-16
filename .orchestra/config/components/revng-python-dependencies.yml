@@ -40,7 +40,7 @@ requirements: |-
   cffi
   Jinja2
   gql[aiohttp]
-  grandiso
+  https://github.com/revng/grandiso-networkx/archive/043ce4b.tar.gz
   jsonschema>=4.17.3,<4.18.0
   networkx
   pefile
