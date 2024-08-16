@@ -50,6 +50,7 @@ dependencies:
   - elfutils
   - libffi
   - zlib
+  - host-libc
 #@ end
 
 #@overlay/match by=overlay.all, expects=1

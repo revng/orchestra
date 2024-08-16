@@ -28,6 +28,7 @@ build_dependencies:
   - host-c-toolchain
 dependencies:
   - zlib
+  - host-libc
 #@ end
 
 #@overlay/match by=overlay.all, expects=1

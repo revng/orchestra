@@ -20,6 +20,8 @@ configure: |
 build_system: make
 build_dependencies:
   - host-c-toolchain
+dependencies:
+  - host-libc
 #@ end
 
 #@overlay/match by=overlay.all, expects=1

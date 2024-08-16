@@ -26,7 +26,10 @@
 license: source/llvm/LICENSE.TXT
 configure: |
   extract.sh --into "$BUILD_DIR/source" "(@= source_url @)"
+
+  # Disable git, using `git remote` might leak sensitive information
   sed -i 's|GIT_FOUND|FALSE|g' "$BUILD_DIR/source/llvm/cmake/modules/VersionFromVCS.cmake"
+
   (@= configure_llvm(cmake_build_type="Release", cflags="-w", additional_cmake_options=cmake_vanilla_opts(), source_dir="$BUILD_DIR/source") @)
 install: |
   cd "$BUILD_DIR"
@@ -80,7 +83,9 @@ configure: |
   grep -vE 'JSONTest.cpp|DJBTest.cpp' "$SUPPORT_UNITTESTS/CMakeLists.txt" > "$SUPPORT_UNITTESTS/CMakeLists.txt.tmp"
   mv "$SUPPORT_UNITTESTS/CMakeLists.txt.tmp" "$SUPPORT_UNITTESTS/CMakeLists.txt"
 
+  # Disable git, using `git remote` might leak sensitive information
   sed -i 's|GIT_FOUND|FALSE|g' "$BUILD_DIR/source/llvm/cmake/modules/VersionFromVCS.cmake"
+
   export PATH="$ORCHESTRA_ROOT/clang-vanilla/wrapped-bin:$ORCHESTRA_ROOT/clang-vanilla/bin:$PATH"
   export HARD_FLAGS_CXX_CLANG=""
   (@= configure_llvm(cmake_build_type="Release", cflags="-w", additional_cmake_options=cmake_profiling_data_opts(), source_dir="$BUILD_DIR/source") @)
@@ -151,7 +156,12 @@ license: source/llvm/LICENSE.TXT
 configure: |
   extract.sh --into "$BUILD_DIR/source" "(@= source_url @)"
 
+  # Disable Python binding tests, we don't have Python yet
+  sed -i 's|RUN_PYTHON_TESTS TRUE|RUN_PYTHON_TESTS FALSE|g' "$BUILD_DIR/source/clang/bindings/python/tests/CMakeLists.txt"
+
+  # Disable git, using `git remote` might leak sensitive information
   sed -i 's|GIT_FOUND|FALSE|g' "$BUILD_DIR/source/llvm/cmake/modules/VersionFromVCS.cmake"
+
   (@ if llvm_enable_pgo_lto: @)
   export PATH="$ORCHESTRA_ROOT/clang-vanilla/wrapped-bin:$ORCHESTRA_ROOT/clang-vanilla/bin:$PATH"
   (@ end @)
@@ -235,11 +245,17 @@ license: source/llvm/LICENSE.TXT
 configure: |
   extract.sh --into "$BUILD_DIR/source" "(@= source_url @)"
 
+  # Disable git, using `git remote` might leak sensitive information
   sed -i 's|GIT_FOUND|FALSE|g' "$BUILD_DIR/source/llvm/cmake/modules/VersionFromVCS.cmake"
+
+  # Disable clang-specific options, we're not ready yet
   export HARD_FLAGS_CXX_CLANG=""
+  export HARD_FLAGS_CLANG_LINK=""
   (@= configure_llvm(cmake_build_type="Release", cflags="-pthread", additional_cmake_options=cmake_runtime_opts(), source_dir="$BUILD_DIR/source") @)
 install: |
+  # Disable clang-specific options, we're not ready yet
   export HARD_FLAGS_CXX_CLANG=""
+  export HARD_FLAGS_CLANG_LINK=""
 
   cd "$BUILD_DIR"
 

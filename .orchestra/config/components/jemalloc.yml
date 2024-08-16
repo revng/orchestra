@@ -3,28 +3,32 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def libuv_args():
-#@ libuv_version = "1.44.2"
-#@ source_url = "https://dist.libuv.org/dist/v" + libuv_version + "/libuv-v" + libuv_version + "-dist.tar.gz"
-license: LICENSE
+#@ def args():
+#@ version = "8.2.0"
+#@ source_url = "https://github.com/jemalloc/jemalloc/archive/refs/tags/5.3.0.tar.gz"
+license: COPYING
 configure: |
   mkdir -p "$BUILD_DIR"
   extract.sh --into "$BUILD_DIR" (@= source_url @)
 
   cd "$BUILD_DIR"
 
-  ./configure \
+  # We need --disable-initial-exec-tls or Python tests fail:
+  # https://github.com/jemalloc/jemalloc/issues/1237
+  ./autogen.sh \
     --prefix="$ORCHESTRA_ROOT" \
+    --disable-stats \
+    --enable-shared \
+    --disable-initial-exec-tls \
     --disable-static
 build_system: make
 build_dependencies:
-  - host-c-toolchain
-dependencies:
-  - host-libc
+  - glibc
+  - gcc-host-toolchain
 #@ end
 
 #@overlay/match by=overlay.all, expects=1
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  libuv: #@ single_build_component(**libuv_args())
+  jemalloc: #@ single_build_component(**args())
