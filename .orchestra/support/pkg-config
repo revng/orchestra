@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Normally pkg{-config,conf} search in a few directories for `.pc` files. This
 # list is composed from a few sources, including some specified at build-time
 # (e.g. distro maintainers). This leads to inconsistend behavior across distros

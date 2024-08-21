@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # rev.ng CI script
 # This script runs orchestra to build the required components.

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 REMOTES_COUNT=$(git remote | wc -l)
 if [ $REMOTES_COUNT -eq 0 ]; then
