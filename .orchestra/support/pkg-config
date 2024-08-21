@@ -5,4 +5,20 @@
 # and the accidental use of `.pc` file outside of $ORCHESTRA_ROOT.
 # Thankfully, pkgconf has the `--env-only` switch which exclude all paths
 # except the ones specified in `PKG_CONFIG_PATH`
-exec pkgconf --env-only "$@"
+
+function containsElement() {
+  local e match="$1"
+  shift
+
+  for e; do
+    [[ "$e" == "$match" ]] && return 0
+  done
+
+  return 1
+}
+
+if containsElement "--version" "$@"; then
+  exec pkgconf "$@"
+else
+  exec pkgconf --env-only "$@"
+fi
