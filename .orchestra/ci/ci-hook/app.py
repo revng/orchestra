@@ -220,7 +220,7 @@ def trigger_ci(username, repo_url, base_repo_url, ref, status_update_metadata: O
 
         parameters = {
             "ref": BRANCH,
-            "variables": [{"key": key, "value": value}
+            "variables": [{"key": key, "value": value, "raw": "true"}
                           for key, value
                           in variables.items()]
         }
