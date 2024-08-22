@@ -19,7 +19,6 @@ configure: |
     --prefix="$ORCHESTRA_ROOT" \
     --disable-stats \
     --enable-shared \
-    --disable-initial-exec-tls \
     --disable-cxx \
     --disable-static
 build_system: make
