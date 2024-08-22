@@ -16,6 +16,7 @@ configure: |
   ./configure \
     --disable-static \
     --disable-native \
+    --disable-openmp \
     --enable-shared \
     --enable-fat \
     --prefix="$ORCHESTRA_ROOT"

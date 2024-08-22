@@ -62,7 +62,7 @@ components:
           find "$IDA_INSTALL_DIR" -maxdepth 1 -type f -executable -name "ida*" | while read EXECUTABLE; do
             NAME="$(basename "$EXECUTABLE")"
             cat > "$INSTALL_DIR/bin/$NAME" <<'EOF'
-          #!/bin/bash
+          #!/usr/bin/env bash
           SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
           export IDAUSR="$(mktemp -d tmp.IDAUSR.XXXXXXXXXX)"
           trap 'rm -rf -- "$IDAUSR"' EXIT;

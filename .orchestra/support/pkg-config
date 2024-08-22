@@ -1,8 +1,24 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Normally pkg{-config,conf} search in a few directories for `.pc` files. This
 # list is composed from a few sources, including some specified at build-time
 # (e.g. distro maintainers). This leads to inconsistend behavior across distros
 # and the accidental use of `.pc` file outside of $ORCHESTRA_ROOT.
 # Thankfully, pkgconf has the `--env-only` switch which exclude all paths
 # except the ones specified in `PKG_CONFIG_PATH`
-exec pkgconf --env-only "$@"
+
+function containsElement() {
+  local e match="$1"
+  shift
+
+  for e; do
+    [[ "$e" == "$match" ]] && return 0
+  done
+
+  return 1
+}
+
+if containsElement "--version" "$@"; then
+  exec pkgconf "$@"
+else
+  exec pkgconf --env-only "$@"
+fi
