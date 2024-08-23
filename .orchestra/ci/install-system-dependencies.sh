@@ -92,10 +92,10 @@ PACKAGES+=(p7zip-full)
 #     orc install --test toolchain/win32-vc16/vc
 #
 PACKAGES+=(winbind)
-PACKAGES+=("wine-devel-amd64=9.6~$UBUNTU_CODENAME-1")
-PACKAGES+=("wine-devel-i386=9.6~$UBUNTU_CODENAME-1")
-PACKAGES+=("wine-devel=9.6~$UBUNTU_CODENAME-1")
-PACKAGES+=("winehq-devel=9.6~$UBUNTU_CODENAME-1")
+PACKAGES+=("wine-devel-amd64=9.8~$UBUNTU_CODENAME-1")
+PACKAGES+=("wine-devel-i386=9.8~$UBUNTU_CODENAME-1")
+PACKAGES+=("wine-devel=9.8~$UBUNTU_CODENAME-1")
+PACKAGES+=("winehq-devel=9.8~$UBUNTU_CODENAME-1")
 
 #
 # vscode-web runtime dependencies
