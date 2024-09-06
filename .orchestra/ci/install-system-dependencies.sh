@@ -66,11 +66,6 @@ PACKAGES+=(doxygen)
 PACKAGES+=(graphviz)
 
 #
-# qemu dependencies
-#
-PACKAGES+=(python2)
-
-#
 # revng dependencies
 #
 PACKAGES+=(doxygen)

@@ -1,0 +1,58 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/make.lib.yml", "make")
+#@ load("/lib/util.lib.yml", "datavalue")
+
+#@yaml/text-templated-strings
+---
+#@ def python2_component():
+#@ python_version = "2.7.18"
+#@ source_url = "https://www.python.org/ftp/python/" + python_version + "/Python-" + python_version + ".tar.xz"
+license: LICENSE
+builds:
+  default:
+    configure: |
+      mkdir -p "$BUILD_DIR"
+      extract.sh --into "$BUILD_DIR" (@= source_url @)
+
+      cd "$BUILD_DIR"
+      patch -p1 < "${ORCHESTRA_DOTDIR}/patches/python2-fixes.patch"
+
+      # orchestra's libc has a buggy getaddrinfo; we expect users to have a newer libc
+      ac_cv_buggy_getaddrinfo=no ./configure \
+        --prefix="$ORCHESTRA_ROOT" \
+        --libdir="${ORCHESTRA_ROOT}/lib64" \
+        --enable-optimizations \
+        --enable-shared \
+        --enable-ipv6 \
+        --with-lto \
+        --with-system-ffi \
+        --with-system-expat \
+        --without-ensurepip \
+        CC="gcc -ljemalloc"
+    install: |
+      cd "$BUILD_DIR"
+      (@= make @)
+      (@= make @) altinstall DESTDIR="$DESTDIR"
+
+      BINDIR="${DESTDIR}${ORCHESTRA_ROOT}/bin"
+      rm "${BINDIR}/pydoc" "${BINDIR}/idle" "${BINDIR}/2to3" "${BINDIR}/smtpd.py"
+      ln -s python2.7 "${BINDIR}/python2"
+    build_dependencies:
+      - host-c-toolchain
+    dependencies:
+      - bzip2
+      - expat
+      - libffi
+      - ncurses
+      - openssl
+      - readline
+      - sqlite
+      - host-libc
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  python2: #@ python2_component()

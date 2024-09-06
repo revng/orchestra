@@ -35,7 +35,7 @@ builds:
           --disable-smartcard-nss \
           --disable-uuid \
           --disable-cap-ng \
-          --python="$(command -v python2)" \
+          --python="${ORCHESTRA_ROOT}/bin/python2" \
           (@ if build_type == "Debug": @)--enable-debug (@ end @)\
           --extra-cflags="(@= cflags @)"
       install: |
@@ -43,6 +43,7 @@ builds:
         (@= make @) install
       build_dependencies:
         - host-c-toolchain
+        - python2
       dependencies:
         - zlib
         - glib
