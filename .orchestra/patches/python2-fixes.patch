@@ -1,0 +1,24 @@
+--- a/Modules/main.c
++++ b/Modules/main.c
+@@ -463,9 +463,7 @@
+         (p = Py_GETENV("PYTHONUNBUFFERED")) && *p != '\0')
+         unbuffered = 1;
+ 
+-    if (!Py_NoUserSiteDirectory &&
+-        (p = Py_GETENV("PYTHONNOUSERSITE")) && *p != '\0')
+-        Py_NoUserSiteDirectory = 1;
++    Py_NoUserSiteDirectory = 1;
+ 
+     if ((p = Py_GETENV("PYTHONWARNINGS")) && *p != '\0') {
+         char *buf, *warning;
+--- a/Makefile.pre.in
++++ b/Makefile.pre.in
+@@ -211,7 +211,7 @@
+ # The task to run while instrument when building the profile-opt target
+ # We exclude unittests with -x that take a rediculious amount of time to
+ # run in the instrumented training build or do not provide much value.
+-PROFILE_TASK=-m test.regrtest --pgo -x test_asyncore test_gdb test_multiprocessing test_subprocess
++PROFILE_TASK=-m test.regrtest --pgo -x test_asyncore test_gdb test_multiprocessing test_subprocess test_docxmlrpc test_urllib2_localnet
+ 
+ # report files for gcov / lcov coverage report
+ COVERAGE_INFO= $(abs_builddir)/coverage.info
