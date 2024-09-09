@@ -1,7 +1,7 @@
 #@ load("@ytt:overlay", "overlay")
 #@ load("/lib/create-component.lib.yml", "single_build_component")
 
-#@ package_json_sha = "90b2d254cf140b7a95d81028a8f21272430786afda6eb54e1f508e59ce21bd6b"
+#@ nodejs_sha = "ba06c19990d289d49dc3b1dc9b04da3f0d2a87bd8c36feee93def0476eb0d17b"
 
 #@yaml/text-templated-strings
 ---
@@ -16,7 +16,7 @@ configure: |
 
   # check that package.json has the right hash, this is to trigger a rebuild in orchestra
   # whenever we change the file
-  echo '(@= package_json_sha @) package.json' | sha256sum -c -
+  [ '(@= nodejs_sha @)' = "$(directory-hash --no-hash-paths "$JS_DIR")" ]
 
   # Generate package lock
   npm.original install --package-lock-only --silent
