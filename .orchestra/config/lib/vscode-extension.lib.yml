@@ -78,6 +78,9 @@ builds:
       export ORCHESTRA_NODE_CACHE="$BUILD_DIR/cache:$ORCHESTRA_NODE_CACHE"
 
       npm install --no-audit --omit peer (@= " ".join(development_packages) @)
+      # The above command doesn't run postinstall automatically, see npm/cli#4804
+      # Run it manually via `npm run`
+      npm run --if-present postinstall
       
       # vsce will try to do an update check if in a tty, we use cat to suppress this
       (@- if flavor == "default": @)
