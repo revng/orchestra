@@ -15,6 +15,7 @@
  */
 const process = require('process');
 const fs = require('fs');
+const path = require('path')
 
 // We assume this script is in $ROOT/bin and yarn is installed in
 // $ROOT/lib/node_modules/yarn/bin/yarn.js
@@ -33,16 +34,20 @@ process.env['yarn_yarn_offline_mirror'] = `${process.env['SOURCE_ARCHIVES']}/yar
 process.env['yarn_yarn_offline_mirror_pruning'] = 'false';
 process.env['yarn_registry'] = '';
 process.env['yarn_disable_self_update_check'] = 'true';
+process.env['DISABLE_V8_COMPILE_CACHE'] = 1;
+
+const workdir = fs.mkdtempSync('/tmp/tmp.revng.yarn-workdir.');
+process.on("exit", () => fs.rmSync(workdir, {force: true, recursive: true}));
+function joinAndMkdir(...args) {
+    const res = path.join(...args);
+    fs.mkdirSync(res, {recursive: true});
+    return res;
+}
 
 // Set HOME to a temporary directory, this is so the user's caches are left untouched
-const fake_home = fs.mkdtempSync('/tmp/tmp.revng.fake-yarn-home.');
-const yarn_cache = fs.mkdtempSync('/tmp/tmp.revng.yarn-cache.');
-process.on("exit", () => {
-    fs.rmSync(fake_home, {force: true, recursive: true});
-    fs.rmSync(yarn_cache, {force: true, recursive: true});
-});
-process.env['HOME'] = fake_home;
-process.argv.push("--cache-folder", yarn_cache);
+process.env['HOME'] = joinAndMkdir(workdir, "home");
+process.env['TMPDIR'] = joinAndMkdir(workdir, "tmp");
+process.argv.push("--cache-folder", joinAndMkdir(workdir, "cache"));
 
 // Actually require yarn.js, this will delegate execution to yarn
 require(YARN_PATH);
