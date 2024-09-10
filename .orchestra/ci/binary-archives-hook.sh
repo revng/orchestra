@@ -47,7 +47,7 @@ if [ "${#REDIST_PATHS[@]}" -gt 0 ]; then
     # S3 sync of binary archives
     #
 
-    BINARY_ARCHIVES_BASE="$ORCHESTRA_DOT_DIR/binary-archives"
+    BINARY_ARCHIVES_BASE="$ORCHESTRA_DOTDIR/binary-archives"
     echo "$BINARY_ARCHIVES_S3CMD_CONFIG" > "$S3_CONF_FILE"
 
     for REDIST_PATH in "${REDIST_PATHS[@]}"; do
