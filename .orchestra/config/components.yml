@@ -26,6 +26,8 @@ environment:
   - HARD_FLAGS_CLANG_LINK: #@ str(datavalue("hard_flags_clang_link"))
   - HARD_FLAGS_LINK_LATE: #@ str(datavalue("hard_flags_link_late"))
   - HARD_FLAGS_LINK_GOLD: #@ str(datavalue("hard_flags_link_gold"))
+  - HARD_FLAGS_LINK_LLD: #@ str(datavalue("hard_flags_link_lld"))
+  - HARD_FLAGS_LINK_MOLD: #@ str(datavalue("hard_flags_link_mold"))
   - HARD_FLAGS_CLANGTIDY: #@ str(datavalue("hard_flags_clangtidy"))
   - HARD_ALLOWED_INCLUDE_PATH: $BUILDS_DIR:$SOURCES_DIR:$ORCHESTRA_ROOT:$ORCHESTRA_DOTDIR
   - HARD_ALLOWED_LIBRARY_PATH: $BUILDS_DIR:$SOURCES_DIR:$ORCHESTRA_ROOT:$ORCHESTRA_DOTDIR

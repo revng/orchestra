@@ -53,11 +53,13 @@ def exec(arguments):
     run(arguments)
     sys.exit(0)
 
-def is_gold(arguments):
+def get_linker(arguments):
     for argument in reversed(arguments):
-        if argument.startswith("-fuse-ld="):
-            return argument == "-fuse-ld=gold"
-    return False
+        prefix = "-fuse-ld="
+        if argument.startswith(prefix):
+            return argument[len(prefix):]
+
+    return "bfd"
 
 def get_flags(flags, current_tags, must_have=set(), must_not_have=set()):
     return list(chain(*(arguments
@@ -78,7 +80,7 @@ def add_arguments_for(original, action):
         current_tags = set([action,
                             "cxx" if is_cxx else "c",
                             "clang" if is_clang else "gcc",
-                            "gold" if is_gold(arguments) else "bfd"])
+                            get_linker(arguments)])
         early = get_flags(flags, current_tags, must_not_have=late_tag)
         late = get_flags(flags, current_tags.union(late_tag), must_have=late_tag)
         arguments = [original[0]] + early + original[1:] + late
