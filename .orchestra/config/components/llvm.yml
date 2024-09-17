@@ -34,7 +34,7 @@ builds:
         cd "$BUILD_DIR"
         (@= ninja @) install
 
-        if test "$RUN_TESTS" -eq 1; then
+        if [ "$RUN_TESTS" -eq 1 ]; then
           (@= ninja @) check-all
         fi
       build_dependencies:
