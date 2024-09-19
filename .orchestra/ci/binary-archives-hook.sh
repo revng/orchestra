@@ -51,9 +51,19 @@ if [ "${#REDIST_PATHS[@]}" -gt 0 ]; then
     echo "$BINARY_ARCHIVES_S3CMD_CONFIG" > "$S3_CONF_FILE"
 
     for REDIST_PATH in "${REDIST_PATHS[@]}"; do
-        s3cmd put --config="$S3_CONF_FILE" --acl-public \
-            "$BINARY_ARCHIVES_BASE/$REDIST_PATH" \
-            "$BINARY_ARCHIVES_S3_PATH/$REDIST_PATH"
+        FULL_REDIST_PATH="$BINARY_ARCHIVES_BASE/$REDIST_PATH"
+        if [ -h "$FULL_REDIST_PATH" ]; then
+            TEMP_FILE=$(mktemp)
+            readlink "$FULL_REDIST_PATH" > "$TEMP_FILE"
+            s3cmd put --config="$S3_CONF_FILE" --acl-public \
+                "$TEMP_FILE" \
+                "$BINARY_ARCHIVES_S3_PATH/$REDIST_PATH"
+            rm "$TEMP_FILE"
+        elif [ -f "$FULL_REDIST_PATH" ]; then
+            s3cmd put --config="$S3_CONF_FILE" --acl-public \
+                "$FULL_REDIST_PATH" \
+                "$BINARY_ARCHIVES_S3_PATH/$REDIST_PATH"
+        fi
     done
 
     # Also remove files which have been deleted in the meantime
