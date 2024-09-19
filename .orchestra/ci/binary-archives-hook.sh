@@ -79,7 +79,7 @@ if [ "${#REDIST_PATHS[@]}" -gt 0 ]; then
     # Build docker image
     #
 
-    LOCAL_IMAGE="localhost/revng-image-$(uuidgen)"
+    LOCAL_IMAGE="localhost/revng-image-$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 16)"
     podman build \
         -t "$LOCAL_IMAGE" \
         -f "$ORCHESTRA_DOTDIR/support/Dockerfile.binary-archives" \
