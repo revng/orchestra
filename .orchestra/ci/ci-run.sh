@@ -346,7 +346,7 @@ COMPONENT_TARGET_BRANCH=$COMPONENT_TARGET_BRANCH"
                 BINARY_ARCHIVE_NAME=$(basename "$BINARY_ARCHIVE_PATH")
                 while IFS= read -r path; do
                     BINARY_ARCHIVES_PATH_CHANGES+=("$BINARY_ARCHIVE_NAME/$path")
-                done < <(git diff --name-only HEAD^..HEAD)
+                done < <(git diff --diff-filter=AMR --name-only HEAD^..HEAD)
             fi
         else
             log "No changes to push for $BINARY_ARCHIVE_PATH"
