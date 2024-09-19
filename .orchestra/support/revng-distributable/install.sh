@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-if test "$#" -lt 2; then
+if [ "$#" -lt 2 ]; then
     echo "Usage: $0 [COMPONENT_NAME] [DEPENDENCY [DEPENDENCY ...]]" > /dev/stderr
     exit 1
 fi
