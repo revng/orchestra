@@ -67,7 +67,7 @@ if [ "${#REDIST_PATHS[@]}" -gt 0 ]; then
     done
 
     # Also remove files which have been deleted in the meantime
-    s3cmd --config="$S3_CONF_FILE" ls "$BINARY_ARCHIVES_S3_PATH" | \
+    s3cmd --config="$S3_CONF_FILE" ls --recursive "$BINARY_ARCHIVES_S3_PATH" | \
         awk '{ print $4 }' | \
         while IFS= read -r OBJECT_PATH; do
             if [ ! -f "$BINARY_ARCHIVES_BASE/${OBJECT_PATH/#$BINARY_ARCHIVES_S3_PATH/}" ]; then
