@@ -79,15 +79,16 @@ if [ "${#REDIST_PATHS[@]}" -gt 0 ]; then
     # Build docker image
     #
 
+    # TODO: check again when upgrading to 24.04 if the 'sudo' can be dropped
     LOCAL_IMAGE="localhost/revng-image-$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 16)"
-    podman build \
+    sudo -i podman build \
         -t "$LOCAL_IMAGE" \
         -f "$ORCHESTRA_DOTDIR/support/Dockerfile.binary-archives" \
         "$DOCKER_CONTEXT"
-    podman login -u "$PODMAN_REGISTRY_USER" \
-                 -p "$PODMAN_REGISTRY_PASSWORD" \
-                 "$(cut -d/ -f1 <<< "$PODMAN_IMAGE_TARGET")"
-    podman push "$LOCAL_IMAGE" "$PODMAN_IMAGE_TARGET"
+    sudo -i podman login -u "$PODMAN_REGISTRY_USER" \
+        -p "$PODMAN_REGISTRY_PASSWORD" \
+        "$(cut -d/ -f1 <<< "$PODMAN_IMAGE_TARGET")"
+    sudo -i podman push "$LOCAL_IMAGE" "$PODMAN_IMAGE_TARGET"
 fi
 
 
