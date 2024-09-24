@@ -3,7 +3,7 @@
 #@ load("/lib/create-component.lib.yml", "single_build_component")
 #@ load("/lib/make.lib.yml", "make")
 
-#@ source_url = "https://github.com/nodejs/node/archive/refs/tags/v18.19.0.tar.gz"
+#@ source_url = "https://github.com/nodejs/node/archive/refs/tags/v20.17.0.tar.gz"
 
 #@yaml/text-templated-strings
 ---
@@ -14,11 +14,12 @@ configure: |
   extract.sh --into "$BUILD_DIR" "(@= source_url @)"
   cd "$BUILD_DIR"
 
-  patch -p1 < "${ORCHESTRA_DOTDIR}/patches/nodejs-18-fixes.patch"
+  patch -p1 < "${ORCHESTRA_DOTDIR}/patches/nodejs-20-fixes.patch"
   ./configure \
     --prefix="$ORCHESTRA_ROOT" \
     --ninja \
     --with-intl=system-icu \
+    --shared-cares \
     --shared-libuv \
     --shared-openssl \
     --shared-nghttp2 \
@@ -41,6 +42,7 @@ build_dependencies:
   - python
 dependencies:
   - host-libcxx
+  - cares
   - icu
   - libuv
   - nghttp2
