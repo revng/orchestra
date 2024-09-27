@@ -51,13 +51,23 @@ if [ "${#REDIST_PATHS[@]}" -gt 0 ]; then
     echo "$BINARY_ARCHIVES_S3CMD_CONFIG" > "$S3_CONF_FILE"
 
     for REDIST_PATH in "${REDIST_PATHS[@]}"; do
-        s3cmd put --config="$S3_CONF_FILE" --acl-public \
-            "$BINARY_ARCHIVES_BASE/$REDIST_PATH" \
-            "$BINARY_ARCHIVES_S3_PATH/$REDIST_PATH"
+        FULL_REDIST_PATH="$BINARY_ARCHIVES_BASE/$REDIST_PATH"
+        if [ -h "$FULL_REDIST_PATH" ]; then
+            TEMP_FILE=$(mktemp)
+            readlink "$FULL_REDIST_PATH" > "$TEMP_FILE"
+            s3cmd put --config="$S3_CONF_FILE" --acl-public \
+                "$TEMP_FILE" \
+                "$BINARY_ARCHIVES_S3_PATH/$REDIST_PATH"
+            rm "$TEMP_FILE"
+        elif [ -f "$FULL_REDIST_PATH" ]; then
+            s3cmd put --config="$S3_CONF_FILE" --acl-public \
+                "$FULL_REDIST_PATH" \
+                "$BINARY_ARCHIVES_S3_PATH/$REDIST_PATH"
+        fi
     done
 
     # Also remove files which have been deleted in the meantime
-    s3cmd --config="$S3_CONF_FILE" ls "$BINARY_ARCHIVES_S3_PATH" | \
+    s3cmd --config="$S3_CONF_FILE" ls --recursive "$BINARY_ARCHIVES_S3_PATH" | \
         awk '{ print $4 }' | \
         while IFS= read -r OBJECT_PATH; do
             if [ ! -f "$BINARY_ARCHIVES_BASE/${OBJECT_PATH/#$BINARY_ARCHIVES_S3_PATH/}" ]; then
@@ -69,15 +79,16 @@ if [ "${#REDIST_PATHS[@]}" -gt 0 ]; then
     # Build docker image
     #
 
-    LOCAL_IMAGE="localhost/revng-image-$(uuidgen)"
-    podman build \
+    # TODO: check again when upgrading to 24.04 if the 'sudo' can be dropped
+    LOCAL_IMAGE="localhost/revng-image-$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 16)"
+    sudo -i podman build \
         -t "$LOCAL_IMAGE" \
         -f "$ORCHESTRA_DOTDIR/support/Dockerfile.binary-archives" \
         "$DOCKER_CONTEXT"
-    podman login -u "$PODMAN_REGISTRY_USER" \
-                 -p "$PODMAN_REGISTRY_PASSWORD" \
-                 "$(cut -d/ -f1 <<< "$PODMAN_IMAGE_TARGET")"
-    podman push "$LOCAL_IMAGE" "$PODMAN_IMAGE_TARGET"
+    sudo -i podman login -u "$PODMAN_REGISTRY_USER" \
+        -p "$PODMAN_REGISTRY_PASSWORD" \
+        "$(cut -d/ -f1 <<< "$PODMAN_IMAGE_TARGET")"
+    sudo -i podman push "$LOCAL_IMAGE" "$PODMAN_IMAGE_TARGET"
 fi
 
 
