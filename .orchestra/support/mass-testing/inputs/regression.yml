@@ -1,0 +1,8 @@
+sources:
+  - 13_binaries.yml
+  - android_12.1.0_aarch64_pixel6.yml
+  - android_7.1.1_armv7h_nexus6.yml
+  - ubuntu_22.04.4_x86_64.yml
+  - win10.yml
+
+exclude: []

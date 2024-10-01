@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Extract new System-as-Root A/B Android system images with Project Treble split partitions
+
+SCRIPT_DIR=$(realpath "$(dirname "${BASH_SOURCE[0]}")")
+INPUT_ZIP="$(realpath "$1")"
+OUTPUT_DIR="$(realpath "$2")"
+
+# shellcheck disable=SC1091
+source "$SCRIPT_DIR/_common"
+
+
+mkdir "$OUTPUT_DIR/_payload"
+cd "$OUTPUT_DIR/_payload"
+android-ota-extractor "$INPUT_ZIP"
+
+cd "$OUTPUT_DIR"
+for img_name in "system" "system_ext" "vendor" "product"; do
+    DEST_DIR="$OUTPUT_DIR/$img_name.img_contents"
+    mkdir "$DEST_DIR"
+    7z x -o"$DEST_DIR" "$OUTPUT_DIR/_payload/$img_name.img"
+done
+
+rm -rf "$OUTPUT_DIR/_payload"
+extract_jars "$OUTPUT_DIR"

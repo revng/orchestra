@@ -1,0 +1,45 @@
+#!/bin/bash
+set -euo pipefail
+
+INPUT_ISO="$1"
+OUTPUT_DIR="$2"
+
+7z x -o"$OUTPUT_DIR" "$INPUT_ISO"
+
+# Read first and unpack later to avoid unpacking a a file from within a squashfs
+readarray -t LIVE_FILES < <(find "$OUTPUT_DIR" -type f)
+for file in "${LIVE_FILES[@]}"; do
+    if [ "$(head -c4 "$file" | tr -dc '[:alnum:]')" = "hsqs" ]; then
+        mkdir "${file}_contents"
+        7z x -o"${file}_contents" "$file"
+    fi
+done
+
+# Unpack .deb
+find "$OUTPUT_DIR" -type f -name '*.deb' | \
+while IFS= read -r deb_file; do
+    DATA_FILE=$(ar t "$deb_file" | grep data.tar)
+    TAR_OPTS=()
+    case "${DATA_FILE##*.}" in
+        gz)
+            TAR_OPTS+=(--gzip)
+            ;;
+        bz | bz2)
+            TAR_OPTS+=(--bzip2)
+            ;;
+        xz)
+            TAR_OPTS+=(--xz)
+            ;;
+        zst | zstd)
+            TAR_OPTS+=(--zstd)
+    esac
+    mkdir "${deb_file}_contents"
+    ar p "$deb_file" "$DATA_FILE" | tar -C "${deb_file}_contents" -x "${TAR_OPTS[@]}"
+done
+
+# Unpack .snap
+find "$OUTPUT_DIR" -type f -name '*.snap' | \
+while IFS= read -r snap_file; do
+    mkdir "${snap_file}_contents"
+    7z x -o"${snap_file}_contents" "$snap_file"
+done

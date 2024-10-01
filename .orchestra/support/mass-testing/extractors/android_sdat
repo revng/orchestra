@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Extract older sdat Android sparse OTA images
+
+SCRIPT_DIR=$(realpath "$(dirname "${BASH_SOURCE[0]}")")
+INPUT_ZIP="$1"
+OUTPUT_DIR="$2"
+
+# shellcheck disable=SC1091
+source "$SCRIPT_DIR/_common"
+
+UNZIP_DIR="$OUTPUT_DIR/_unzip"
+mkdir -p "$UNZIP_DIR"
+unzip "$INPUT_ZIP" -d "$UNZIP_DIR"
+sdat2img.py "$UNZIP_DIR/system.transfer.list" "$UNZIP_DIR/system.new.dat" \
+            "$OUTPUT_DIR/system.img"
+rm -rf "$UNZIP_DIR"
+
+mkdir "$OUTPUT_DIR/system.img_contents"
+7z x -o"$OUTPUT_DIR/system.img_contents" "$OUTPUT_DIR/system.img"
+rm "$OUTPUT_DIR/system.img"
+
+extract_jars "$OUTPUT_DIR"

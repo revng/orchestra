@@ -22,7 +22,7 @@
         fi
 
         rm -rf *
-        "$ORCHESTRA_ROOT/libexec/revng/revng-test-configure" \
+        "$ORCHESTRA_ROOT/libexec/revng/test-configure" \
           (@ for test_name in [name] + [dependency for dependency in options["build_dependencies"] if dependency.startswith("test/")]: -@)
           "$ORCHESTRA_ROOT/share/revng/test/configuration"/(@= test_name.replace("test/", "") @)/*.yml \
           (@ end -@)

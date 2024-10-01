@@ -45,9 +45,9 @@ builds:
         (@= make @)
         find "$2.docset/Contents/Resources/Documents" -iname "*.html" | xargs -n 10 sed -i -s 's/ inherit / /'
 
-        download-file.sh "$2.docset/Contents/Resources/Documents" \
-                         "https://opensource.apple.com/source/lldb/lldb-310.2.36/www/cpp_reference/html" \
-                         "dynsections.js"
+        fetch.sh --no-copy \
+          "https://opensource.apple.com/source/lldb/lldb-310.2.36/www/cpp_reference/html/dynsections.js"
+        cp -a "${SOURCE_ARCHIVES}/dynsections.js" "$2.docset/Contents/Resources/Documents"
       }
 
       make_docset $BUILD_DIR/build/docs/doxygen/html/ llvm

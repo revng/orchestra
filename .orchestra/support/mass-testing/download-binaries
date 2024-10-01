@@ -1,0 +1,113 @@
+#!/usr/bin/env python3
+
+#
+# This file is distributed under the MIT License. See LICENSE.md for details.
+#
+
+import argparse
+import os
+import re
+from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass, field
+from pathlib import Path
+from shutil import copyfile
+from typing import Dict, Iterable, List
+
+import yaml
+from common import BinaryEntry, get_s3_client, hash_file
+
+
+@dataclass
+class DownloadSpec:
+    sources: List[str] = field(default_factory=list)
+    include: List[re.Pattern] = field(default_factory=list)
+    exclude: List[re.Pattern] = field(default_factory=list)
+
+    @staticmethod
+    def from_dict(dict_: dict) -> "DownloadSpec":
+        includes = [re.compile(p) for p in dict_.get("include", [])]
+        excludes = [re.compile(p) for p in dict_.get("exclude", [])]
+        return DownloadSpec(dict_.get("sources", []), includes, excludes)
+
+    def merge_to(self, target: "DownloadSpec"):
+        target.sources.extend(self.sources)
+        target.include.extend(self.include)
+        target.exclude.extend(self.exclude)
+
+
+def get_aux_caches() -> List[Path]:
+    if "MASS_TESTING_CACHE" in os.environ:
+        return [Path(p) for p in os.environ["MASS_TESTING_CACHE"].split(":")]
+    else:
+        return []
+
+
+def find_file(caches: Iterable[Path], hash_: str) -> Path | None:
+    for entry in [p / hash_ for p in caches]:
+        if entry.is_file() and hash_file(entry) == hash_:
+            return entry
+    return None
+
+
+def match_rules(string: str, rules: Iterable[re.Pattern]) -> bool:
+    return any(rule.match(string) for rule in rules)
+
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dry-run", action="store_true", help="Dry run, do not download files")
+    parser.add_argument("output", help="Output directory")
+    parser.add_argument("input", nargs="+", help="Input files")
+    return parser.parse_args()
+
+
+def main():
+    args = parse_args()
+    s3_client = get_s3_client()
+
+    spec = DownloadSpec()
+    for file in args.input:
+        with open(file) as f:
+            partial_spec = DownloadSpec.from_dict(yaml.safe_load(f))
+        partial_spec.merge_to(spec)
+
+    output_dir = Path(args.output)
+    downloads: Dict[str, Path] = {}
+    for file in spec.sources:
+        raw_data = s3_client.read_object(file)
+        data = [BinaryEntry.from_dict(e) for e in yaml.safe_load(raw_data)]
+
+        dir_name = Path(file).stem
+        for entry in data:
+            name = os.path.join(dir_name, entry.name)
+            if match_rules(name, spec.include) and not match_rules(name, spec.exclude):
+                downloads[entry.hash] = (output_dir / dir_name / f"{entry.name}.bin").resolve()
+
+    if args.dry_run:
+        for entry in downloads.items():
+            print(f"{entry[0]} -> {entry[1].relative_to(output_dir)}")
+        return
+
+    for directory in {e.parent for e in downloads.values()}:
+        directory.mkdir(parents=True, exist_ok=True)
+
+    main_cache = Path(os.environ["SOURCE_ARCHIVES"]) / "mass-testing"
+    main_cache.mkdir(parents=True, exist_ok=True)
+    caches = (main_cache, *get_aux_caches())
+
+    def download_file(hash_: str, destination: Path):
+        cache_file = find_file(caches, hash_)
+        if cache_file is None:
+            cache_file = main_cache / hash_
+            # File is not present or corrupt, redownload
+            s3_client.get_object(hash_, cache_file)
+        copyfile(cache_file, destination)
+
+    with ThreadPoolExecutor() as executor:
+        # force iterating on jobs so that if there's an exception it is raised
+        for _ in executor.map(lambda e: download_file(e[0], e[1]), downloads.items()):
+            pass
+
+
+if __name__ == "__main__":
+    main()

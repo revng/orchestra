@@ -34,6 +34,10 @@ builds:
         cd "$BUILD_DIR"
         (@= ninja @) install
 
+        # Symlink the llvm-symbolizer binary, so it is available in PATH
+        ln -s ../lib/llvm/llvm/bin/llvm-symbolizer \
+              "${DESTDIR}${ORCHESTRA_ROOT}/bin/llvm-symbolizer"
+
         if [ "$RUN_TESTS" -eq 1 ]; then
           (@= ninja @) check-all
         fi

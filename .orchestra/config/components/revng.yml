@@ -30,11 +30,12 @@ dependencies:
   - glibc
   - gcc-runtime
   - libarchive
+  - flamegraph
 use_asan: false
 post_install_script: |
   if [ "$RUN_TESTS" -eq 1 ]; then
     cd "$SOURCE_DIR"
-    ./libexec/revng/revng-check-conventions
+    ./libexec/revng/check-conventions
   fi
 #@ end
 
@@ -49,6 +50,6 @@ components:
     test_triggers:
       - test/revng
     check_branch:
-      - ./libexec/revng/revng-check-conventions --force-format --HEAD --check-commit
+      - ./libexec/revng/check-conventions --force-format --HEAD --check-commit
       - orc shell -c revng cmake . && orc shell -c revng ninja revng-all-binaries
     builds: #@ typical_cmake_builds(**build_args())
