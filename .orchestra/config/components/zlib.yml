@@ -1,23 +1,28 @@
 #@ load("@ytt:data", "data")
 #@ load("@ytt:overlay", "overlay")
 #@ load("/lib/create-component.lib.yml", "single_build_component")
+#@ load("/lib/cmake.lib.yml", "cmake")
 
-#@ source_url = "https://zlib.net/fossils/zlib-1.2.12.tar.gz"
+#@ source_url = "https://github.com/zlib-ng/zlib-ng/archive/refs/tags/2.2.2.tar.gz"
 
 #@yaml/text-templated-strings
 ---
 #@ def zlib_args():
-license: README
+license: LICENSE.md
 configure: |
   mkdir -p "$BUILD_DIR"
-  extract.sh --into "$BUILD_DIR" (@= source_url @)
+  extract.sh --into "$BUILD_DIR" "(@= source_url @)"
   cd "$BUILD_DIR"
-  ./configure \
-    --shared \
-    --uname=linux \
-    --prefix="$ORCHESTRA_ROOT"
+
+  (@= cmake @) \
+    -DZLIB_ENABLE_TESTS=OFF \
+    -DWITH_GTEST=OFF \
+    -DZLIB_COMPAT=ON
 build_system: make
+post_install: |
+  rm "${DESTDIR}${ORCHESTRA_ROOT}/lib/libz.a"
 build_dependencies:
+  - cmake
   - gcc-host-toolchain
   - glibc
 dependencies:
