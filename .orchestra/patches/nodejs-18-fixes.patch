@@ -71,3 +71,14 @@
  // On IBMi, os.uptime() returns 'undefined'
  if (!common.isIBMi) {
    const uptime = os.uptime();
+--- a/test/parallel/test-process-versions.js
++++ b/test/parallel/test-process-versions.js
+@@ -61,7 +61,7 @@ assert.match(process.versions.brotli, commonTemplate);
+ assert.match(process.versions.llhttp, commonTemplate);
+ assert.match(process.versions.node, commonTemplate);
+ assert.match(process.versions.uv, commonTemplate);
+-assert.match(process.versions.zlib, /^\d+(?:\.\d+){1,3}(?:-.*)?$/);
++assert.match(process.versions.zlib, /^\d+(?:\.\d+){1,3}(?:.*)?$/);
+ 
+ if (hasUndici) {
+   assert.match(process.versions.undici, commonTemplate);
