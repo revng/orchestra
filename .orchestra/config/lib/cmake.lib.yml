@@ -36,6 +36,8 @@
 - -DPython_FIND_VIRTUALENV=STANDARD
 #@ end
 
+#@ cmake_release_base_configuration = expand_args(cmdline_cmake_base_configuration(cmake_build_type="Release"))
+
 ---
 
 #@ def _cmake_boost_configuration():
