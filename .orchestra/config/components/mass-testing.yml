@@ -111,4 +111,4 @@ download_specs:
 components:
   mass-testing: #@ mass_testing_config(**mass_testing_args())
   mass-testing-regression: #@ mass_testing_config(**mass_testing_regression_args())
-  mass-testing-13_binaries: #@ mass_testing_config(**mass_testing_13_binaries_args())
+  mass-testing-13-binaries: #@ mass_testing_config(**mass_testing_13_binaries_args())
