@@ -37,7 +37,7 @@ install: |
   (@= ninja @) install
 
   COMPILER_WRAPPER="${ORCHESTRA_DOTDIR}/support/hard-flags-compiler-wrapper.py"
-  echo "25da6081a2325995b8e668072c23387428d8561cfc6e932876fd449b57aaa862 ${COMPILER_WRAPPER}" | sha256sum -c -
+  echo "0b57238f96cfdce849e109918776789ec9bdc44d5736eca19b58f6cf4f748804 ${COMPILER_WRAPPER}" | sha256sum -c -
   mkdir -p "${DESTDIR}${ORCHESTRA_ROOT}/clang-vanilla/wrapped-bin"
   cd "${DESTDIR}${ORCHESTRA_ROOT}/clang-vanilla/wrapped-bin"
   cp -a "$COMPILER_WRAPPER" clang
