@@ -1,0 +1,36 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/create-component.lib.yml", "single_build_component")
+#@ load("/lib/cmake.lib.yml", "cmake", "cmake_release_base_configuration")
+
+#@ source_url = "https://github.com/facebook/zstd/releases/download/v1.5.6/zstd-1.5.6.tar.gz"
+
+#@yaml/text-templated-strings
+---
+#@ def zstd_args():
+license: LICENSE
+configure: |
+  mkdir -p "$BUILD_DIR"
+  extract.sh --into "$BUILD_DIR" (@= source_url @)
+  
+  cd "$BUILD_DIR"
+  (@= cmake @) \
+    -S build/cmake \
+    -G Ninja \
+    (@= cmake_release_base_configuration @) \
+    -DBUILD_SHARED_LIBS=ON \
+    -DZSTD_BUILD_SHARED=ON \
+    -DZSTD_BUILD_STATIC=OFF \
+    -DZSTD_PROGRAMS_LINK_SHARED=ON
+build_system: ninja
+build_dependencies:
+  - host-c-toolchain
+dependencies:
+  - host-libc
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  zstd: #@ single_build_component(**zstd_args())
