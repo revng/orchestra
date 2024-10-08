@@ -50,6 +50,9 @@ install: |
 
   # This file is needed because gcc fixinclude detects it when bootstrapping toolchains
   touch "$DESTDIR$INSTALL_LINK_ONLY_PATH/include/stdc-predef.h"
+
+  # This is a file that is sometimes needed
+  cp -a "$DESTDIR$INSTALL_LINK_ONLY_PATH"/usr/include/gnu/stubs{-64,-32}.h
 build_dependencies:
   - libgcc
 #@ end
