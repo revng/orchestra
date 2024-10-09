@@ -133,7 +133,7 @@ def _check_fat_macho_inner(file: BufferedIOBase):
         file.seek(8 + 20 * i + 8, os.SEEK_SET)
         offset = struct.unpack(">I", file.read(4))[0]
         file.seek(offset, os.SEEK_SET)
-        if _check_fat_macho(file.read(16)):
+        if _check_plain_macho(file.read(16)):
             return True
     return False
 
