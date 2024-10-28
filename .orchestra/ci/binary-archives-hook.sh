@@ -7,6 +7,11 @@ set -euo pipefail
 #
 # Mandatory parameters:
 #
+# 1:
+#   File containing the list of changed files in the binary archives, each line
+#   is a different file path
+# COMPONENT_TARGET_BRANCH: target branch the CI has been triggered against
+#
 # BINARY_ARCHIVES_S3CMD_CONFIG:
 #   This variable will contain a valid configuration for s3cmd that allows
 #   PUT-ing and DELETE-ing object from S3
@@ -21,10 +26,25 @@ set -euo pipefail
 #
 # Optional parameters:
 #
+# BINARY_ARCHIVES_HOOKS_FORCE:
+#   If set to '1' the hooks are going to be run regardless if there have been
+#   changes to the binary archives
+# BINARY_ARCHIVES_HOOKS_SKIP:
+#   If set to '1' the hooks are not going to be run, this script will exit
+#   without doing anything
 # PUSH_HOOK_SCRIPT:
 #   If present, this script will be `eval`-ed in a subshell. Useful to
 #   implement additional logic while maintaining orchestra agnostic.
 
+if [ "${BINARY_ARCHIVES_HOOKS_SKIP:-}" -eq 1 ]; then
+    exit 0
+fi
+
+SCRIPT_DIR=$(realpath "$(dirname "${BASH_SOURCE[0]}")")
+CHANGES_FILE="$1"
+ORCHESTRA_DOTDIR="$(realpath "$SCRIPT_DIR/../../.orchestra")"
+
+BRANCH="$COMPONENT_TARGET_BRANCH"
 S3_CONF_FILE=$(mktemp --tmpdir tmp.s3cmd-credentials-XXXXXXXXXX)
 DOCKER_CONTEXT=$(mktemp --tmpdir -d tmp.podman-context-XXXXXXXXXX)
 function cleanup() {
@@ -35,14 +55,14 @@ trap cleanup EXIT
 
 
 REDIST_PATHS=()
-for PATH_CHANGE in "${BINARY_ARCHIVES_PATH_CHANGES[@]}"; do
+while IFS= read -r PATH_CHANGE; do
     if [[ "$PATH_CHANGE" = 'public/linux-x86-64/revng-distributable/default/'* || \
           "$PATH_CHANGE" = 'public/linux-x86-64/revng-distributable-public-demo/default/'* ]]; then
         REDIST_PATHS+=("$PATH_CHANGE")
     fi
-done
+done < "$CHANGES_FILE"
 
-if [ "${#REDIST_PATHS[@]}" -gt 0 ]; then
+if [[ "${#REDIST_PATHS[@]}" -gt 0 || "${BINARY_ARCHIVES_HOOKS_FORCE:-}" -eq 1 ]]; then
     #
     # S3 sync of binary archives
     #
@@ -110,14 +130,17 @@ EOF
     LOCAL_IMAGE="localhost/revng-image-$(tr -dc a-z0-9 < /dev/urandom | head -c 16)"
     sudo -i podman build \
         -t "$LOCAL_IMAGE" \
+        --build-arg="REVNG_BRANCH=$BRANCH" \
         -f "$ORCHESTRA_DOTDIR/support/Dockerfile.binary-archives" \
         "$DOCKER_CONTEXT"
     sudo -i podman login -u "$PODMAN_REGISTRY_USER" \
         -p "$PODMAN_REGISTRY_PASSWORD" \
         "$(cut -d/ -f1 <<< "$PODMAN_IMAGE_TARGET")"
-    sudo -i podman push "$LOCAL_IMAGE" "$PODMAN_IMAGE_TARGET"
+    sudo -i podman push "$LOCAL_IMAGE" "$PODMAN_IMAGE_TARGET:$BRANCH"
+    if [ "$BRANCH" == "master" ]; then
+        sudo -i podman push "$LOCAL_IMAGE" "$PODMAN_IMAGE_TARGET:latest"
+    fi
 fi
-
 
 #
 # Run the PUSH_HOOK_SCRIPT, if present
