@@ -2,6 +2,7 @@ image: revng/revng-build-dependencies:latest
 
 stages:
   - build
+  - promotion
 
 create-binaries:
   stage: build
@@ -9,3 +10,19 @@ create-binaries:
     - git clone "${ORCHESTRA_CONFIG_REPO_HTTP_URL:-https://github.com/revng/orchestra.git}"
     - cd orchestra
     - .orchestra/ci/ci.sh
+
+
+regression-and-promotion:
+  tags:
+    - mass-testing
+  stage: promotion
+  rules:
+    - if: $PUSHED_REF == "refs/heads/next-develop"
+  script:
+    - git clone --branch develop "${ORCHESTRA_CONFIG_REPO_HTTP_URL:-https://github.com/revng/orchestra.git}"
+    - cd orchestra
+    - .orchestra/ci/ci-regression.sh
+  artifacts:
+    paths:
+      - orchestra/root/share/mass-testing-reports/regression/
+    when: always

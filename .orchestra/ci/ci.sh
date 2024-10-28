@@ -1,21 +1,23 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 # rev.ng CI entrypoint script
 # This script checks out the correct configuration branch and initializes
 # variables for the actual CI script (ci-run.sh)
+# The ci.sh and ci-run.sh are two separate scripts due to how branches are
+# pulled: the `orchestra` repo (where this file resides) is cloned and a
+# checkout is attempted for a few branch names (e.g. `$PUSHED_REF`, develop,
+# master). This script should remain small and just take care of having the
+# orchestra repo at the right branch before passing control over to it.
 #
-# Parameters are supplied as environment variables.
-#
-# Optional parameters:
+# Mandatory environment variables:
 #
 # PUSHED_REF:
 #   orchestra config commit/branch to use.
 #   Normally set by Gitlab or whoever triggers the CI.
 
-set -euo pipefail
-
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-ORCHESTRA_DIR="$DIR/../.."
+SCRIPT_DIR=$(realpath "$(dirname "${BASH_SOURCE[0]}")")
+ORCHESTRA_DIR="$SCRIPT_DIR/../.."
 
 BOLD="\e[1m"
 RED="\e[31m"
@@ -52,15 +54,11 @@ function log2() {
 # If this ref is a branch, it will be used as the first default branch to try
 # for all components and for orchestra configuration
 
-COMPONENT_TARGET_BRANCH=""
-
-if [[ -n "${PUSHED_REF:-}" ]]; then
-    if [[ "$PUSHED_REF" = refs/heads/* ]]; then
-        COMPONENT_TARGET_BRANCH="${PUSHED_REF#refs/heads/}"
-    else
-        log_err "PUSHED_REF ($PUSHED_REF) is not a branch, bailing out"
-        exit 0
-    fi
+if [[ -n "${PUSHED_REF:-}" && "$PUSHED_REF" = refs/heads/* ]]; then
+    COMPONENT_TARGET_BRANCH="${PUSHED_REF#refs/heads/}"
+else
+    log_err "PUSHED_REF ($PUSHED_REF) is not a branch, bailing out"
+    exit 0
 fi
 
 ogit fetch
@@ -74,7 +72,7 @@ if [[ ! "$COMPONENT_TARGET_BRANCH" =~ ^(next-)?(develop|master)$ ]] && \
 fi
 
 # Switch orchestra to the target branch or try the default list
-for B in "$COMPONENT_TARGET_BRANCH" next-develop develop next-master master; do
+for B in "$COMPONENT_TARGET_BRANCH" next-develop develop master; do
     if ogit checkout "$B"; then
         ORCHESTRA_TARGET_BRANCH="$B"
         break
@@ -139,4 +137,4 @@ export COMPONENT_TARGET_BRANCH
 
 # Run "true" CI script
 log "Starting ci-run with COMPONENT_TARGET_BRANCH=$COMPONENT_TARGET_BRANCH"
-"$DIR/ci-run.sh"
+"$SCRIPT_DIR/ci-run.sh"
