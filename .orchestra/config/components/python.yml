@@ -6,7 +6,7 @@
 #@yaml/text-templated-strings
 ---
 #@ def python_component():
-#@ python_version = "3.12.2"
+#@ python_version = "3.12.7"
 #@ source_url = "https://www.python.org/ftp/python/" + python_version + "/Python-" + python_version + ".tar.xz"
 license: LICENSE
 builds:
