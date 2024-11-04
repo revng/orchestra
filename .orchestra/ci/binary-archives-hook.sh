@@ -46,7 +46,31 @@ if [ "${#REDIST_PATHS[@]}" -gt 0 ]; then
     #
 
     BINARY_ARCHIVES_BASE="$ORCHESTRA_DOTDIR/binary-archives"
-    echo "$BINARY_ARCHIVES_S3CMD_CONFIG" > "$S3_CONF_FILE"
+    cat - > "$S3_CONF_FILE" <<EOF
+[default]
+# Basic config
+use_https = True
+check_ssl_certificate = True
+
+# Do not dereference symlinks
+follow_symlinks = False
+
+# Tweak multipart upload (only do if >1GB)
+enable_multipart = True
+multipart_chunk_size_mb = 1024
+
+# Do not set metadata with unix permissions
+preserve_attrs = False
+
+# When sync-ing, remove files that are only present in S3
+delete_removed = True
+delete_after = True
+
+# Logging
+verbosity = ERROR
+
+$BINARY_ARCHIVES_S3CMD_CONFIG
+EOF
 
     for REDIST_PATH in "${REDIST_PATHS[@]}"; do
         FULL_REDIST_PATH="$BINARY_ARCHIVES_BASE/$REDIST_PATH"
