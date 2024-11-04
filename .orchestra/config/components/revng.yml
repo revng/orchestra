@@ -9,6 +9,9 @@ test: true
 extra_cmake_args:
   - #@ template.replace(cmake_boost_configuration)
   - "-DLLVM_DIR=$ORCHESTRA_ROOT/lib64/llvm/llvm/lib/cmake/llvm"
+  - "-DClang_DIR=$ORCHESTRA_ROOT/lib64/llvm/llvm/lib/cmake/clang"
+  - "-DMLIR_DIR=$ORCHESTRA_ROOT/lib64/llvm/llvm/lib/cmake/mlir"
+  - "-DTARGET_CLANG=$ORCHESTRA_ROOT/link-only/bin/clang"
 extra_compiler_flags: #@ data.values.revng_extra_compiler_flags
 build_dependencies:
   - host-cxx-toolchain
