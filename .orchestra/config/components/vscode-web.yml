@@ -12,6 +12,7 @@ builds:
   #@ for flavor in ["default", "debug"]:
   (@= flavor @):
     build_dependencies:
+    - host-c-toolchain
     - revng-js-prerequisites
     - libxkbfile
     - libx11
