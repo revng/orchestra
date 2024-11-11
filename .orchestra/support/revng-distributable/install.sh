@@ -138,7 +138,6 @@ if [ "$RUN_TESTS" -eq 1 ]; then
     ./revng
     graphql
     --analyses-list=revng-initial-auto-analysis
-    --analyses-list=revng-c-initial-auto-analysis
     --produce-artifacts
     "$TEST_BINARY"
   )

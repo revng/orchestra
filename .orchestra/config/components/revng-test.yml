@@ -61,17 +61,6 @@ build_dependencies:
   - clang-release
 #@ end
 
-#@ def revng_c_test():
-configure_args: --target-type 'revng-c\..*'
-build_dependencies:
-  - ninja
-  - revng-c
-  - revng-qa
-  - test/revng
-  - test/revng-qa
-  - clang-release
-#@ end
-
 #@overlay/match by=overlay.all, expects=1
 #@overlay/match-child-defaults missing_ok=True
 ---
@@ -79,4 +68,3 @@ build_dependencies:
 components:
   _: #@ template.replace(revng_test_component("test/revng-qa", revng_qa_test()))
   _: #@ template.replace(revng_test_component("test/revng", revng_test()))
-  _: #@ template.replace(revng_test_component("test/revng-c", revng_c_test()))

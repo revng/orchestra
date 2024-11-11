@@ -7,7 +7,7 @@
 ---
 #@ def boost_libs():
 - regex   #! used by: source-highlight
-- test    #! used by: revng, revng-c
+- test    #! used by: revng
 #@ end
 
 #@yaml/text-templated-strings

@@ -7,7 +7,7 @@
 #@ def revng_vscode_web_args():
 binary_archives: private
 dependencies:
-- revng-c
+- revng
 build_dependencies:
 - revng-ui
 - revng-theme

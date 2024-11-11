@@ -14,7 +14,7 @@ builds:
     build_dependencies:
     - ninja
     - revng-qa
-    - revng-c
+    - revng
     - sqlite
 
     configure: |

@@ -9,7 +9,6 @@ components:
       default:
         dependencies:
           - test/revng
-          - test/revng-c
           - revng-vscode-web
           - llvm-documentation
           - revng-distributable
