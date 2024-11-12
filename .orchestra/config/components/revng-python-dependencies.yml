@@ -44,20 +44,14 @@ requirements: |-
   gql[aiohttp]
   https://github.com/revng/grandiso-networkx/archive/043ce4b.tar.gz
   jsonschema>=4.17.3,<4.18.0
-  networkx
+  networkx>=3.3
   pefile
   pycparser
-  pydot
+  pydot>=3.0.2
   pyelftools
 
   # This is our fork of the python-idb package that includes some fixes.
   https://github.com/revng/python-idb/archive/08ba07a.tar.gz
-
-  # pydot 3.0.2 introduced an incompatibility with pydot which is supposed to be
-  # resolved in a later version, but still causes problems to us (for instance,
-  # monotone framework headers generation fails), so we request v2.4.7.  See
-  # https://github.com/pydot/pydot/issues/277
-  pyparsing==2.4.7
 
   pytest
   pytest-asyncio

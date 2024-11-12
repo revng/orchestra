@@ -60,6 +60,9 @@ if [ "${#REDIST_PATHS[@]}" -gt 0 ]; then
                 "$BINARY_ARCHIVES_S3_PATH/$REDIST_PATH"
             rm "$TEMP_FILE"
         elif [ -f "$FULL_REDIST_PATH" ]; then
+            pushd "$(dirname "$FULL_REDIST_PATH")" &> /dev/null
+            git lfs pull -I "$(basename "$FULL_REDIST_PATH")"
+            popd &> /dev/null
             s3cmd put --config="$S3_CONF_FILE" --acl-public \
                 "$FULL_REDIST_PATH" \
                 "$BINARY_ARCHIVES_S3_PATH/$REDIST_PATH"
