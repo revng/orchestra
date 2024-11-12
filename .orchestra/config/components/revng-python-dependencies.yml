@@ -37,7 +37,7 @@ requirements: |-
   cmakelang
 
   # Applications/Script dependencies
-  ariadne[asgi-file-uploads]>=0.20.1
+  ariadne[asgi-file-uploads]>=0.23.0
   boto3
   cffi
   Jinja2
@@ -62,7 +62,7 @@ requirements: |-
   build
 
   # uvicorn[standard] but without watchfiles (since it requires rust)
-  uvicorn==0.22.0
+  uvicorn==0.32.0
   httptools>=0.5.0
   python-dotenv>=0.13
   websockets>=10.4
