@@ -11,6 +11,7 @@ dependencies:
 - pyyaml
 - cython
 - uvloop
+- llvm
 requirements: |-
   # Python language checkers/formatters
   black>=22.12.0,<23.0
@@ -60,6 +61,7 @@ requirements: |-
   rich
   psutil
   build
+  llvmcpy>=0.2.1
 
   # uvicorn[standard] but without watchfiles (since it requires rust)
   uvicorn==0.32.0
