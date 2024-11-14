@@ -15,6 +15,7 @@
 - -DLLVM_ENABLE_OCAMLDOC=OFF
 - -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT/lib/llvm/llvm"
 - -DLLVM_USE_LINKER=mold
+- -DLLVM_ENABLE_ZSTD=ON
 #@ end
 
 #@yaml/text-templated-strings
@@ -50,6 +51,7 @@ builds:
         - libunwind
         - libedit
         - zlib
+        - zstd
         - lit
       #@ if/end ndebug == False:
       ndebug: false
