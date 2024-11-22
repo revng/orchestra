@@ -24,7 +24,7 @@ requirements: |-
   pep8-naming>=0.13.3,<1.0
   isort>=5.11.4,<6.0
   codespell>=2.2.2,<3.0
-  mypy==1.4.1
+  mypy==1.13.0
 
   # Python types, needed for mypy to work correctly
   boto3-stubs[s3]
