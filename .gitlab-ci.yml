@@ -6,5 +6,6 @@ stages:
 create-binaries:
   stage: build
   script:
-    - git checkout -B "$CI_COMMIT_REF_NAME" "$CI_COMMIT_SHA"
+    - git clone "${ORCHESTRA_CONFIG_REPO_HTTP_URL:-https://github.com/revng/orchestra.git}"
+    - cd orchestra
     - .orchestra/ci/ci.sh
