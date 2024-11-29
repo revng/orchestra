@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# rev.ng CI script
+# This script runs orchestra to build the required components.
+# If the build is successful the script can push the newly produced binary
+# archives and promote next-<name> branches to <name>.
+#
+# Mandatory parameters:
+#
+# REGRESSION_TARGET_COMPONENT: name of the orchestra target to build to test regression
+# REVNG_ORCHESTRA_URL: orchestra git repo URL (must be git+ssh:// or git+https://)
+#
+# Optional parameters:
+#
+# SSH_PRIVATE_KEY: private key used to push binary archives
+# LFS_RETRIES: Number of times lfs pull/push operations are retried. Defaults to 3.
+
+SCRIPT_DIR=$(realpath "$(dirname "${BASH_SOURCE[0]}")")
+# shellcheck disable=SC1091
+source "$SCRIPT_DIR/common.sh"
+
+cd "$ORCHESTRA_REPO_DIR"
+"$SCRIPT_DIR/install-dependencies.sh"
+
+# Install revng-orchestra
+for REVNG_ORCHESTRA_TARGET_BRANCH in next-develop develop master; do
+    if pip3 -q install --user "$REVNG_ORCHESTRA_URL@$REVNG_ORCHESTRA_TARGET_BRANCH"; then
+        break
+    fi
+done
+
+# Make sure we can run orchestra
+export PATH="$HOME/.local/bin:$PATH"
+command -v orc > /dev/null
+
+# Load ssh key
+load_ssh_key
+
+# Populate USER_OPTIONS
+cat >> "$USER_OPTIONS" <<EOF
+${BASE_USER_OPTIONS_YML}
+
+#@overlay/replace
+branches:
+  - develop
+  - master
+EOF
+
+# Print debug information
+echo "User options:"
+cat "$USER_OPTIONS"
+
+# Start downstream pipeline, since it can take a while this and the run of
+# the regression suite are started in parallel to optimize time
+PIPELINE_ID=$(COMPONENT_TARGET_BRANCH=develop pipeline_create)
+
+# Run regression suite
+orc update --no-config
+orc --quiet install \
+    --discard-build-directories \
+    --lfs-retries "$LFS_RETRIES" \
+    -b "$REGRESSION_TARGET_COMPONENT"
+
+# Wait and check if the downstream pipeline has finished
+pipeline_wait "$PIPELINE_ID"
+
+#
+# Promote develop to master and push
+#
+promote_branches develop master
+export COMPONENT_TARGET_BRANCH=master
+CHANGES_FILE="$(mktemp --tmpdir tmp.binary-archives-changes.XXXXXXXXXX)"
+add_to_cleanup "$CHANGES_FILE"
+push_binary_archives "$CHANGES_FILE"
+"$SCRIPT_DIR/binary-archives-hook.sh" "$CHANGES_FILE"
+
+#
+# Run the downstream pipeline, if needed
+#
+pipeline_wait "$(pipeline_create)"
