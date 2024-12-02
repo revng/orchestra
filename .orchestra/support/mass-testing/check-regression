@@ -1,0 +1,140 @@
+#!/usr/bin/env python3
+
+import argparse
+import csv
+import os
+import re
+import sqlite3
+import sys
+from dataclasses import dataclass
+from pathlib import Path
+
+import yaml
+
+
+@dataclass
+class Data:
+    name: str
+    test_name: str
+
+    elapsed_time: float
+    max_rss: float
+    status: str
+
+    previous_elapsed_time: float
+    previous_max_rss: float
+
+
+@dataclass
+class TestLimits:
+    min_timeout: float
+    max_timeout: float
+
+    min_memory: float
+    max_memory: float
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--memory-margin", default=0.5, type=float, help="Memory margin")
+    parser.add_argument("--timeout-margin", default=0.5, type=float, help="Timeout margin")
+    parser.add_argument("input_csv", type=Path, help="Input csv")
+    parser.add_argument("report_dir", type=Path, help="Output report directory")
+
+    args = parser.parse_args()
+
+    timeout_margin = os.environ.get("MASS_TESTING_REGRESSION_TIMEOUT_MARGIN", args.timeout_margin)
+    memory_margin = os.environ.get("MASS_TESTING_REGRESSION_MEMORY_MARGIN", args.memory_margin)
+    assert 0 <= timeout_margin <= 1, "Timeout margin must be between 0 and 1"
+    assert 0 <= memory_margin <= 1, "Timeout margin must be between 0 and 1"
+
+    csv_data = {}
+    with open(args.input_csv, newline="") as csvfile:
+        for entry in csv.DictReader(csvfile):
+            csv_data[(entry["name"], entry["test_name"])] = {
+                "elapsed_time": float(entry["elapsed_time"]),
+                "max_rss": float(entry["max_rss"]),
+            }
+
+    conn = sqlite3.connect(args.report_dir / "main.db")
+    conn.row_factory = sqlite3.Row
+
+    sql_data = {}
+    query = "SELECT name, input_name, elapsed_time, max_rss, status FROM main"
+    for entry in conn.execute(query):
+        name = str(Path(entry["name"]).parent / entry["input_name"].removesuffix(".bin"))
+        test_name = re.sub("-[a-f0-9]{8}$", "", entry["name"].removeprefix(f"{name}-"))
+        sql_data[(name, test_name)] = {
+            "elapsed_time": entry["elapsed_time"],
+            "max_rss": entry["max_rss"],
+            "status": entry["status"],
+        }
+
+    entries: list[Data] = []
+    for key, sql_entry in sql_data.items():
+        if key not in csv_data:
+            # TODO: should this be an error?
+            continue
+
+        entries.append(
+            Data(
+                name=key[0],
+                test_name=key[1],
+                elapsed_time=sql_entry["elapsed_time"],
+                max_rss=sql_entry["max_rss"],
+                status=sql_entry["status"],
+                previous_elapsed_time=csv_data[key]["elapsed_time"],
+                previous_max_rss=csv_data[key]["max_rss"],
+            )
+        )
+
+    with open(args.report_dir / "meta.yml") as f:
+        yaml_data = yaml.safe_load(f)
+        test_configurations_raw = yaml_data["configurations"]
+
+    tests_limits: dict[str, TestLimits] = {}
+    for test in test_configurations_raw:
+        tests_limits[test["name"]] = TestLimits(
+            min_timeout=(1 - timeout_margin) * test["timeout"],
+            max_timeout=test["timeout"],
+            min_memory=(1 - memory_margin) * test["memory_limit"],
+            max_memory=test["memory_limit"],
+        )
+
+    errors = []
+    for entry in entries:
+        if entry.status == "OK":
+            continue
+
+        if entry.status == "FAILED":
+            errors.append(f"{entry.name} exited with a non-zero exit code")
+            continue
+        if entry.status == "CRASHED":
+            errors.append(f"{entry.name} has crashed")
+            continue
+
+        limits = tests_limits[entry.test_name]
+        if entry.status == "OOM":
+            if not (limits.min_memory <= entry.previous_max_rss <= limits.max_memory):
+                errors.append(f"{entry.name} exited due to excessive memory usage")
+            continue
+
+        if entry.status == "TIMED_OUT":
+            if not (limits.min_timeout <= entry.previous_elapsed_time <= limits.max_timeout):
+                errors.append(f"{entry.name} took to long to execute")
+            continue
+
+        # If here, the `status` string is unknown, error out
+        errors.append(f"{entry.name} has unknown status: {entry.status}")
+
+    if len(errors) > 0:
+        print("Regression failed, the following errors were encountered:")
+        for error in errors:
+            print(error)
+        return 1
+    else:
+        return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
