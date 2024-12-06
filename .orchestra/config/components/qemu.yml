@@ -20,22 +20,30 @@ builds:
         cd "$BUILD_DIR";
         "$SOURCE_DIR/configure" \
           --cc="(@= data.values.regular_c_compiler @)" \
-          --cxx="(@= data.values.regular_cxx_compiler @)" \
           --prefix="$ORCHESTRA_ROOT" \
-          --target-list=" arm-libtinycode arm-linux-user aarch64-libtinycode aarch64-linux-user i386-libtinycode i386-linux-user mips-libtinycode mips-linux-user mipsel-libtinycode mipsel-linux-user s390x-libtinycode s390x-linux-user x86_64-libtinycode x86_64-linux-user " \
-          --disable-werror \
+          --target-list=" \
+            arm-linux-user \
+            aarch64-linux-user \
+            i386-linux-user \
+            mips-linux-user \
+            mipsel-linux-user \
+            s390x-linux-user \
+            x86_64-linux-user \
+            hexagon-linux-user \
+            loongarch64-linux-user" \
+          --enable-libtcg \
           --enable-llvm-helpers \
+          --disable-werror \
           --disable-kvm \
-          --without-pixman \
           --disable-tools \
           --disable-system \
           --disable-libnfs \
           --disable-vde \
           --disable-gnutls \
-          --disable-smartcard-nss \
-          --disable-uuid \
           --disable-cap-ng \
-          --python="${ORCHESTRA_ROOT}/bin/python2" \
+          -Dvhost_user=disabled \
+          -Dxkbcommon=disabled \
+          --python="$(command -v python)" \
           (@ if build_type == "Debug": @)--enable-debug (@ end @)\
           --extra-cflags="(@= cflags @)"
       install: |
@@ -43,11 +51,9 @@ builds:
         (@= make @) install
       build_dependencies:
         - host-c-toolchain
-        - python2
       dependencies:
         - zlib
         - glib
-        - host-libc
       #@ if/end ndebug == False:
       ndebug: false
   #@ end
