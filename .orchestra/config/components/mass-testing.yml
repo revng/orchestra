@@ -92,6 +92,9 @@ post_install: |
 
   if [ "$TOTAL" -ne "$OK" ]; then
     echo "Failed tests during regression!" >&2
+    echo "Total run: $TOTAL" >&2
+    echo "Passed: $OK" >&2
+    echo "Failed: $(( TOTAL - OK ))" >&2
     sqlite3 -list report/main.db "SELECT name FROM main WHERE status != 'OK'" >&2
     exit 1
   fi
