@@ -26,10 +26,8 @@ set -euo pipefail
 #   implement additional logic while maintaining orchestra agnostic.
 
 S3_CONF_FILE=$(mktemp --tmpdir tmp.s3cmd-credentials-XXXXXXXXXX)
-DOCKER_CONTEXT=$(mktemp --tmpdir -d tmp.podman-context-XXXXXXXXXX)
 function cleanup() {
     rm -f "$S3_CONF_FILE"
-    rm -rf "$DOCKER_CONTEXT"
 }
 trap cleanup EXIT
 
@@ -84,10 +82,8 @@ if [ "${#REDIST_PATHS[@]}" -gt 0 ]; then
 
     # TODO: check again when upgrading to 24.04 if the 'sudo' can be dropped
     LOCAL_IMAGE="localhost/revng-image-$(tr -dc a-z0-9 < /dev/urandom | head -c 16)"
-    sudo -i podman build \
-        -t "$LOCAL_IMAGE" \
-        -f "$ORCHESTRA_DOTDIR/support/Dockerfile.binary-archives" \
-        "$DOCKER_CONTEXT"
+    sudo -i "$ORCHESTRA_DOTDIR/support/docker-image/build.sh" \
+        "$LOCAL_IMAGE" "$ORCHESTRA_ROOT/revng-public-demo"
     sudo -i podman login -u "$PODMAN_REGISTRY_USER" \
         -p "$PODMAN_REGISTRY_PASSWORD" \
         "$(cut -d/ -f1 <<< "$PODMAN_IMAGE_TARGET")"
