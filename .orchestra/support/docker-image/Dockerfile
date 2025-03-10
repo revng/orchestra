@@ -11,11 +11,11 @@ RUN apt-get update -y && \
         # For debugging
         busybox curl bash \
         # Needed otherwise we'd get errors when, for example, when we fetch debug symbols
-        ca-certificates \
-        # Used by 'install.sh' to unpack the tarball from binary archives
-        tar xz-utils && \
+        ca-certificates && \
     rm -rf /root/.cache /var/lib/apt/lists/* /var/log/* /var/cache/*
 
-RUN cd / && \
-    curl -L "https://rev.ng/downloads/revng-distributable/${REVNG_BRANCH}/install.sh" | bash
+COPY . /revng/
 ENV PATH="${PATH}:/revng"
+
+# Sanity check
+RUN revng --version
