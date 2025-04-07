@@ -57,7 +57,6 @@ requirements: |-
   pytest-asyncio
   requests
   requests-toolbelt
-  rich
   psutil
   build
 
@@ -74,6 +73,7 @@ requirements: |-
   mkdocs-graphviz
   mkdocs-material
 
+  yachalk
   yq
 #@ end
 
