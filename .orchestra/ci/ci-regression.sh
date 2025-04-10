@@ -27,9 +27,7 @@ SCRIPT_DIR=$(realpath "$(dirname "${BASH_SOURCE[0]}")")
 source "$SCRIPT_DIR/common.sh"
 
 cd "$ORCHESTRA_REPO_DIR"
-"$SCRIPT_DIR/install-dependencies.sh"
-# TODO: remove this once install-dependencies does this itself
-sudo apt-get -qq install --no-install-recommends --yes inkscape
+"$SCRIPT_DIR/install-dependencies.sh" --full
 
 # Install revng-orchestra
 for REVNG_ORCHESTRA_TARGET_BRANCH in next-develop develop master; do
