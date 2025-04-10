@@ -58,7 +58,7 @@ fi
 cd "$SCRIPT_DIR"
 
 # Install dependencies
-"$SCRIPT_DIR/install-dependencies.sh"
+"$SCRIPT_DIR/install-dependencies.sh" --full
 
 #
 # Register deploy key, if any
