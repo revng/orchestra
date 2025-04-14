@@ -14,7 +14,7 @@ from starlette.staticfiles import StaticFiles
 import uvicorn
 
 from revng.internal.cli.commands_registry import Command, CommandsRegistry, Options
-from revng.internal.support import get_root
+from revng.support import get_root
 
 ROOT = (get_root() / "share/vscode-web").resolve()
 
