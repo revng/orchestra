@@ -22,7 +22,6 @@ build_dependencies:
   #! binaries, but the benefits are not too big.
   - test/revng-qa
 dependencies:
-  - aws-sdk
   - boost
   - host-libcxx
   - llvm
