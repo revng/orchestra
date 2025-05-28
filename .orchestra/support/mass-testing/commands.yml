@@ -1,11 +1,4 @@
-commands:
-- type: revng-regression.decompile
-  from:
-  - type: source
-  suffix: /
-  command: |-
-    test-harness "$INPUT" "$OUTPUT" --timeout 300 --memory-limit 4500000000 --
-    revng
-      artifact
-      decompile-to-single-file
-      --analyze %INPUT%
+- name: revng-regression.decompile
+  timeout: 300
+  memory_limit: 3700000000
+  command: revng artifact decompile-to-single-file --analyze %INPUT%

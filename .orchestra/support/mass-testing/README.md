@@ -94,8 +94,9 @@ This tool is used to download files given one or more specification `.yml` files
 
 ### `generate-inclusions`
 
-This tool, given a `main.db` database from a report, will generate a YAML file
-which includes all tests which passed.
+This tool, given a `main.db` database from a report, will generate a CSV file
+with all the passed tests and additional (time, max_rss) resource usage
+information.
 
 ### `generate-meta`
 
