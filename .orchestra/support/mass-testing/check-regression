@@ -1,0 +1,166 @@
+#!/usr/bin/env python3
+
+import argparse
+import csv
+import os
+import re
+import sqlite3
+import sys
+from dataclasses import dataclass
+from pathlib import Path
+
+import yaml
+
+# This script checks two executions of mass-testing and determines if the
+# current run has regressed from the previous one.
+#
+# Inputs
+# * `input_csv`: the csv of a previous mass-testing run, as produced by the
+#                `generate-inclusions` script. This only contains inputs which
+#                previously passed mass-testing.
+# * `report_dir`: the current execution of mass-testing to check
+#
+# Environment variables
+# MASS_TESTING_REGRESSION_TIMEOUT_MARGIN: the timeout_margin to use (default: 0.5)
+# MASS_TESTING_REGRESSION_MEMORY_MARGIN: the memory_margin to use (default: 0.5)
+#
+# Logic
+# All the inputs are paired between the current execution and the previous one.
+# Inputs which are not present in the previous execution are ignored. The
+# script then compares each execution pair, and follows the logic below based
+# on the result of the current execution:
+# * if OK, then it's a pass
+# * if FAILED or CRASHED, report an error
+# * if OOM, but 1 <= previous_max_rss% <= (1 - memory_margin), then pass.
+#           Otherwise report as an error.
+# * if TIMED_OUT, but 1 <= previous_elapsed_time% <= (1 - timeout_margin), then
+#                 pass. Otherwise report as an error.
+# The last two rules are there to safeguard for some variance in the execution
+# of inputs, e.g. a passing input might have passed because it took 299s
+# seconds when the limit was 300, and this time it is TIMED_OUT.
+#
+# At the end, if all the inputs have passed the script exits with code 0
+# silently. If there has been at least one error then the script exits with
+# code 1 and prints all the inputs which have produced an error.
+
+
+@dataclass
+class Data:
+    # Identifiers for a singular execution
+    name: str
+    test_name: str
+
+    # Data from <report>/main.db
+    status: str
+
+    # Data from csv
+    previous_elapsed_time: float
+    previous_max_rss: float
+
+    def full_name(self) -> str:
+        return f"{self.test_name}/{self.name}"
+
+
+@dataclass
+class TestLimits:
+    min_timeout: float
+    max_timeout: float
+
+    min_memory: float
+    max_memory: float
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("input_csv", type=Path, help="Input csv (of previous run)")
+    parser.add_argument("report_dir", type=Path, help="Input report directory (of current run)")
+    args = parser.parse_args()
+
+    timeout_margin = float(os.environ.get("MASS_TESTING_REGRESSION_TIMEOUT_MARGIN", 0.5))
+    memory_margin = float(os.environ.get("MASS_TESTING_REGRESSION_MEMORY_MARGIN", 0.5))
+    assert 0 <= timeout_margin <= 1, "Timeout margin must be between 0 and 1"
+    assert 0 <= memory_margin <= 1, "Memory margin must be between 0 and 1"
+
+    csv_data = {}
+    with open(args.input_csv, newline="") as csvfile:
+        for csv_entry in csv.DictReader(csvfile):
+            csv_data[(csv_entry["name"], csv_entry["test_name"])] = {
+                "elapsed_time": float(csv_entry["elapsed_time"]),
+                "max_rss": float(csv_entry["max_rss"]),
+            }
+
+    conn = sqlite3.connect(args.report_dir / "main.db")
+    conn.row_factory = sqlite3.Row
+
+    entries: list[Data] = []
+    query = "SELECT name, input_name, elapsed_time, max_rss, status FROM main"
+    for sql_entry in conn.execute(query):
+        name = str(Path(sql_entry["name"]).parent / sql_entry["input_name"].removesuffix(".bin"))
+        test_name = re.sub("-[a-f0-9]{8}$", "", sql_entry["name"].removeprefix(f"{name}-"))
+        key = (name, test_name)
+
+        if key not in csv_data:
+            # If here it means that the previous run did not include this
+            # particular input, skip it
+            continue
+
+        entries.append(
+            Data(
+                name=name,
+                test_name=test_name,
+                status=sql_entry["status"],
+                previous_elapsed_time=csv_data[key]["elapsed_time"],
+                previous_max_rss=csv_data[key]["max_rss"],
+            )
+        )
+
+    with open(args.report_dir / "meta.yml") as f:
+        yaml_data = yaml.safe_load(f)
+        test_configurations_raw = yaml_data["configurations"]
+
+    tests_limits: dict[str, TestLimits] = {}
+    for test in test_configurations_raw:
+        tests_limits[test["name"]] = TestLimits(
+            min_timeout=(1 - timeout_margin) * test["timeout"],
+            max_timeout=test["timeout"],
+            min_memory=(1 - memory_margin) * test["memory_limit"],
+            max_memory=test["memory_limit"],
+        )
+
+    errors = []
+    for entry in entries:
+        if entry.status == "OK":
+            continue
+
+        if entry.status == "FAILED":
+            errors.append(f"{entry.full_name()} exited with a non-zero exit code")
+            continue
+        if entry.status == "CRASHED":
+            errors.append(f"{entry.full_name()} has crashed")
+            continue
+
+        limits = tests_limits[entry.test_name]
+        if entry.status == "OOM":
+            if not (limits.min_memory <= entry.previous_max_rss <= limits.max_memory):
+                errors.append(f"{entry.full_name()} exited due to excessive memory usage")
+            continue
+
+        if entry.status == "TIMED_OUT":
+            if not (limits.min_timeout <= entry.previous_elapsed_time <= limits.max_timeout):
+                errors.append(f"{entry.full_name()} took to long to execute")
+            continue
+
+        # If here, the `status` string is unknown, error out
+        errors.append(f"{entry.full_name()} has unknown status: {entry.status}")
+
+    if len(errors) > 0:
+        print("Regression failed, the following errors were encountered:")
+        for error in errors:
+            print(error)
+        return 1
+    else:
+        return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

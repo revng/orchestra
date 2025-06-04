@@ -16,6 +16,7 @@ RUN apt-get update -y && \
 
 COPY . /revng/
 ENV PATH="${PATH}:/revng"
+WORKDIR /revng
 
 # Sanity check
 RUN revng --version
