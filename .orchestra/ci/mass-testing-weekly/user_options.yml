@@ -1,0 +1,17 @@
+#@data/values
+---
+#@overlay/match missing_ok=True
+remote_base_urls:
+  - public: https://github.com/revng
+
+#@overlay/match missing_ok=True
+binary_archives:
+  - public: https://rev.ng/gitlab/revng/binary-archives.git
+
+#@overlay/replace
+branches:
+  - master
+
+#@overlay/replace
+build_from_source:
+  - mass-testing
