@@ -1,0 +1,12 @@
+stages:
+- build
+
+build:
+  tags:
+  - mass-testing
+  stage: build
+  image: docker.io/revng/revng-build-dependencies:latest
+  script:
+  - git clone https://github.com/revng/orchestra.git
+  - cd orchestra
+  - .orchestra/ci/mass-testing-weekly/entrypoint.sh
