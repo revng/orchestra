@@ -1,10 +1,8 @@
 FROM ubuntu:22.04
 
-COPY install-dependencies.sh \
-     install-system-dependencies.sh \
-     /
+COPY install-dependencies.sh /
 
-RUN /install-dependencies.sh \
+RUN /install-dependencies.sh --full \
     && apt-get autoremove --yes --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
