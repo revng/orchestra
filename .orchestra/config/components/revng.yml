@@ -14,6 +14,7 @@ extra_cmake_args:
   - "-DTARGET_CLANG=$ORCHESTRA_ROOT/link-only/bin/clang"
 extra_compiler_flags: #@ data.values.revng_extra_compiler_flags
 build_dependencies:
+  - glibc
   - host-cxx-toolchain
   - nodejs-support
   #! Note: we need this dependency for well-known-model binaries, which is a
@@ -29,7 +30,6 @@ dependencies:
   - revng-python-dependencies
   - toolchain/host/binutils
   - revng-js-prerequisites
-  - glibc
   - gcc-runtime
   - libarchive
   - flamegraph
