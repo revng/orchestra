@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-
-set -e
-
-FILES=$(find -name "*.docker")
-
-for FILE in $FILES; do
-    ./run $(basename "${FILE%.*}") "$@"
-done
