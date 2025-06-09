@@ -53,6 +53,9 @@ class Data:
     # Data from <report>/main.db
     status: str
 
+    current_elapsed_time: float
+    current_max_rss: float
+
     # Data from csv
     previous_elapsed_time: float
     previous_max_rss: float
@@ -109,6 +112,8 @@ def main() -> int:
                 name=name,
                 test_name=test_name,
                 status=sql_entry["status"],
+                current_elapsed_time=sql_entry["elapsed_time"],
+                current_max_rss=sql_entry["max_rss"],
                 previous_elapsed_time=csv_data[key]["elapsed_time"],
                 previous_max_rss=csv_data[key]["max_rss"],
             )
@@ -142,12 +147,20 @@ def main() -> int:
         limits = tests_limits[entry.test_name]
         if entry.status == "OOM":
             if not (limits.min_memory <= entry.previous_max_rss <= limits.max_memory):
-                errors.append(f"{entry.full_name()} exited due to excessive memory usage")
+                errors.append(
+                    f"{entry.full_name()} exited due to excessive memory usage "
+                    + f"(used {entry.current_max_rss:.0f} bytes, "
+                    + f"was {entry.previous_max_rss:.0f} bytes)"
+                )
             continue
 
         if entry.status == "TIMED_OUT":
             if not (limits.min_timeout <= entry.previous_elapsed_time <= limits.max_timeout):
-                errors.append(f"{entry.full_name()} took to long to execute")
+                errors.append(
+                    f"{entry.full_name()} took too long to execute "
+                    + f"(took {entry.current_elapsed_time:.2f}s, "
+                    + f"was {entry.previous_elapsed_time:.2f}s)"
+                )
             continue
 
         # If here, the `status` string is unknown, error out
