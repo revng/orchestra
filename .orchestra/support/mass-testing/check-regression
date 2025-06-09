@@ -2,11 +2,12 @@
 
 import argparse
 import csv
+import json
 import os
 import re
 import sqlite3
 import sys
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from pathlib import Path
 
 import yaml
@@ -53,6 +54,9 @@ class Data:
     # Data from <report>/main.db
     status: str
 
+    current_elapsed_time: float
+    current_max_rss: float
+
     # Data from csv
     previous_elapsed_time: float
     previous_max_rss: float
@@ -72,6 +76,7 @@ class TestLimits:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
+    parser.add_argument("--json", type=Path, help="JSON output")
     parser.add_argument("input_csv", type=Path, help="Input csv (of previous run)")
     parser.add_argument("report_dir", type=Path, help="Input report directory (of current run)")
     args = parser.parse_args()
@@ -109,6 +114,8 @@ def main() -> int:
                 name=name,
                 test_name=test_name,
                 status=sql_entry["status"],
+                current_elapsed_time=sql_entry["elapsed_time"],
+                current_max_rss=sql_entry["max_rss"],
                 previous_elapsed_time=csv_data[key]["elapsed_time"],
                 previous_max_rss=csv_data[key]["max_rss"],
             )
@@ -128,30 +135,48 @@ def main() -> int:
         )
 
     errors = []
+    error_entries = []
     for entry in entries:
         if entry.status == "OK":
             continue
 
         if entry.status == "FAILED":
             errors.append(f"{entry.full_name()} exited with a non-zero exit code")
+            error_entries.append(entry)
             continue
         if entry.status == "CRASHED":
             errors.append(f"{entry.full_name()} has crashed")
+            error_entries.append(entry)
             continue
 
         limits = tests_limits[entry.test_name]
         if entry.status == "OOM":
             if not (limits.min_memory <= entry.previous_max_rss <= limits.max_memory):
-                errors.append(f"{entry.full_name()} exited due to excessive memory usage")
+                errors.append(
+                    f"{entry.full_name()} exited due to excessive memory usage "
+                    + f"(used {entry.current_max_rss:.0f} bytes, "
+                    + f"was {entry.previous_max_rss:.0f} bytes)"
+                )
+                error_entries.append(entry)
             continue
 
         if entry.status == "TIMED_OUT":
             if not (limits.min_timeout <= entry.previous_elapsed_time <= limits.max_timeout):
-                errors.append(f"{entry.full_name()} took to long to execute")
+                errors.append(
+                    f"{entry.full_name()} took too long to execute "
+                    + f"(took {entry.current_elapsed_time:.2f}s, "
+                    + f"was {entry.previous_elapsed_time:.2f}s)"
+                )
+                error_entries.append(entry)
             continue
 
         # If here, the `status` string is unknown, error out
         errors.append(f"{entry.full_name()} has unknown status: {entry.status}")
+        error_entries.append(entry)
+
+    if args.json is not None:
+        with open(args.json, "w") as f:
+            json.dump([asdict(e) for e in error_entries], f)
 
     if len(errors) > 0:
         print("Regression failed, the following errors were encountered:")
