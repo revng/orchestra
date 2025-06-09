@@ -7,6 +7,6 @@ build:
   stage: build
   image: docker.io/revng/revng-build-dependencies:latest
   script:
-  - git clone https://github.com/revng/orchestra.git
+  - git clone --branch master https://github.com/revng/orchestra.git
   - cd orchestra
   - .orchestra/ci/mass-testing-weekly/entrypoint.sh
