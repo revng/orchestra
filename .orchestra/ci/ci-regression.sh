@@ -75,7 +75,7 @@ PIPELINE_ID=$(COMPONENT_TARGET_BRANCH=develop pipeline_create)
 orc --quiet install \
     --discard-build-directories \
     --lfs-retries "$LFS_RETRIES" \
-    -b mass-testing-regression
+    mass-testing-regression
 
 # Wait and check if the downstream pipeline has finished
 pipeline_wait "$PIPELINE_ID"
