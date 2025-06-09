@@ -2,11 +2,12 @@
 
 import argparse
 import csv
+import json
 import os
 import re
 import sqlite3
 import sys
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from pathlib import Path
 
 import yaml
@@ -75,6 +76,7 @@ class TestLimits:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
+    parser.add_argument("--json", type=Path, help="JSON output")
     parser.add_argument("input_csv", type=Path, help="Input csv (of previous run)")
     parser.add_argument("report_dir", type=Path, help="Input report directory (of current run)")
     args = parser.parse_args()
@@ -133,15 +135,18 @@ def main() -> int:
         )
 
     errors = []
+    error_entries = []
     for entry in entries:
         if entry.status == "OK":
             continue
 
         if entry.status == "FAILED":
             errors.append(f"{entry.full_name()} exited with a non-zero exit code")
+            error_entries.append(entry)
             continue
         if entry.status == "CRASHED":
             errors.append(f"{entry.full_name()} has crashed")
+            error_entries.append(entry)
             continue
 
         limits = tests_limits[entry.test_name]
@@ -152,6 +157,7 @@ def main() -> int:
                     + f"(used {entry.current_max_rss:.0f} bytes, "
                     + f"was {entry.previous_max_rss:.0f} bytes)"
                 )
+                error_entries.append(entry)
             continue
 
         if entry.status == "TIMED_OUT":
@@ -161,10 +167,16 @@ def main() -> int:
                     + f"(took {entry.current_elapsed_time:.2f}s, "
                     + f"was {entry.previous_elapsed_time:.2f}s)"
                 )
+                error_entries.append(entry)
             continue
 
         # If here, the `status` string is unknown, error out
         errors.append(f"{entry.full_name()} has unknown status: {entry.status}")
+        error_entries.append(entry)
+
+    if args.json is not None:
+        with open(args.json, "w") as f:
+            json.dump([asdict(e) for e in error_entries], f)
 
     if len(errors) > 0:
         print("Regression failed, the following errors were encountered:")

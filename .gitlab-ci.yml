@@ -22,7 +22,3 @@ regression-and-promotion:
     - git clone --branch develop "${ORCHESTRA_CONFIG_REPO_HTTP_URL:-https://github.com/revng/orchestra.git}"
     - cd orchestra
     - .orchestra/ci/ci-regression.sh
-  artifacts:
-    paths:
-      - orchestra/root/share/mass-testing-reports/regression/
-    when: always
