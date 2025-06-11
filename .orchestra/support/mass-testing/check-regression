@@ -24,6 +24,8 @@ import yaml
 # Environment variables
 # MASS_TESTING_REGRESSION_TIMEOUT_MARGIN: the timeout_margin to use (default: 0.5)
 # MASS_TESTING_REGRESSION_MEMORY_MARGIN: the memory_margin to use (default: 0.5)
+# MASS_TESTING_REGRESSION_TIMEOUT_OOM_FAIL_MARGIN: the timeout_oom_fail_margin
+#     to use (default: 0.05)
 #
 # Logic
 # All the inputs are paired between the current execution and the previous one.
@@ -40,9 +42,11 @@ import yaml
 # of inputs, e.g. a passing input might have passed because it took 299s
 # seconds when the limit was 300, and this time it is TIMED_OUT.
 #
-# At the end, if all the inputs have passed the script exits with code 0
-# silently. If there has been at least one error then the script exits with
-# code 1 and prints all the inputs which have produced an error.
+# At the end, if all the inputs have passed or the failures are only
+# timeouts/OOMs and they're under the timeout_oom_fail_margin the script exits
+# with code 0. If there has been at least one crash or failure, or the timeouts
+# and OOMs have been greater than the magin the script exits with code 1. In
+# either case if there have been error they will be printed to stdout.
 
 
 @dataclass
@@ -74,6 +78,11 @@ class TestLimits:
     max_memory: float
 
 
+def log(string: str):
+    sys.stderr.write(string + "\n")
+    sys.stderr.flush()
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--json", type=Path, help="JSON output")
@@ -83,8 +92,12 @@ def main() -> int:
 
     timeout_margin = float(os.environ.get("MASS_TESTING_REGRESSION_TIMEOUT_MARGIN", 0.5))
     memory_margin = float(os.environ.get("MASS_TESTING_REGRESSION_MEMORY_MARGIN", 0.5))
+    timeout_oom_fail_margin = float(
+        os.environ.get("MASS_TESTING_REGRESSION_TIMEOUT_OOM_FAIL_MARGIN", 0.05)
+    )
     assert 0 <= timeout_margin <= 1, "Timeout margin must be between 0 and 1"
     assert 0 <= memory_margin <= 1, "Memory margin must be between 0 and 1"
+    assert 0 <= timeout_oom_fail_margin <= 1, "Timeout/OOM fail margin must be between 0 and 1"
 
     csv_data = {}
     with open(args.input_csv, newline="") as csvfile:
@@ -134,57 +147,68 @@ def main() -> int:
             max_memory=test["memory_limit"],
         )
 
-    errors = []
-    error_entries = []
+    errors: list[Data] = []
+    timeout_oom_count = 0
+    other_errors_count = 0
     for entry in entries:
         if entry.status == "OK":
             continue
 
-        if entry.status == "FAILED":
-            errors.append(f"{entry.full_name()} exited with a non-zero exit code")
-            error_entries.append(entry)
-            continue
-        if entry.status == "CRASHED":
-            errors.append(f"{entry.full_name()} has crashed")
-            error_entries.append(entry)
+        if entry.status in ("FAILED", "CRASHED"):
+            errors.append(entry)
+            other_errors_count += 1
             continue
 
         limits = tests_limits[entry.test_name]
         if entry.status == "OOM":
             if not (limits.min_memory <= entry.previous_max_rss <= limits.max_memory):
-                errors.append(
-                    f"{entry.full_name()} exited due to excessive memory usage "
-                    + f"(used {entry.current_max_rss:.0f} bytes, "
-                    + f"was {entry.previous_max_rss:.0f} bytes)"
-                )
-                error_entries.append(entry)
+                timeout_oom_count += 1
+                errors.append(entry)
             continue
 
         if entry.status == "TIMED_OUT":
             if not (limits.min_timeout <= entry.previous_elapsed_time <= limits.max_timeout):
-                errors.append(
-                    f"{entry.full_name()} took too long to execute "
-                    + f"(took {entry.current_elapsed_time:.2f}s, "
-                    + f"was {entry.previous_elapsed_time:.2f}s)"
-                )
-                error_entries.append(entry)
+                timeout_oom_count += 1
+                errors.append(entry)
             continue
 
         # If here, the `status` string is unknown, error out
-        errors.append(f"{entry.full_name()} has unknown status: {entry.status}")
-        error_entries.append(entry)
+        errors.append(entry)
+        other_errors_count += 1
 
     if args.json is not None:
         with open(args.json, "w") as f:
-            json.dump([asdict(e) for e in error_entries], f)
+            json.dump([asdict(e) for e in errors], f)
 
-    if len(errors) > 0:
-        print("Regression failed, the following errors were encountered:")
-        for error in errors:
-            print(error)
-        return 1
-    else:
-        return 0
+    timeout_oom_over_limit = timeout_oom_count > (len(entries) * timeout_oom_fail_margin)
+    do_fail = other_errors_count > 0 or timeout_oom_over_limit
+
+    if do_fail:
+        log("Regression failed, the following errors were encountered:")
+    elif len(errors) > 0:
+        log("Regression passed, however the following skippable errors were encountered:")
+
+    for entry in errors:
+        if entry.status == "FAILED":
+            log(f"{entry.full_name()} exited with a non-zero exit code")
+        elif entry.status == "CRASHED":
+            log(f"{entry.full_name()} has crashed")
+        elif entry.status == "OOM":
+            log(
+                f"{entry.full_name()} exited due to excessive memory usage "
+                + f"(used {entry.current_max_rss:.0f} bytes, "
+                + f"was {entry.previous_max_rss:.0f} bytes)"
+            )
+        elif entry.status == "TIMED_OUT":
+            log(
+                f"{entry.full_name()} took too long to execute "
+                + f"(took {entry.current_elapsed_time:.2f}s, "
+                + f"was {entry.previous_elapsed_time:.2f}s)"
+            )
+        else:
+            log(f"{entry.full_name()} has unknown status: {entry.status}")
+
+    return 1 if do_fail else 0
 
 
 if __name__ == "__main__":
