@@ -1,62 +1,54 @@
 #!/usr/bin/env python3
 
 import json
-import os
 import sys
-from glob import glob
+from pathlib import Path
 
-
-def log(message):
-    sys.stderr.write(message + "\n")
+from revng.support import get_root
 
 
 def main():
     # Print Python version information
     print("Python version:")
-    print("  " + sys.version.replace("\n", "\n  ").strip())
+    print(f"  {sys.version}")
     print()
 
     # Print Linux distro information
-    if os.path.exists("/etc/os-release"):
-        with open("/etc/os-release", "r") as os_release:
+    os_release_path = Path("/etc/os-release")
+    if os_release_path.is_file():
+        with open(os_release_path, "r") as os_release:
             print("Content of /etc/os-release:")
-            print("  " + os_release.read().replace("\n", "\n  ").strip())
+            for line in os_release.readlines():
+                print(f"  {line.rstrip()}")
     else:
         print("Couldn't find /etc/os-release")
     print()
 
     # Print the list of installed packages
-    script_dir = os.path.dirname(os.path.realpath(__file__))
-    orchestra_share = os.path.join(script_dir, "..", "..", "share", "orchestra")
-
-    if os.path.isdir(orchestra_share):
+    orchestra_share = get_root() / "share/orchestra"
+    if orchestra_share.is_dir():
         print("Installed components:")
-        for json_path in sorted(glob(os.path.join(orchestra_share, "*.json"))):
-            try:
-                with open(json_path, "r") as json_file:
-                    print("  " + json.load(json_file)["binary_archive_path"])
-            except:
-                name = os.path.basename(json_path)
-                print("  Couldn't extract `binary_archive_path` from " + name)
+        for json_path in sorted(orchestra_share.glob("*.json")):
+            with open(json_path, "r") as json_file:
+                json_data = json.load(json_file)
+
+            if "binary_archive_path" in json_data:
+                print(f"  {json_data['binary_archive_path']}")
+            else:
+                print(f"  Couldn't extract `binary_archive_path` from {json_path.name}")
     else:
         print("share/orchestra does not exist")
     print()
 
     # Print revng-distributable information
-    config_json_path = os.path.join(script_dir, "..", "..", "..", "config.json")
-    success = False
-    if os.path.exists(config_json_path):
-        try:
-            with open(config_json_path, "r") as config_json:
-                config = json.load(config_json)
-                print("revng-distributable info:")
-                print("  last-archive: " + config["last-archive"])
-                print("  branch: " + config["branch"])
-                success = True
-        except:
-            pass
-
-    if not success:
+    config_json_path = get_root() / "../config.json"
+    if config_json_path.is_file():
+        with open(config_json_path, "r") as config_json:
+            config = json.load(config_json)
+            print("revng-distributable info:")
+            print(f"  last-archive: {config.get('last-archive')}")
+            print(f"  branch: {config.get('branch')}")
+    else:
         print("Couldn't get revng-distributable release info")
 
     return 0
