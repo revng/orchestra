@@ -6,27 +6,32 @@ import shutil
 import subprocess
 import sys
 import tempfile
-
 from argparse import ArgumentParser
 
 if sys.version_info[0] < 3:
-    from urllib2 import HTTPErrorProcessor, HTTPCookieProcessor, build_opener, HTTPPasswordMgrWithDefaultRealm, HTTPBasicAuthHandler
     from urllib import urlretrieve
+
+    from urllib2 import HTTPBasicAuthHandler, HTTPCookieProcessor, HTTPErrorProcessor
+    from urllib2 import HTTPPasswordMgrWithDefaultRealm, build_opener
     from urlparse import urlparse
 else:
-    from urllib.request import HTTPErrorProcessor, HTTPCookieProcessor, build_opener, urlretrieve, HTTPPasswordMgrWithDefaultRealm, HTTPBasicAuthHandler
     from urllib.parse import urlparse
+    from urllib.request import HTTPBasicAuthHandler, HTTPCookieProcessor, HTTPErrorProcessor
+    from urllib.request import HTTPPasswordMgrWithDefaultRealm, build_opener, urlretrieve
 
 latest_progress = 0
 
+
 def log(message):
     sys.stderr.write(message + "\n")
+
 
 class IgnoreRedirectsErrorProcessor(HTTPErrorProcessor):
     def http_response(self, req, res):
         return res
 
     https_response = http_response
+
 
 def print_progress(completed_chunks, max_chunksize, total_size):
     global latest_progress
@@ -35,6 +40,7 @@ def print_progress(completed_chunks, max_chunksize, total_size):
     if current_progress > latest_progress and current_progress % 5 == 0:
         latest_progress = current_progress
         log("Progress: {}%".format(latest_progress))
+
 
 class RevertableMoves:
     def __enter__(self):
@@ -52,6 +58,7 @@ class RevertableMoves:
                 shutil.move(source, destination)
         return False
 
+
 def main():
     updater_dir = os.path.dirname(__file__)
     revng_dir = os.path.join(updater_dir, "..", "..", "..")
@@ -62,16 +69,14 @@ def main():
         configuration = json.load(config_json)
 
     argparser = ArgumentParser()
-    argparser.add_argument("--check",
-                           action="store_true",
-                           help="Download and install updates if available")
-    argparser.add_argument("--force",
-                           action="store_true",
-                           help="Force update even if no new versions are available")
-    argparser.add_argument("--switch-to",
-                           help="Change branch")
-    argparser.add_argument("--update-url",
-                           help="Manually specify the update URL")
+    argparser.add_argument(
+        "--check", action="store_true", help="Download and install updates if available"
+    )
+    argparser.add_argument(
+        "--force", action="store_true", help="Force update even if no new versions are available"
+    )
+    argparser.add_argument("--switch-to", help="Change branch")
+    argparser.add_argument("--update-url", help="Manually specify the update URL")
 
     args = argparser.parse_args()
 
@@ -88,12 +93,12 @@ def main():
         update_url = update_url.format(branch)
 
     password_manager = HTTPPasswordMgrWithDefaultRealm()
-    password_manager.add_password(None, "https://rev.ng/", configuration["user"], configuration["pass"])
+    password_manager.add_password(
+        None, "https://rev.ng/", configuration["user"], configuration["pass"]
+    )
     auth_handler = HTTPBasicAuthHandler(password_manager)
 
-    opener = build_opener(HTTPCookieProcessor(),
-                          IgnoreRedirectsErrorProcessor(),
-                          auth_handler)
+    opener = build_opener(HTTPCookieProcessor(), IgnoreRedirectsErrorProcessor(), auth_handler)
     r = opener.open(update_url)
     latest_url = r.headers.get("Location")
     if not latest_url:
@@ -109,8 +114,7 @@ def main():
             log("You are using the latest version of branch {}".format(branch))
             return 0
     else:
-        log("Update available for branch {} ({})".format(branch,
-                                                         latest_version_tar_name))
+        log("Update available for branch {} ({})".format(branch, latest_version_tar_name))
 
     if args.check:
         return 1
@@ -121,12 +125,12 @@ def main():
         opener = build_opener(auth_handler)
         r = opener.open(update_url)
         size = int(r.headers.get("Content-Length"))
-        log("Downloading update ({} MB)...".format(int(size / (1024 ** 2))))
+        log("Downloading update ({} MB)...".format(int(size / (1024**2))))
 
         save_to = os.path.join(new_revng_install, latest_version_tar_name)
         with open(save_to, "wb") as local_file:
             written = 0
-            chunk_size = 1024 ** 2
+            chunk_size = 1024**2
             data = r.read(chunk_size)
             next_percentage = 10
             while data:
@@ -138,8 +142,9 @@ def main():
                 data = r.read(chunk_size)
 
         log("Extracting update...")
-        subprocess.check_call(["tar", "--strip-components=1", "--extract", "--file", save_to],
-                              cwd=new_revng_install)
+        subprocess.check_call(
+            ["tar", "--strip-components=1", "--extract", "--file", save_to], cwd=new_revng_install
+        )
 
         # Drop the archive
         os.unlink(save_to)
@@ -156,7 +161,7 @@ def main():
                     destination = os.path.join(backup_path, top_level_file)
                     mover.move(source, destination)
                 else:
-                    log("Warning: \"{}\" has been deleted".format(top_level_file))
+                    log('Warning: "{}" has been deleted'.format(top_level_file))
 
             log("Applying update...")
             new_top_level_files = os.listdir(new_revng_install)
@@ -164,16 +169,20 @@ def main():
                 source = os.path.join(new_revng_install, new_top_level_file)
                 destination = os.path.join(revng_dir, new_top_level_file)
                 if os.path.exists(destination):
-                    raise Exception("Error: \"{}\" already exists. Remove it and relaunch the update".format(new_top_level_file))
+                    raise Exception(
+                        'Error: "{}" already exists. Remove it and relaunch the update'.format(
+                            new_top_level_file
+                        )
+                    )
                 mover.move(source, destination)
 
             log("Running post-update script...")
-            subprocess.check_call([os.path.join(revng_dir,
-                                                "root",
-                                                "share",
-                                                "revng-distributable",
-                                                "post-update"),
-                                   new_revng_install])
+            subprocess.check_call(
+                [
+                    os.path.join(revng_dir, "root", "share", "revng-distributable", "post-update"),
+                    new_revng_install,
+                ]
+            )
 
             # Update and save the configuration
             log("Committing new config.json...")
@@ -186,6 +195,7 @@ def main():
         log("Done!")
 
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())
