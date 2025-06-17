@@ -40,6 +40,13 @@ def main():
     revng_dir = (get_root() / "..").resolve()
     config_path = revng_dir / "config.json"
 
+    # Sanity check
+    assert config_path.is_file(), "Config file missing"
+    assert shutil.which("tar") is not None, "tar executable not found"
+    assert shutil.which("xz") is not None, "xz executable not found"
+    assert shutil.which("sh") is not None, "sh executable not found"
+    assert Path("/usr/bin/env").is_file(), "/usr/bin/env not found"
+
     with open(config_path, "r") as config_json:
         configuration: dict = json.load(config_json)
 
