@@ -11,6 +11,7 @@ COMPONENT_NAME="$1"
 shift
 
 DISTRIBUTABLE_PATH="${DESTDIR}${ORCHESTRA_ROOT}/${COMPONENT_NAME}"
+BASE_DIR="$ORCHESTRA_DOTDIR/support/revng-distributable"
 
 echo "Copying root"
 rm -rf "${DISTRIBUTABLE_PATH}/root"
@@ -50,7 +51,7 @@ rsync \
 cd "${DISTRIBUTABLE_PATH}"
 
 echo "Creating environment"
-cp -a "$ORCHESTRA_DOTDIR/support/revng-distributable/environment" environment
+cp -a "$BASE_DIR/environment" environment
 
 # shellcheck disable=SC2094
 {
@@ -63,19 +64,18 @@ EOF
 
 
 echo "Copying README.md"
-cp -a "$ORCHESTRA_DOTDIR/support/revng-distributable/README.md" .
+cp -a "$BASE_DIR/README.md" .
 
 echo "Copying revng"
-cp -a "$ORCHESTRA_DOTDIR/support/revng-distributable/revng" revng
+cp -a "$BASE_DIR/revng" revng
 
 
 cd "${DISTRIBUTABLE_PATH}/root"
 
 echo "Copying revng-distributable scripts"
-cp -a \
-  "$ORCHESTRA_DOTDIR/support/revng-distributable/update" \
-  "$ORCHESTRA_DOTDIR/support/revng-distributable/system-info" \
-  libexec/revng/
+cp -a "$BASE_DIR/update" \
+      "$BASE_DIR/system-info" \
+      libexec/revng/
 
 echo "revng-distributable updater info"
 mkdir -p share/revng-distributable
