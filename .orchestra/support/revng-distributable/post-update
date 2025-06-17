@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+set -eu
+
+./revng --help > /dev/null 2>&1
+echo "Update successful!"

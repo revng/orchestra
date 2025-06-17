@@ -80,15 +80,7 @@ cp -a "$BASE_DIR/update" \
 echo "revng-distributable updater info"
 mkdir -p share/revng-distributable
 echo 1 > share/revng-distributable/version
-
-cat > share/revng-distributable/post-update <<eof
-#!/usr/bin/env bash
-set -e
-./revng --help >& /dev/null
-./revng lift --help >& /dev/null
-echo "Update successful!"
-eof
-chmod +x share/revng-distributable/post-update
+cp -a "$BASE_DIR/post-update" share/revng-distributable/
 
 ln -s lib64 lib
 
