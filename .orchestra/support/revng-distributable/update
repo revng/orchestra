@@ -6,7 +6,7 @@ import shutil
 import sys
 from argparse import ArgumentParser
 from pathlib import Path
-from subprocess import check_call
+from subprocess import PIPE, Popen, check_call
 from tempfile import TemporaryDirectory
 from urllib.parse import urlparse
 from urllib.request import BaseHandler, HTTPBasicAuthHandler, HTTPCookieProcessor
@@ -112,29 +112,26 @@ def main():
 
         download_request = opener.open(update_url)
         size = int(download_request.headers.get("Content-Length"))
-        log(f"Downloading update ({size // (1024 ** 2)} MB)...")
+        log(f"Downloading and extracting update ({size // (1024 ** 2)} MB)...")
 
-        save_to = new_revng_install_path / latest_version_tar_name
-        with open(save_to, "wb") as local_file:
-            written = 0
-            chunk_size = 1024**2
-            next_percentage = 10
-            while written < size:
-                data = download_request.read(chunk_size)
-                local_file.write(data)
-                written += len(data)
-                if int(100 * written / size) >= next_percentage:
-                    log(f"{next_percentage}%")
-                    next_percentage += 10
+        tar_proc = Popen(["tar", "-xJ", "--strip-components=1"], stdin=PIPE, cwd=new_revng_install)
+        assert tar_proc.stdin is not None
 
-        log("Extracting update...")
-        check_call(
-            ["tar", "--strip-components=1", "--extract", "--file", str(save_to)],
-            cwd=new_revng_install
-        )
+        written = 0
+        chunk_size = 1024**2
+        next_percentage = 10
+        while written < size:
+            data = download_request.read(chunk_size)
+            tar_proc.stdin.write(data)
+            written += len(data)
+            if int(100 * written / size) >= next_percentage:
+                log(f"{next_percentage}%")
+                next_percentage += 10
 
-        # Drop the archive
-        save_to.unlink()
+        tar_proc.stdin.close()
+        if tar_proc.wait() != 0:
+            log("Update extraction failed")
+            return 1
 
         # We're going to move files around, if anything goes wrong, revert all
         # the moves
