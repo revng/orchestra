@@ -6,10 +6,10 @@ TIMESTAMP=$(date +%s)
 
 # Install dependencies and the orchestra tool
 sudo apt-get update
-sudo apt-get install -y less nano vim inkscape
+sudo apt-get install -y less nano vim
 
 cd "$SCRIPT_DIR/../../.."
-.orchestra/ci/install-dependencies.sh
+.orchestra/ci/install-dependencies.sh --full
 pip3 -q install --user "git+https://github.com/revng/revng-orchestra.git@master"
 export PATH="$HOME/.local/bin:$PATH"
 
