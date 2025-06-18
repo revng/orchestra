@@ -1,8 +1,6 @@
 FROM docker.io/library/ubuntu:22.04
 
-ARG REVNG_BRANCH=master
 ARG DEBIAN_FRONTEND=noninteractive
-
 RUN apt-get update -y && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
@@ -17,6 +15,9 @@ RUN apt-get update -y && \
 COPY . /revng/
 ENV PATH="${PATH}:/revng"
 WORKDIR /revng
+
+ARG CONFIG_JSON
+RUN [ -f config.json ] || echo "$CONFIG_JSON" > config.json
 
 # Sanity check
 RUN revng --version
