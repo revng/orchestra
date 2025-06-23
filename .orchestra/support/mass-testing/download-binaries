@@ -28,7 +28,7 @@ class DownloadSpec:
     def from_dict(dict_: dict) -> "DownloadSpec":
         includes = [re.compile(p) for p in dict_.get("include", [])]
         for entry in dict_.get("include_csv", []):
-            with open(entry, newline='') as f:
+            with open(entry, newline="") as f:
                 for row in csv.DictReader(f):
                     includes.append(re.compile("^" + re.escape(row["name"]) + "$"))
 
