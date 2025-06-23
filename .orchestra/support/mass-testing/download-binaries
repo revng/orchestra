@@ -86,7 +86,11 @@ def main():
         dir_name = Path(file).stem
         for entry in data:
             name = os.path.join(dir_name, entry.name)
-            if match_rules(name, spec.include) and not match_rules(name, spec.exclude):
+            if (
+                entry.hash not in downloads
+                and match_rules(name, spec.include)
+                and not match_rules(name, spec.exclude)
+            ):
                 downloads[entry.hash] = (output_dir / dir_name / f"{entry.name}.bin").resolve()
 
     if args.dry_run:
