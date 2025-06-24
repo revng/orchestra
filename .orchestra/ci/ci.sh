@@ -131,6 +131,14 @@ echo -e "$BOLD"
 echo "################################################################################"
 echo -e "$RESET"
 
+if ping -c 1 -W 1 mirror.hetzner.com >/dev/null 2>&1; then
+    log "Selecting Hetzner APT mirror"
+    mv /etc/apt/sources.list.hetzner /etc/apt/sources.list
+else
+    log "Not running on Hetzner, using preconfigured APT mirror"
+fi
+
+log "Updating system dependencies..."
 
 # Install missing dependencies
 .orchestra/ci/install-dependencies.sh

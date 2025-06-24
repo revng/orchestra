@@ -1,0 +1,11 @@
+deb https://mirror.23m.com/ubuntu/ jammy main restricted
+deb https://mirror.23m.com/ubuntu/ jammy-updates main restricted
+deb https://mirror.23m.com/ubuntu/ jammy universe
+deb https://mirror.23m.com/ubuntu/ jammy-updates universe
+deb https://mirror.23m.com/ubuntu/ jammy multiverse
+deb https://mirror.23m.com/ubuntu/ jammy-updates multiverse
+deb https://mirror.23m.com/ubuntu/ jammy-backports main restricted universe multiverse
+deb https://mirror.23m.com/ubuntu/ jammy-security main restricted
+deb https://mirror.23m.com/ubuntu/ jammy-security universe
+deb https://mirror.23m.com/ubuntu/ jammy-security multiverse
+
