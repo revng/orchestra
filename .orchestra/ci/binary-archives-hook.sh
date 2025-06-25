@@ -140,7 +140,7 @@ EOF
     popd &> /dev/null
 
     # TODO: check again when upgrading to 24.04 if the 'sudo' can be dropped
-    sudo -i "$ORCHESTRA_DOTDIR/support/docker-image/build.sh" "$LOCAL_IMAGE" "$TAR_FILE"
+    sudo -i BRANCH="$BRANCH" "$ORCHESTRA_DOTDIR/support/revng-distributable/docker/build.sh" "$LOCAL_IMAGE" "$TAR_FILE"
     sudo -i podman login -u "$PODMAN_REGISTRY_USER" \
         -p "$PODMAN_REGISTRY_PASSWORD" \
         "$(cut -d/ -f1 <<< "$PODMAN_IMAGE_TARGET")"
