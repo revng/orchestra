@@ -123,7 +123,7 @@ echo -e "$RESET"
 
 
 # Install missing dependencies
-.orchestra/ci/install-dependencies.sh
+.orchestra/ci/install-dependencies.sh --full
 
 export COMPONENT_TARGET_BRANCH
 
