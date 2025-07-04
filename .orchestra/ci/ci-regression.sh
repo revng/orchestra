@@ -78,7 +78,6 @@ PIPELINE_ID=$(COMPONENT_TARGET_BRANCH=develop pipeline_create)
 # Run regression suite
 RC=0
 orc --quiet install \
-    --discard-build-directories \
     --lfs-retries "$LFS_RETRIES" \
     mass-testing-regression || RC=$?
 
