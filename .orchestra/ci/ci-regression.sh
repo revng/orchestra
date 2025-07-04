@@ -14,8 +14,12 @@ set -euo pipefail
 #
 # Mandatory environment variables:
 #
-# REGRESSION_TARGET_COMPONENT: name of the orchestra target to build to test regression
 # REVNG_ORCHESTRA_URL: orchestra git repo URL (must be git+ssh:// or git+https://)
+# REGRESSION_SSH_PRIVATE_KEY:
+#   base64-encoded key to push regression results to mass.rev.ng
+# REGRESSION_RSYNC_TARGET:
+#   prefix to use to rsync regression results. The results will be rsynced to
+#   "$REGRESSION_RSYNC_TARGET/$TIMESTAMP_$JOBID"
 #
 # Optional environment variables:
 #
@@ -74,7 +78,6 @@ PIPELINE_ID=$(COMPONENT_TARGET_BRANCH=develop pipeline_create)
 # Run regression suite
 RC=0
 orc --quiet install \
-    --discard-build-directories \
     --lfs-retries "$LFS_RETRIES" \
     mass-testing-regression || RC=$?
 
