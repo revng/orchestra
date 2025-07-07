@@ -65,6 +65,7 @@
 #@        pre_install_script="",
 #@        post_install_script="",
 #@        test=False,
+#@        configure_dir="",
 #@ ):
 
 #@ for flavor, opts in typical_cmake_flavors(use_asan=use_asan).items():
@@ -85,7 +86,11 @@
 
     cd "$BUILD_DIR";
     (@= cmake @) \
+      (@- if configure_dir: @)
+      (@= configure_dir @) \
+      (@- else: @)
       "$SOURCE_DIR" \
+      (@- end @)
       -G"(@= build_system @)" \
       (@= expand_args(cmdline_cmake_base_configuration(cmake_build_type=opts["cmake_build_type"], extra_compiler_flags=flavor_extra_compiler_flags)) @)
       (@- if extra_cmake_args: @) \
