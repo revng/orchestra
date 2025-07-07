@@ -1,0 +1,27 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/cmake.lib.yml", "typical_cmake_builds")
+
+---
+#@ def build_args():
+pre_configure_script: |
+  # TODO: this should really be handled by orchestra in CloneAction
+  git -C "$SOURCE_DIR" submodule update --init --recursive
+configure_dir: '"$SOURCE_DIR/standalone"'
+extra_cmake_args:
+- -DBUILD_SHARED_LIBS=ON
+build_dependencies:
+- host-cxx-toolchain
+dependencies:
+- host-libcxx
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  nanobind:
+    license: LICENSE
+    repository: nanobind
+    builds:
+      default: #@ typical_cmake_builds(**build_args())["optimized"]
