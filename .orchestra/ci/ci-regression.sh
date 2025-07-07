@@ -45,7 +45,14 @@ export PATH="$HOME/.local/bin:$PATH"
 command -v orc > /dev/null
 
 # Load ssh key, if present
-load_ssh_key
+if [ -n "${SSH_PRIVATE_KEY:-}" ]; then
+  load_ssh_key
+
+  # Change orchestra remote to ssh if we were given the URL
+  if [[ -n "${ORCHESTRA_CONFIG_REPO_SSH_URL:-}" ]]; then
+    git -C "$ORCHESTRA_REPO_DIR" remote set-url origin "$ORCHESTRA_CONFIG_REPO_SSH_URL"
+  fi
+fi
 # Load ssh key to rsync
 base64 -d <<< "$REGRESSION_SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
 
