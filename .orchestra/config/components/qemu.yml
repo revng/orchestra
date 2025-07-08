@@ -18,9 +18,12 @@ builds:
       configure: |
         mkdir -p "$BUILD_DIR"
         cd "$BUILD_DIR";
+        export PATH="$ORCHESTRA_ROOT/link-only/bin:$ORCHESTRA_ROOT/lib64/llvm/llvm/bin:$PATH";
+        which -a clang;
         "$SOURCE_DIR/configure" \
           --cc="(@= data.values.regular_c_compiler @)" \
           --prefix="$ORCHESTRA_ROOT" \
+          --disable-plugins \
           --target-list=" \
             arm-linux-user \
             aarch64-linux-user \
