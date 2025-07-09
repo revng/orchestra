@@ -1,0 +1,34 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/create-component.lib.yml", "single_build_component")
+#@ load("/lib/shell.lib.yml", "expand_args")
+#@ load("/lib/cmake.lib.yml", "cmake", "cmdline_cmake_base_configuration")
+#@ load("/lib/optimization-flavors.lib.yml", "typical_cmake_flavors")
+
+#@yaml/text-templated-strings
+---
+#@ def args():
+license: LICENSE
+repository: nanobind
+configure: |
+  git -C "$SOURCE_DIR" submodule update --init --recursive
+  mkdir -p "$BUILD_DIR"
+  cd "$BUILD_DIR"
+  
+  (@= cmake @) \
+    (@= expand_args(cmdline_cmake_base_configuration(cmake_build_type="Debug", extra_compiler_flags="-ggdb3 -O2 -fno-omit-frame-pointer")) @) \
+    "$SOURCE_DIR/standlone" \
+    -DBUILD_SHARED_LIBS=ON
+build_system: make
+build_dependencies:
+  - cmake
+  - host-cxx-toolchain
+dependencies:
+  - host-libcxx
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  nanobind: #@ single_build_component(**args())
