@@ -92,7 +92,6 @@ orc --quiet install \
 BASE_DIR=build/mass-testing-regression/default
 REGRESSION_JSON="$BASE_DIR/check-regression.json"
 RSYNC_FILTER=$(mktemp --tmpdir tmp.rsync-filter.XXXXXXXXXX)
-add_to_cleanup "$RSYNC_FILTER"
 {
   cat - <<EOF
 + /inputs/***/
@@ -137,7 +136,6 @@ pipeline_wait "$PIPELINE_ID"
 promote_branches develop master
 export COMPONENT_TARGET_BRANCH=master
 CHANGES_FILE="$(mktemp --tmpdir tmp.binary-archives-changes.XXXXXXXXXX)"
-add_to_cleanup "$CHANGES_FILE"
 push_binary_archives "$CHANGES_FILE"
 "$SCRIPT_DIR/binary-archives-hook.sh" "$CHANGES_FILE"
 

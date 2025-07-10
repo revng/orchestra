@@ -200,7 +200,6 @@ fi
 if [[ "$PUSH_BINARY_ARCHIVES" = 1 || "$PUSH_CHANGES" = 1 ]]; then
     # Push the binary archives
     CHANGES_FILE="$(mktemp --tmpdir tmp.binary-archives-changes.XXXXXXXXXX)"
-    add_to_cleanup "$CHANGES_FILE"
     if push_binary_archives "$CHANGES_FILE"; then
         "$SCRIPT_DIR/binary-archives-hook.sh" "$CHANGES_FILE"
     else

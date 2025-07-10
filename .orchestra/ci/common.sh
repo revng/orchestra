@@ -11,23 +11,29 @@ ORCHESTRA_DOTDIR="$ORCHESTRA_REPO_DIR/.orchestra"
 USER_OPTIONS="$ORCHESTRA_DOTDIR/config/user_options.yml"
 LFS_RETRIES="${LFS_RETRIES:-3}"
 
-# Cleanup logic
-# Since there can only be one `trap` in the entirety of the bash script, this
-# system is set up for cleaning up temporary files. After a temp file/directory
-# are created (e.g. via `mktemp`), their path should be added via
-# `add_to_cleanup`. Then the `cleanup` function takes care of deleting them.
-CLEANUP_PATHS=()
-function add_to_cleanup() {
-    CLEANUP_PATHS+=("$1")
+# Temporary file handling
+# Temporary files need to be deleted when the script exits. The best way to do
+# so is through the 'EXIT' trap, which is always called. However only one can
+# be set up and it's possible for some files to be generated in subshells.
+# Because of this the system below saves the temporary files in a file, as to
+# avoid the subshell issue. We override 'mktemp' as to make it as painless as
+# possible to handle.
+_CLEANUP_FILE="$(mktemp --tmpdir tmp.orchestra-ci-cleanup.XXXXXXXXXX)"
+_MKTEMP_BIN="$(command -v mktemp)"
+function mktemp() {
+    local RESULT
+    RESULT="$("$_MKTEMP_BIN" "$@")"
+    echo "$RESULT" >> "$_CLEANUP_FILE"
+    echo "$RESULT"
 }
 
-function cleanup() {
-    if [ "${#CLEANUP_PATHS[@]}" -eq 0 ]; then
-        return 0
-    fi
-    rm -rf "${CLEANUP_PATHS[@]}"
+function _cleanup() {
+    while IFS= read -r TEMPORARY; do
+        rm -rf "$TEMPORARY"
+    done < "$_CLEANUP_FILE"
+    rm -f "$_CLEANUP_FILE"
 }
-trap cleanup EXIT
+trap _cleanup EXIT
 
 #
 # Logging functions
@@ -267,8 +273,6 @@ function pipeline_create() {
     local REQ_OUTPUT REQ_CODE
     REQ_OUTPUT=$(mktemp)
     REQ_CODE=$(mktemp)
-    add_to_cleanup "$REQ_OUTPUT"
-    add_to_cleanup "$REQ_CODE"
 
     local RC=0
     # TODO: use `--write-out '%output{...}'` with curl > 8.3.0
@@ -310,8 +314,6 @@ function pipeline_wait() {
     local REQ_OUTPUT REQ_CODE
     REQ_OUTPUT=$(mktemp)
     REQ_CODE=$(mktemp)
-    add_to_cleanup "$REQ_OUTPUT"
-    add_to_cleanup "$REQ_CODE"
 
     while true; do
         # NOTE:
