@@ -229,11 +229,43 @@ COMPONENT_TARGET_BRANCH=$COMPONENT_TARGET_BRANCH"
     done
 }
 
+# Change the pipeline to the specified name
+# Usage: _pipeline_change_name PIPELINE_ID NAME [REQ_OUTPUT] [REQ_CODE]
+#
+# PIPELINE_ID: The project ID of the pipeline
+# NAME: The name to change the pipeline to
+# REQ_OUTPUT: file where the request's output will be written to
+# REQ_CODE: file where the requests's HTTP code will be written to
+#
+# Mandatory environment variables:
+#
+# DOWNSTREAM_PROJECT_URL:
+#   The base URL that will be used to create a pipeline for the project, if
+#   missing this function will exit without any output
+function _pipeline_change_name() {
+    local PIPELINE_ID="$1"
+    local NAME="$2"
+    local REQ_OUTPUT="${3:-/dev/null}"
+    local REQ_CODE="${4:-/dev/null}"
+
+    local RC=0
+    curl -X PUT -s -o "$REQ_OUTPUT" \
+        --write-out '%{http_code}' \
+        --data "job_token=$CI_JOB_TOKEN" --data "name=$NAME" \
+        "$DOWNSTREAM_PROJECT_URL/pipelines/$PIPELINE_ID/metadata" > "$REQ_CODE" || RC=$?
+
+    return "$RC"
+}
+
 
 # Pipeline creation
 # This function's responsibility is to trigger the execution of a pipeline of a
 # generic downstream project. The resulting ID is printed to stdout or a
 # non-zero return code is returned
+#
+# Usage pipeline_create [NAME]
+#
+# NAME: Optional name to give to the created pipeline
 #
 # Mandatory environment variables:
 #
@@ -253,6 +285,7 @@ function pipeline_create() {
     if [ -z "${DOWNSTREAM_PROJECT_URL:-}" ]; then
         return 0
     fi
+    local NAME="${1:-}"
 
     local POST_VARIABLES='{'
     POST_VARIABLES+="\"COMPONENT_TARGET_BRANCH\": \"$COMPONENT_TARGET_BRANCH\","
@@ -286,16 +319,24 @@ function pipeline_create() {
         return 1
     fi
 
-    jq -r .id "$REQ_OUTPUT"
+    local PIPELINE_ID
+    PIPELINE_ID=$(jq -r .id "$REQ_OUTPUT")
+    if [ -n "$NAME" ]; then
+        _pipeline_change_name "$PIPELINE_ID" "$NAME" || true
+    fi
+    echo "$PIPELINE_ID"
 }
 
 
 # This function will wait for the specified pipeline ID to finish
 #
-# Usage: pipeline_wait PIPELINE_ID
+# Usage: pipeline_wait PIPELINE_ID [PIPELINE_NAME]
 #
 # PIPELINE_ID:
 #   The ID of the pipeline execution, as returned by `pipeline_create`
+# PIPELINE_NAME:
+#   An optional name to use instead of the default
+#   `orchestra-trigger-from-ci`
 #
 # Mandatory environment variables:
 #
@@ -303,6 +344,7 @@ function pipeline_create() {
 #   The base URL that will be used to create a pipeline for the project
 function pipeline_wait() {
     local PIPELINE_ID="$1"
+    local NAME="${2:-orchestra-trigger-from-ci}"
 
     # `pipeline_create` can sometimes return an empty output (e.g.
     # DOWNSTREAM_PROJECT_URL is not defined). In these cases return
@@ -322,11 +364,7 @@ function pipeline_wait() {
         #   which has the side effect of also returning the pipeline's status.
         #   This is a semi-hack, but it works
         local RC=0
-        curl -X PUT -s -o "$REQ_OUTPUT" \
-            --write-out '%{http_code}' \
-            --data "job_token=$CI_JOB_TOKEN" \
-            --data "name=orchestra-trigger-from-ci" \
-            "$DOWNSTREAM_PROJECT_URL/pipelines/$PIPELINE_ID/metadata" > "$REQ_CODE" || RC=$?
+        _pipeline_change_name "$PIPELINE_ID" "$NAME" "$REQ_OUTPUT" "$REQ_CODE" || RC=$?
 
         if [[ $RC -ne 0 || $(cat "$REQ_CODE") -ne 200 || $(jq .error "$REQ_OUTPUT") != "null" ]]; then
             return 1
