@@ -11,23 +11,29 @@ ORCHESTRA_DOTDIR="$ORCHESTRA_REPO_DIR/.orchestra"
 USER_OPTIONS="$ORCHESTRA_DOTDIR/config/user_options.yml"
 LFS_RETRIES="${LFS_RETRIES:-3}"
 
-# Cleanup logic
-# Since there can only be one `trap` in the entirety of the bash script, this
-# system is set up for cleaning up temporary files. After a temp file/directory
-# are created (e.g. via `mktemp`), their path should be added via
-# `add_to_cleanup`. Then the `cleanup` function takes care of deleting them.
-CLEANUP_PATHS=()
-function add_to_cleanup() {
-    CLEANUP_PATHS+=("$1")
+# Temporary file handling
+# Temporary files need to be deleted when the script exits. The best way to do
+# so is through the 'EXIT' trap, which is always called. However only one can
+# be set up and it's possible for some files to be generated in subshells.
+# Because of this the system below saves the temporary files in a file, as to
+# avoid the subshell issue. We override 'mktemp' as to make it as painless as
+# possible to handle.
+_CLEANUP_FILE="$(mktemp --tmpdir tmp.orchestra-ci-cleanup.XXXXXXXXXX)"
+_MKTEMP_BIN="$(command -v mktemp)"
+function mktemp() {
+    local RESULT
+    RESULT="$("$_MKTEMP_BIN" "$@")"
+    echo "$RESULT" >> "$_CLEANUP_FILE"
+    echo "$RESULT"
 }
 
-function cleanup() {
-    if [ "${#CLEANUP_PATHS[@]}" -eq 0 ]; then
-        return 0
-    fi
-    rm -rf "${CLEANUP_PATHS[@]}"
+function _cleanup() {
+    while IFS= read -r TEMPORARY; do
+        rm -rf "$TEMPORARY"
+    done < "$_CLEANUP_FILE"
+    rm -f "$_CLEANUP_FILE"
 }
-trap cleanup EXIT
+trap _cleanup EXIT
 
 #
 # Logging functions
@@ -223,11 +229,43 @@ COMPONENT_TARGET_BRANCH=$COMPONENT_TARGET_BRANCH"
     done
 }
 
+# Change the pipeline to the specified name
+# Usage: _pipeline_change_name PIPELINE_ID NAME [REQ_OUTPUT] [REQ_CODE]
+#
+# PIPELINE_ID: The project ID of the pipeline
+# NAME: The name to change the pipeline to
+# REQ_OUTPUT: file where the request's output will be written to
+# REQ_CODE: file where the requests's HTTP code will be written to
+#
+# Mandatory environment variables:
+#
+# DOWNSTREAM_PROJECT_URL:
+#   The base URL that will be used to create a pipeline for the project, if
+#   missing this function will exit without any output
+function _pipeline_change_name() {
+    local PIPELINE_ID="$1"
+    local NAME="$2"
+    local REQ_OUTPUT="${3:-/dev/null}"
+    local REQ_CODE="${4:-/dev/null}"
+
+    local RC=0
+    curl -X PUT -s -o "$REQ_OUTPUT" \
+        --write-out '%{http_code}' \
+        --data "job_token=$CI_JOB_TOKEN" --data "name=$NAME" \
+        "$DOWNSTREAM_PROJECT_URL/pipelines/$PIPELINE_ID/metadata" > "$REQ_CODE" || RC=$?
+
+    return "$RC"
+}
+
 
 # Pipeline creation
 # This function's responsibility is to trigger the execution of a pipeline of a
 # generic downstream project. The resulting ID is printed to stdout or a
 # non-zero return code is returned
+#
+# Usage pipeline_create [NAME]
+#
+# NAME: Optional name to give to the created pipeline
 #
 # Mandatory environment variables:
 #
@@ -247,6 +285,7 @@ function pipeline_create() {
     if [ -z "${DOWNSTREAM_PROJECT_URL:-}" ]; then
         return 0
     fi
+    local NAME="${1:-}"
 
     local POST_VARIABLES='{'
     POST_VARIABLES+="\"COMPONENT_TARGET_BRANCH\": \"$COMPONENT_TARGET_BRANCH\","
@@ -267,8 +306,6 @@ function pipeline_create() {
     local REQ_OUTPUT REQ_CODE
     REQ_OUTPUT=$(mktemp)
     REQ_CODE=$(mktemp)
-    add_to_cleanup "$REQ_OUTPUT"
-    add_to_cleanup "$REQ_CODE"
 
     local RC=0
     # TODO: use `--write-out '%output{...}'` with curl > 8.3.0
@@ -282,16 +319,24 @@ function pipeline_create() {
         return 1
     fi
 
-    jq -r .id "$REQ_OUTPUT"
+    local PIPELINE_ID
+    PIPELINE_ID=$(jq -r .id "$REQ_OUTPUT")
+    if [ -n "$NAME" ]; then
+        _pipeline_change_name "$PIPELINE_ID" "$NAME" || true
+    fi
+    echo "$PIPELINE_ID"
 }
 
 
 # This function will wait for the specified pipeline ID to finish
 #
-# Usage: pipeline_wait PIPELINE_ID
+# Usage: pipeline_wait PIPELINE_ID [PIPELINE_NAME]
 #
 # PIPELINE_ID:
 #   The ID of the pipeline execution, as returned by `pipeline_create`
+# PIPELINE_NAME:
+#   An optional name to use instead of the default
+#   `orchestra-trigger-from-ci`
 #
 # Mandatory environment variables:
 #
@@ -299,6 +344,7 @@ function pipeline_create() {
 #   The base URL that will be used to create a pipeline for the project
 function pipeline_wait() {
     local PIPELINE_ID="$1"
+    local NAME="${2:-orchestra-trigger-from-ci}"
 
     # `pipeline_create` can sometimes return an empty output (e.g.
     # DOWNSTREAM_PROJECT_URL is not defined). In these cases return
@@ -310,8 +356,6 @@ function pipeline_wait() {
     local REQ_OUTPUT REQ_CODE
     REQ_OUTPUT=$(mktemp)
     REQ_CODE=$(mktemp)
-    add_to_cleanup "$REQ_OUTPUT"
-    add_to_cleanup "$REQ_CODE"
 
     while true; do
         # NOTE:
@@ -320,11 +364,7 @@ function pipeline_wait() {
         #   which has the side effect of also returning the pipeline's status.
         #   This is a semi-hack, but it works
         local RC=0
-        curl -X PUT -s -o "$REQ_OUTPUT" \
-            --write-out '%{http_code}' \
-            --data "job_token=$CI_JOB_TOKEN" \
-            --data "name=orchestra-trigger-from-ci" \
-            "$DOWNSTREAM_PROJECT_URL/pipelines/$PIPELINE_ID/metadata" > "$REQ_CODE" || RC=$?
+        _pipeline_change_name "$PIPELINE_ID" "$NAME" "$REQ_OUTPUT" "$REQ_CODE" || RC=$?
 
         if [[ $RC -ne 0 || $(cat "$REQ_CODE") -ne 200 || $(jq .error "$REQ_OUTPUT") != "null" ]]; then
             return 1
