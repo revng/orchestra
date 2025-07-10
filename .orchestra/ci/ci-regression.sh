@@ -30,6 +30,9 @@ SCRIPT_DIR=$(realpath "$(dirname "${BASH_SOURCE[0]}")")
 # shellcheck disable=SC1091
 source "$SCRIPT_DIR/common.sh"
 
+REGRESSION_PIPELINE_DEVELOP_NAME="hitman-test-mode"
+REGRESSION_PIPELINE_MASTER_NAME="hitman-push-to-prod"
+
 cd "$ORCHESTRA_REPO_DIR"
 "$SCRIPT_DIR/install-dependencies.sh" --full
 
@@ -80,7 +83,7 @@ orc update --no-config
 
 # Start downstream pipeline, since it can take a while this and the run of
 # the regression suite are started in parallel to optimize time
-PIPELINE_ID=$(COMPONENT_TARGET_BRANCH=develop pipeline_create)
+PIPELINE_ID=$(COMPONENT_TARGET_BRANCH=develop pipeline_create "$REGRESSION_PIPELINE_DEVELOP_NAME")
 
 # Run regression suite
 RC=0
@@ -128,7 +131,7 @@ if [ "$RC" -ne 0 ]; then
 fi
 
 # Wait and check if the downstream pipeline has finished
-pipeline_wait "$PIPELINE_ID"
+pipeline_wait "$PIPELINE_ID" "$REGRESSION_PIPELINE_DEVELOP_NAME"
 
 #
 # Promote develop to master and push
@@ -142,4 +145,4 @@ push_binary_archives "$CHANGES_FILE"
 #
 # Run the downstream pipeline, if needed
 #
-pipeline_wait "$(pipeline_create)"
+pipeline_create "$REGRESSION_PIPELINE_MASTER_NAME"

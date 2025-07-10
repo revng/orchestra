@@ -4,7 +4,7 @@ stages:
   - build
   - promotion
 
-create-binaries:
+push-to-develop:
   stage: build
   script:
     - git clone "${ORCHESTRA_CONFIG_REPO_HTTP_URL:-https://github.com/revng/orchestra.git}"
@@ -12,7 +12,7 @@ create-binaries:
     - .orchestra/ci/ci.sh
 
 
-regression-and-promotion:
+push-to-master:
   tags:
     - mass-testing
   stage: promotion
