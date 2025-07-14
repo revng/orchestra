@@ -148,6 +148,7 @@ FULL_PACKAGES+=(ripgrep)
 #
 FULL_PACKAGES+=(s3cmd)
 FULL_PACKAGES+=(podman)
+FULL_PACKAGES+=(twine)
 
 #
 # flamegraph.pl runtime dependencies
