@@ -75,6 +75,7 @@ MINIMAL_PACKAGES+=(ssh)
 MINIMAL_PACKAGES+=(wget)
 PACKAGES+=(jq)
 PACKAGES+=(sed)
+PACKAGES+=(zip)
 PACKAGES+=(unzip)
 FULL_PACKAGES+=(rsync)
 FULL_PACKAGES+=(sudo)
@@ -148,6 +149,7 @@ FULL_PACKAGES+=(ripgrep)
 #
 FULL_PACKAGES+=(s3cmd)
 FULL_PACKAGES+=(podman)
+FULL_PACKAGES+=(twine)
 
 #
 # flamegraph.pl runtime dependencies

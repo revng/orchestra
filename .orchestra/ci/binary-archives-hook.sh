@@ -54,8 +54,10 @@ ORCHESTRA_DOTDIR="$(realpath "$SCRIPT_DIR/../../.orchestra")"
 
 BRANCH="$COMPONENT_TARGET_BRANCH"
 S3_CONF_FILE=$(mktemp --tmpdir tmp.s3cmd-credentials-XXXXXXXXXX)
+WORKDIR=$(mktemp -d --tmpdir tmp.binary-archives-hook-workdir-XXXXXXXXXX)
 function cleanup() {
     rm -f "$S3_CONF_FILE"
+    rm -rf "$WORKDIR"
 }
 trap cleanup EXIT
 
@@ -129,16 +131,44 @@ EOF
         done
 
     #
-    # Build docker image
+    # Get the current-branch revng-distributable tar file
     #
-
-    LOCAL_IMAGE="localhost/revng-image-$( (tr -dc a-z0-9 < /dev/urandom || true) | head -c 16)"
     TAR_FILE="$BINARY_ARCHIVES_BASE/public/linux-x86-64/revng-distributable-public-demo/default/$BRANCH.tar.xz"
 
     pushd "$(dirname "$TAR_FILE")" &> /dev/null
     git lfs pull -I "$(basename "$(realpath "$TAR_FILE")")"
     popd &> /dev/null
 
+    #
+    # Push revng wheel to pypi
+    #
+    if [[ "$BRANCH" = "master" || "$BRANCH" = "develop" ]]; then
+        REVNG_WHEEL_TAR_PATH=$(tar -tf "$TAR_FILE" | grep 'root/share/python/revng-.*.whl$')
+        REVNG_WHEEL_FILENAME=$(basename "$REVNG_WHEEL_TAR_PATH")
+        tar -xf "$TAR_FILE" "$REVNG_WHEEL_TAR_PATH" -O > "$WORKDIR/$REVNG_WHEEL_FILENAME"
+        TWINE_CMD=(
+            twine upload
+            --non-interactive --skip-existing
+            --repository-url "$PYPI_URL"
+            -u __token__ -p "$PYPI_TOKEN"
+        )
+
+        if [[ "$BRANCH" = "develop" ]]; then
+            # Append 'rc1' to the version, this will show up in PyPI as a
+            # pre-release version of the package which will not be installed
+            # automatically.
+            NEW_WHEEL=$("$ORCHESTRA_DOTDIR/support/change-wheel-version.sh" \
+                            "$WORKDIR/$REVNG_WHEEL_FILENAME" "$WORKDIR" +rc1)
+            "${TWINE_CMD[@]}" "$NEW_WHEEL"
+        else
+            "${TWINE_CMD[@]}" "$WORKDIR/$REVNG_WHEEL_FILENAME"
+        fi
+    fi
+
+    #
+    # Build docker image
+    #
+    LOCAL_IMAGE="localhost/revng-image-$( (tr -dc a-z0-9 < /dev/urandom || true) | head -c 16)"
     # TODO: check again when upgrading to 24.04 if the 'sudo' can be dropped
     sudo -i BRANCH="$BRANCH" "$ORCHESTRA_DOTDIR/support/revng-distributable/docker/build.sh" "$LOCAL_IMAGE" "$TAR_FILE"
     sudo -i podman login -u "$PODMAN_REGISTRY_USER" \

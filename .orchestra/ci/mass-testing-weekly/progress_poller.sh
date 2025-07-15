@@ -11,7 +11,7 @@ while true; do
 
     TOTAL=$(find "$BASE_DIR/inputs" -type f | wc -l)
     COUNT=$(find "$BASE_DIR/build" -name test-harness.json | wc -l)
-    PERCENT=$(python -c "print('{:03.2f}'.format($COUNT * 100 / $TOTAL))")
+    PERCENT=$(python3 -c "print('{:03.2f}'.format($COUNT * 100 / $TOTAL))")
 
     echo '------- MASS TESTING PROGRESS -------'
     echo "Timestamp:  $(date --iso-8601=seconds)"
