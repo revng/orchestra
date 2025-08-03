@@ -48,7 +48,7 @@ builds:
           -Dxkbcommon=disabled \
           --python="$(command -v python)" \
           (@ if build_type == "Debug": @)--enable-debug (@ end @)\
-          --extra-cflags="(@= cflags @)"
+          --extra-cflags="(@= cflags @) -Wno-unused-variable -Wno-unused-function -Wno-unused-result -Wno-unused-but-set-variable"
       install: |
         cd "$BUILD_DIR"
         (@= make @) install
