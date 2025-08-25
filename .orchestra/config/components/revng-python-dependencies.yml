@@ -33,6 +33,9 @@ requirements: |-
   types-PyYAML
   types-requests
   types-urllib3
+  # This specific versions because newer ones requires maturin, the rust setup tool, 
+  # and inside orchestra it fails to compile because it doesn't link against libc.
+  types-jsonschema>=4.17.0.10,<4.18.0
 
   # cmake-format executable
   cmakelang
