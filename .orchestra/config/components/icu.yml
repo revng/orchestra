@@ -1,8 +1,9 @@
 #@ load("@ytt:data", "data")
 #@ load("@ytt:overlay", "overlay")
 #@ load("/lib/create-component.lib.yml", "single_build_component")
+#@ load("/lib/make.lib.yml", "make")
 
-#@ source_url = "https://github.com/unicode-org/icu/releases/download/release-71-1/icu4c-71_1-src.tgz"
+#@ source_url = "https://github.com/unicode-org/icu/releases/download/release-78.3/icu4c-78.3-sources.tgz"
 
 #@yaml/text-templated-strings
 ---
@@ -13,6 +14,10 @@ configure: |
   extract.sh --into "$BUILD_DIR" (@= source_url @)
 
   cd "$BUILD_DIR"
+  patch -p1 < "${ORCHESTRA_DOTDIR}/patches/icu-fixes.patch"
+
+  CC=clang \
+  CXX=clang++ \
   ./source/configure \
     --disable-static \
     --disable-debug \
@@ -22,6 +27,11 @@ configure: |
     --enable-tools \
     --prefix="$ORCHESTRA_ROOT"
 build_system: make
+post_install: |
+  if [ "$RUN_TESTS" -eq 1 ]; then
+    (@= make @) check-exhaustive
+    (@= make @) -C test check
+  fi
 build_dependencies:
   - host-cxx-toolchain
   - python

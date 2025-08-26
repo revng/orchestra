@@ -4,7 +4,7 @@
 #@yaml/text-templated-strings
 ---
 #@ def nghttp2_args():
-#@ nghttp2_version = "1.54.0"
+#@ nghttp2_version = "1.64.0"
 #@ source_url = "https://github.com/nghttp2/nghttp2/releases/download/v" + nghttp2_version + "/nghttp2-" + nghttp2_version + ".tar.xz"
 license: COPYING
 configure: |
