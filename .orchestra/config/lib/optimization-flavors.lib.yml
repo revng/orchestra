@@ -12,7 +12,7 @@ o3: -ggdb3 -Wl,--gc-sections -ffunction-sections -O3
 
 #@ libc_optimization_flavors = dict(_libc_optimization_flavors())
 
-#@ common_flags = "-ggdb3"
+#@ common_flags = "-g -gdwarf-5 -gpubnames"
 
 #@yaml/text-templated-strings
 ---
