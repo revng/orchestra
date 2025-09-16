@@ -150,7 +150,6 @@ FULL_PACKAGES+=(ripgrep)
 #
 FULL_PACKAGES+=(s3cmd)
 FULL_PACKAGES+=(podman)
-FULL_PACKAGES+=(twine)
 
 #
 # flamegraph.pl runtime dependencies
@@ -198,6 +197,12 @@ if [[ "$INSTALL_TYPE" = "standard" || "$INSTALL_TYPE" = "full" ]]; then
 fi
 
 apt-get -qq install --no-install-recommends --yes --allow-downgrades "${PACKAGES_TO_INSTALL[@]}"
+
+# Install twine manually, as the version provided by the ubuntu
+# repositories is too old
+if [[ "$INSTALL_TYPE" = "full" ]]; then
+  pip3 install twine
+fi
 
 # git-lfs on jammy is out-of-date, install it manually from the official github releases
 if ! command -v git-lfs &> /dev/null; then
