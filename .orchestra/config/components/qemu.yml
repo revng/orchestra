@@ -47,6 +47,7 @@ builds:
           -Dvhost_user=disabled \
           -Dxkbcommon=disabled \
           --python="$(command -v python)" \
+          --libdir="$ORCHESTRA_ROOT/lib"  \
           (@ if build_type == "Debug": @)--enable-debug (@ end @)\
           --extra-cflags="(@= cflags @) -Wno-unused-variable -Wno-unused-function -Wno-unused-result -Wno-unused-but-set-variable"
       install: |
@@ -54,6 +55,7 @@ builds:
         (@= make @) install
       build_dependencies:
         - host-c-toolchain
+        - llvm
       dependencies:
         - zlib
         - glib
