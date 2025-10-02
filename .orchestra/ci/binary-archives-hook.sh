@@ -133,7 +133,7 @@ EOF
     #
     # Get the current-branch revng-distributable tar file
     #
-    TAR_FILE="$BINARY_ARCHIVES_BASE/public/linux-x86-64/revng-distributable-public-demo/default/$BRANCH.tar.xz"
+    TAR_FILE="$BINARY_ARCHIVES_BASE/public/linux-x86-64/revng-distributable-public-demo/default/${BRANCH////-}.tar.xz"
 
     pushd "$(dirname "$TAR_FILE")" &> /dev/null
     git lfs pull -I "$(basename "$(realpath "$TAR_FILE")")"
