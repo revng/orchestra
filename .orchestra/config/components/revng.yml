@@ -21,6 +21,7 @@ build_dependencies:
   #! It would be possible to split off test/revng-qa to make it only build those
   #! binaries, but the benefits are not too big.
   - test/revng-qa
+  - qemu-helpers
 dependencies:
   - boost
   - host-libcxx
