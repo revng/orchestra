@@ -5,7 +5,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def qemu_component(use_asan=False):
+#@ def qemu_component(target_suffixes, extra_cflags="", use_asan=False):
 repository: qemu
 license: LICENSE
 default_build: optimized
@@ -18,36 +18,47 @@ builds:
       configure: |
         mkdir -p "$BUILD_DIR"
         cd "$BUILD_DIR";
+        # export PATH="$ORCHESTRA_ROOT/link-only/bin:$ORCHESTRA_ROOT/lib64/llvm/llvm/bin:$PATH";
+        which -a clang;
         "$SOURCE_DIR/configure" \
           --cc="(@= data.values.regular_c_compiler @)" \
           --cxx="(@= data.values.regular_cxx_compiler @)" \
           --prefix="$ORCHESTRA_ROOT" \
-          --target-list=" arm-libtinycode arm-linux-user aarch64-libtinycode aarch64-linux-user i386-libtinycode i386-linux-user mips-libtinycode mips-linux-user mipsel-libtinycode mipsel-linux-user s390x-libtinycode s390x-linux-user x86_64-libtinycode x86_64-linux-user " \
+          --disable-plugins \
+          --target-list=" \
+            (@ for target_suffix in target_suffixes: -@)
+            arm-(@= target_suffix @) \
+            aarch64-(@= target_suffix @) \
+            i386-(@= target_suffix @) \
+            mips-(@= target_suffix @) \
+            mipsel-(@= target_suffix @) \
+            s390x-(@= target_suffix @) \
+            x86_64-(@= target_suffix @) \
+            (@ end -@)
+          " \
           --disable-werror \
-          --enable-llvm-helpers \
+          --disable-docs \
           --disable-kvm \
-          --without-pixman \
           --disable-tools \
           --disable-system \
           --disable-libnfs \
           --disable-vde \
           --disable-gnutls \
-          --disable-smartcard-nss \
-          --disable-uuid \
           --disable-cap-ng \
-          --python="${ORCHESTRA_ROOT}/bin/python2" \
+          -Dvhost_user=disabled \
+          -Dxkbcommon=disabled \
+          --libdir="$ORCHESTRA_ROOT/lib"  \
           (@ if build_type == "Debug": @)--enable-debug (@ end @)\
-          --extra-cflags="(@= cflags @)"
+          --extra-cflags="(@= cflags @) (@= extra_cflags @) -Wno-unused-variable -Wno-unused-function -Wno-unused-result -Wno-unused-but-set-variable"
       install: |
         cd "$BUILD_DIR"
         (@= make @) install
       build_dependencies:
         - host-c-toolchain
-        - python2
+        - llvm
       dependencies:
         - zlib
         - glib
-        - host-libc
       #@ if/end ndebug == False:
       ndebug: false
   #@ end
@@ -57,4 +68,13 @@ builds:
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  qemu: #@ qemu_component()
+  qemu: #@ qemu_component(["linux-user", "libtcg"], "-fPIC")
+  #! TODO: we need to make CSAA compatible with optimized code so that we can
+  #!       then just add -fembed-bitcode to a regular build.
+  #!       Note that it might not be hard, we haven't tried.
+  #!       In order to achieve this, we should also switch from using
+  #!       GEN_LLVM_HELPERS to CONFIG_LLVM_HELPERS. However, we can't use that
+  #!       in common code, so some extra work needs to be done there as well. If
+  #!       we try to use CONFIG_LLVM_HELPERS where not allowed, we'll get a nice
+  #!       "attempt to use a poisoned identifier" error.
+  qemu-helpers: #@ qemu_component(["llvm-helpers"], "-fPIC -Wno-gcc-compat -DGEN_LLVM_HELPERS -O0 -Xclang -disable-O0-optnone -fembed-bitcode")
