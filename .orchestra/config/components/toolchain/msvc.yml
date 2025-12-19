@@ -337,7 +337,7 @@ toolchain/(@= name @)/vc:
         export DISPLAY=
 
         # Suppress wine debug information
-        export WINEDEBUG="fixme-all,warn-all"
+        export WINEDEBUG="fixme-all,warn-all,-winediag,-systray"
 
         # Disable .Net and mshtml
         export WINEDLLOVERRIDES="mscoree,mshtml="
