@@ -257,6 +257,8 @@ bin: VC/bin/Hostx86/(@= target_path @)/
 include:
 - VC/include
 - windows-sdk/Include/(@= sdk_version @)/ucrt
+- windows-sdk/Include/(@= sdk_version @)/um
+- windows-sdk/Include/(@= sdk_version @)/shared
 lib:
 - VC/lib/(@= target_path @)
 - windows-sdk/Lib/(@= sdk_version @)/um/(@= target_path @)
@@ -335,7 +337,7 @@ toolchain/(@= name @)/vc:
         export DISPLAY=
 
         # Suppress wine debug information
-        export WINEDEBUG="fixme-all,warn-all"
+        export WINEDEBUG="fixme-all,warn-all,-winediag,-systray"
 
         # Disable .Net and mshtml
         export WINEDLLOVERRIDES="mscoree,mshtml="
