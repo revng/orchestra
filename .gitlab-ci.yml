@@ -19,6 +19,6 @@ push-to-master:
   rules:
     - if: $PUSHED_REF == "refs/heads/next-develop"
   script:
-    - git clone --branch develop "${ORCHESTRA_CONFIG_REPO_HTTP_URL:-https://github.com/revng/orchestra.git}"
+    - git clone --branch next-develop "${ORCHESTRA_CONFIG_REPO_HTTP_URL:-https://github.com/revng/orchestra.git}"
     - cd orchestra
     - .orchestra/ci/ci-regression.sh
