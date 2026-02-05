@@ -7,6 +7,7 @@ import json
 import yaml
 import os
 import string
+import sys
 import time
 from datetime import date, datetime, timedelta
 from textwrap import dedent
@@ -59,6 +60,13 @@ _installation_token_info = None
 def log_response(body: str, status_code: int = 400) -> Tuple[str, int]:
     print(body, end="")
     return body, status_code
+
+
+def log_request():
+    sys.stderr.write(f"{request.method} {request.full_path}\n")
+    sys.stderr.write(f"{request.headers!s}\n")
+    sys.stderr.write(f"{request.get_data()!s}\n")
+    sys.stderr.flush()
 
 
 def installation_token() -> str:
@@ -345,6 +353,7 @@ def gitlab_ci_hook():
 
 @app.route('/ci-hook/gitlab', methods=["POST"])
 def gitlab_hook():
+    log_request()
     headers = dict(request.headers)
     if headers.get("X-Gitlab-Token", "") != GITLAB_SECRET:
         return log_response("Invalid token\n", 403)
@@ -397,6 +406,7 @@ def github_hook():
     4. We start the CI and link it to the check run ID; gitlab_ci_hook() will then update the check run status.
     """
 
+    log_request()
     headers = dict(request.headers)
 
     signature = 'sha256=' + hmac.new(GITHUB_APP_SECRET, request.data, hashlib.sha256).hexdigest()
