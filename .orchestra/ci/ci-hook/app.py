@@ -224,7 +224,6 @@ def trigger_ci(username, repo_url, base_repo_url, ref, status_update_metadata: O
                           for key, value
                           in variables.items()]
         }
-        print(json.dumps(parameters, indent=2))
         project.pipelines.create(parameters)
 
 
