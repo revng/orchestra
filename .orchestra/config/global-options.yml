@@ -14,6 +14,20 @@
 #@ clang_release_version = "16.0.0"
 #@ gcc_host_version = "11.2.0"
 
+#@ def revng_compiler_flags():
+#! Use clangTidy as a plugin, so that the parsing for C++ is only done once
+- -fplugin=libclangTidyPlugin.so
+#! common command-line arguments
+- -Wl,--no-undefined -Wno-unused-command-line-argument -stdlib=libc++
+#! Use the mold linker
+- -fuse-ld=mold
+#! Make the mold linker always behave like it's linking a shared library
+#! This is to work around the behavior where mold will make some symbols
+#! local in a main executable even though they're `inline` in C++.
+#! See: https://github.com/rui314/mold/issues/1401#issuecomment-2598001460
+- -Wl,--shared -fPIC
+#@ end
+
 #@data/values
 #@yaml/text-templated-strings
 ---
@@ -33,7 +47,7 @@ hard_flags_link_gold: -Wl,--gdb-index
 hard_flags_link_mold: -Wl,--gdb-index
 hard_flags_link_lld: -Wl,--gdb-index
 hard_flags_clangtidy: --extra-arg-before=-nostdinc++ --extra-arg-before=-nostdinc --extra-arg-before=-idirafter --extra-arg-before=$ORCHESTRA_ROOT/lib64/llvm/clang-release/include/c++/v1 --extra-arg-before=-idirafter --extra-arg-before=$ORCHESTRA_ROOT/lib/clang/(@= clang_release_version @)/include --extra-arg-before=-idirafter --extra-arg-before=$ORCHESTRA_ROOT/link-only/include
-revng_extra_compiler_flags: -fplugin=libclangTidyPlugin.so -Wl,--no-undefined -Wno-unused-command-line-argument -stdlib=libc++ -fuse-ld=mold
+revng_extra_compiler_flags: #@ " ".join(revng_compiler_flags())
 
 parallelism: $(nproc)
 build_from_source: []
