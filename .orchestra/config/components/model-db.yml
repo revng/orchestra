@@ -1,0 +1,129 @@
+#@ load("@ytt:overlay", "overlay")
+
+#@yaml/text-templated-strings
+---
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  model-db:
+    skip_post_install: true
+    builds:
+      default:
+        build_dependencies:
+          - revng
+          #! WIP: only depending on a single rootfs for now
+          - rootfs/ubuntu-24-04-x86-64/debug-info
+        configure: |
+          log() { echo "$@" >&2; }
+
+          mkdir -p "$BUILD_DIR"
+          cd "$BUILD_DIR"
+
+          export REVNG_NO_FETCH_DEBUG_INFO=1
+
+          ROOTS_DIR="$ORCHESTRA_ROOT/share/roots"
+
+          rm -rf models/
+          mkdir -p models
+
+          for ROOTFS_NAME in $(ls "$ROOTS_DIR"); do
+            ROOTFS_DIR="$ROOTS_DIR/$ROOTFS_NAME"
+
+            if ! test -d "$ROOTFS_DIR"; then
+              continue
+            fi
+
+            SYMBOLS_CACHE="$ROOTFS_DIR/symbols-cache"
+
+            export XDG_CACHE_HOME="$BUILD_DIR/cache"
+            mkdir -p "$XDG_CACHE_HOME"
+
+            if test -d "$SYMBOLS_CACHE"; then
+              mkdir -p "$XDG_CACHE_HOME/revng/debug-symbols/elf"
+              cp -a "$SYMBOLS_CACHE"/* "$XDG_CACHE_HOME/revng/debug-symbols/elf/" \
+                2>/dev/null || true
+            fi
+
+            # WIP: limit to 5 ELFs per rootfs
+            ELF_COUNT=0
+            for ELF_FILE in $(find "$ROOTFS_DIR" -type f); do
+              if ! head -c 4 "$ELF_FILE" 2>/dev/null | grep -q $'\x7fELF'; then
+                continue
+              fi
+
+              ELF_COUNT=$((ELF_COUNT + 1))
+              if test "$ELF_COUNT" -gt 5; then
+                break
+              fi
+
+              RELATIVE_PATH="${ELF_FILE#$ROOTFS_DIR/}"
+              MODEL_NAME="$(echo "$RELATIVE_PATH" | tr '/' '_')"
+
+              log "Importing $ROOTFS_NAME / $RELATIVE_PATH..."
+              revng \
+                analyze \
+                import-binary \
+                -o "$BUILD_DIR/models/${ROOTFS_NAME}_${MODEL_NAME}.yml" \
+                "$ELF_FILE" || true
+            done
+          done
+
+          rm -f db.sqlite
+
+          MODEL_FILES=$(find models/ -name '*.yml' -size +0c)
+          if test -n "$MODEL_FILES"; then
+            for ROOTFS_NAME in $(ls "$ROOTS_DIR"); do
+              ROOTFS_MODELS=$(find models/ -name "${ROOTFS_NAME}_*.yml" -size +0c)
+              if test -n "$ROOTFS_MODELS"; then
+                log "Exporting models for $ROOTFS_NAME to SQLite..."
+                revng \
+                  model \
+                  export \
+                  sqlite \
+                  --db db.sqlite \
+                  --platform "$ROOTFS_NAME" \
+                  $ROOTFS_MODELS
+              fi
+            done
+          fi
+
+          # Test: round-trip a few symbols through model-import-sqlite
+          if test -f db.sqlite; then
+            TEST_SYMBOLS=$(sqlite3 db.sqlite \
+              "SELECT s.Name FROM Symbol s LIMIT 3;")
+
+            if test -n "$TEST_SYMBOLS"; then
+              FIRST_LIBRARY=$(sqlite3 db.sqlite \
+                "SELECT l.Name FROM Library l LIMIT 1;")
+              FIRST_PLATFORM=$(sqlite3 db.sqlite \
+                "SELECT p.Name FROM Platform p LIMIT 1;")
+
+              SYMBOL_ARGS=""
+              for SYMBOL_NAME in $TEST_SYMBOLS; do
+                SYMBOL_ARGS="$SYMBOL_ARGS --symbol $SYMBOL_NAME"
+              done
+
+              log "Round-trip test: $TEST_SYMBOLS"
+              revng \
+                model \
+                import \
+                sqlite \
+                --db db.sqlite \
+                --platform "$FIRST_PLATFORM" \
+                --library "$FIRST_LIBRARY" \
+                $SYMBOL_ARGS \
+                -o test-round-trip.yml
+
+              log "Round-trip test passed ($(wc -l < test-round-trip.yml) lines)"
+              rm -f test-round-trip.yml
+            fi
+          fi
+
+        install: |
+          cd "$BUILD_DIR"
+          mkdir -p "${DESTDIR}${ORCHESTRA_ROOT}/share/revng"
+          if test -f db.sqlite; then
+            cp db.sqlite "${DESTDIR}${ORCHESTRA_ROOT}/share/revng/db.sqlite"
+          fi
