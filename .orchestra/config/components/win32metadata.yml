@@ -1,0 +1,29 @@
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/create-component.lib.yml", "single_build_component")
+
+#@ commit = "236161b35f4b81e7b15e02c506c7ef5799d53fbf"
+
+#@yaml/text-templated-strings
+---
+#@ def win32metadata_args():
+configure: |
+  mkdir -p "$BUILD_DIR"
+  git init "$BUILD_DIR/win32metadata"
+  cd "$BUILD_DIR/win32metadata"
+  git fetch --depth 1 \
+    "https://github.com/microsoft/win32metadata.git" \
+    "(@= commit @)"
+  git checkout FETCH_HEAD
+
+install: |
+  cd "$BUILD_DIR"
+  mkdir -p "${DESTDIR}${ORCHESTRA_ROOT}/share/win32metadata"
+  cp -a win32metadata/generation "${DESTDIR}${ORCHESTRA_ROOT}/share/win32metadata/"
+  cp -a win32metadata/sources "${DESTDIR}${ORCHESTRA_ROOT}/share/win32metadata/"
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  win32metadata: #@ single_build_component(**win32metadata_args())
