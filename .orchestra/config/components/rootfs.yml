@@ -1,0 +1,213 @@
+#@ load("@ytt:template", "template")
+#@ load("@ytt:overlay", "overlay")
+
+#@yaml/text-templated-strings
+---
+#@ def rootfs_configurations():
+- name: ubuntu-20-04-x86-64
+  codename: focal
+  architecture: amd64
+  url: "http://archive.ubuntu.com/ubuntu/"
+  operating_system: ubuntu
+  packages: "libfuse2,libc6-dbg"
+- name: ubuntu-22-04-x86-64
+  codename: jammy
+  architecture: amd64
+  url: "http://archive.ubuntu.com/ubuntu/"
+  operating_system: ubuntu
+  packages: "libfuse2,libc6-dbg"
+- name: ubuntu-24-04-x86-64
+  codename: noble
+  architecture: amd64
+  url: "http://archive.ubuntu.com/ubuntu/"
+  operating_system: ubuntu
+  packages: "libfuse3-3,libc6-dbg"
+- name: ubuntu-24-04-i386
+  codename: noble
+  architecture: i386
+  url: "http://archive.ubuntu.com/ubuntu/"
+  operating_system: ubuntu
+  packages: "libfuse3-3,libc6-dbg"
+- name: ubuntu-24-04-arm
+  codename: noble
+  architecture: armhf
+  url: "http://ports.ubuntu.com/ubuntu-ports/"
+  operating_system: ubuntu
+  packages: "libfuse3-3,libc6-dbg"
+- name: ubuntu-24-04-aarch64
+  codename: noble
+  architecture: arm64
+  url: "http://ports.ubuntu.com/ubuntu-ports/"
+  operating_system: ubuntu
+  packages: "libfuse3-3,libc6-dbg"
+- name: ubuntu-24-04-s390x
+  codename: noble
+  architecture: s390x
+  url: "http://ports.ubuntu.com/ubuntu-ports/"
+  operating_system: ubuntu
+  packages: "libfuse3-3,libc6-dbg"
+- name: debian-bookworm-mipsel
+  codename: bookworm
+  architecture: mipsel
+  url: "https://ftp.debian.org/debian/"
+  operating_system: debian
+  packages: "libfuse2,libc6-dbg"
+- name: debian-buster-mips
+  codename: buster
+  architecture: mips
+  url: "https://archive.debian.org/debian/"
+  operating_system: debian
+  packages: "libfuse2,libc6-dbg"
+#@ end
+
+#@yaml/text-templated-strings
+---
+#@ def create_rootfs_component(name, codename, architecture, url, operating_system, packages):
+#@ if operating_system == "ubuntu":
+#@   components = "main,restricted,universe,multiverse"
+#@ elif operating_system == "debian":
+#@   components = "main,contrib,non-free"
+#@ end
+rootfs/(@= name @):
+  skip_post_install: true
+  builds:
+    default:
+      build_dependencies:
+        - debootstrap
+      configure: |
+        log() { echo "$@" >&2; }
+
+        mkdir -p "$BUILD_DIR"
+        cd "$BUILD_DIR"
+
+        rm -rf rootfs/
+
+        log "Running debootstrap for (@= name @)..."
+        DEBOOTSTRAP_DIR="$ORCHESTRA_ROOT/share/debootstrap" \
+          fakeroot \
+          "$ORCHESTRA_ROOT/bin/debootstrap" \
+          --arch="(@= architecture @)" \
+          --components="(@= components @)" \
+          --include="(@= packages @)" \
+          --download-only \
+          "(@= codename @)" \
+          rootfs/ \
+          "(@= url @)" || true
+
+        log "Extracting .deb packages..."
+        find rootfs -name "*.deb" | while read DEB_FILE; do
+          mkdir -p temp
+          cd temp
+          ar x "../$DEB_FILE"
+          cd ../rootfs
+          if test -e "../temp/data.tar"*; then
+            tar xaf "../temp/data.tar"*
+          fi
+          cd ..
+          rm -rf temp
+        done
+
+        if test "$(find rootfs/ -name 'libc.so*' | wc -l)" -lt 1; then
+          log "ERROR: debootstrap (@= name @) failed"
+          exit 1
+        fi
+
+        # Cleanup: keep only symlinks, ELF files, /etc/ld.so.conf,
+        # and files in /etc/ld.so.conf.d/
+        log "Cleaning up non-ELF files..."
+        find rootfs -not -type d | while read FILE; do
+          if test -L "$FILE"; then
+            continue
+          fi
+
+          RELATIVE_PATH="${FILE#rootfs}"
+
+          if test "$RELATIVE_PATH" = "/etc/ld.so.conf"; then
+            continue
+          fi
+
+          case "$RELATIVE_PATH" in
+            /etc/ld.so.conf.d/*) continue ;;
+          esac
+
+          if head -c 4 "$FILE" 2>/dev/null | grep -q $'\x7fELF'; then
+            continue
+          fi
+
+          rm -f "$FILE"
+        done
+
+        # Fix permissions before modifying symlinks
+        chmod -R u+rwX rootfs/
+
+        # Make all symlinks relative
+        find rootfs -type l | while read LINK; do
+          TARGET="$(readlink "$LINK")"
+          if test "${TARGET#/}" != "$TARGET"; then
+            LINK_DIR="$(dirname "$LINK")"
+            RELATIVE_TARGET="$(realpath -m --relative-to="$LINK_DIR" "rootfs$TARGET")"
+            ln -sfn "$RELATIVE_TARGET" "$LINK"
+          fi
+        done
+
+        # Drop empty directories
+        find rootfs -type d -empty -delete
+
+        log "Rootfs (@= name @) ready."
+
+      install: |
+        cd "$BUILD_DIR"
+        mkdir -p "${DESTDIR}${ORCHESTRA_ROOT}/share/roots/(@= name @)"
+        cp -a rootfs/* "${DESTDIR}${ORCHESTRA_ROOT}/share/roots/(@= name @)/"
+        chmod -R u+rwX "${DESTDIR}${ORCHESTRA_ROOT}/share/roots/(@= name @)/"
+#@ end
+
+#@ def create_debug_info_component(name, codename=None, architecture=None, url=None, operating_system=None, packages=None):
+rootfs/(@= name @)/debug-info:
+  skip_post_install: true
+  builds:
+    default:
+      build_dependencies:
+        - revng
+        - rootfs/(@= name @)
+      configure: |
+        log() { echo "$@" >&2; }
+
+        mkdir -p "$BUILD_DIR"
+        cd "$BUILD_DIR"
+
+        ROOTFS_DIR="$ORCHESTRA_ROOT/share/roots/(@= name @)"
+
+        export XDG_CACHE_HOME="$BUILD_DIR/cache"
+        mkdir -p "$XDG_CACHE_HOME"
+
+        log "Fetching debug info for (@= name @)..."
+        find "$ROOTFS_DIR" -type f | while read ELF_FILE; do
+          if head -c 4 "$ELF_FILE" 2>/dev/null | grep -q $'\x7fELF'; then
+            log "  $ELF_FILE"
+            revng model fetch-debuginfo "$ELF_FILE" || true
+          fi
+        done
+
+        log "Debug info fetching complete."
+
+      install: |
+        cd "$BUILD_DIR"
+
+        SYMBOLS_SRC="$BUILD_DIR/cache/revng/debug-symbols/elf"
+        SYMBOLS_DST="${DESTDIR}${ORCHESTRA_ROOT}/share/roots/(@= name @)/symbols-cache"
+
+        if test -d "$SYMBOLS_SRC"; then
+          mkdir -p "$SYMBOLS_DST"
+          cp -a "$SYMBOLS_SRC"/* "$SYMBOLS_DST/"
+        fi
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  #@ for configuration in rootfs_configurations():
+  _: #@ template.replace(create_rootfs_component(**configuration))
+  _: #@ template.replace(create_debug_info_component(**configuration))
+  #@ end
