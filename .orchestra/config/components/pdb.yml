@@ -48,11 +48,14 @@ pdb/(@= name @):
           (@= arch_rsp_flags @) \
           --output-dir "$BUILD_DIR"
 
-        log "Building PDBs..."
-        ninja -C "$BUILD_DIR" -j"$(nproc)"
-
       install: |
+        log() { echo "$@" >&2; }
+
         cd "$BUILD_DIR"
+
+        log "Building PDBs..."
+        ninja -j"$(nproc)"
+
         mkdir -p "${DESTDIR}${ORCHESTRA_ROOT}/share/pdb/(@= name @)"
         for PDB_FILE in *.pdb; do
           if test -f "$PDB_FILE"; then
@@ -61,10 +64,51 @@ pdb/(@= name @):
         done
 #@ end
 
+#@yaml/text-templated-strings
+---
+#@ def create_pdb_debug_info_component(name, target_triple=None, vc_component=None, vc_triple=None, arch_rsp_flags=None):
+pdb/(@= name @)/debug-info:
+  skip_post_install: true
+  builds:
+    default:
+      build_dependencies:
+        - revng
+        - pdb/(@= name @)
+      configure: |
+        mkdir -p "$BUILD_DIR"
+
+      install: |
+        log() { echo "$@" >&2; }
+
+        cd "$BUILD_DIR"
+
+        PDB_DIR="$ORCHESTRA_ROOT/share/pdb/(@= name @)"
+
+        rm -rf models/
+        mkdir -p models
+
+        for PDB_FILE in "$PDB_DIR"/*.pdb; do
+          if ! test -f "$PDB_FILE"; then
+            continue
+          fi
+
+          PDB_NAME="$(basename "$PDB_FILE" .pdb)"
+
+          log "Importing $PDB_NAME..."
+          #! WIP: replace with actual tool invocation
+          touch "models/${PDB_NAME}.yml"
+        done
+
+        mkdir -p "${DESTDIR}${ORCHESTRA_ROOT}/share/pdb/(@= name @)/models"
+        cp -a models/* "${DESTDIR}${ORCHESTRA_ROOT}/share/pdb/(@= name @)/models/" \
+          2>/dev/null || true
+#@ end
+
 #@overlay/match by=overlay.all, expects=1
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
   #@ for configuration in pdb_configurations():
   _: #@ template.replace(create_pdb_component(**configuration))
+  _: #@ template.replace(create_pdb_debug_info_component(**configuration))
   #@ end
