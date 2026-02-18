@@ -1,7 +1,7 @@
 #@ load("@ytt:overlay", "overlay")
 #@ load("/lib/create-component.lib.yml", "single_build_component")
 
-#@ commit = "236161b35f4b81e7b15e02c506c7ef5799d53fbf"
+#@ commit = "223f4b9723d8fb7c83c286b6b4ad75dff18985c4"
 
 #@yaml/text-templated-strings
 ---
