@@ -13,12 +13,15 @@ components:
       default:
         build_dependencies:
           - revng
-          #! WIP: only depending on a single rootfs for now
+          #! WIP: only depending on a single rootfs/pdb for now
           - rootfs/ubuntu-24-04-x86-64/debug-info
+          - pdb/x86-64/debug-info
         configure: |
+          mkdir -p "$BUILD_DIR"
+
+        install: |
           log() { echo "$@" >&2; }
 
-          mkdir -p "$BUILD_DIR"
           cd "$BUILD_DIR"
 
           export REVNG_NO_FETCH_DEBUG_INFO=1
@@ -70,6 +73,27 @@ components:
             done
           done
 
+          PDB_DIR="$ORCHESTRA_ROOT/share/pdb"
+
+          if test -d "$PDB_DIR"; then
+            for PDB_ARCH_DIR in "$PDB_DIR"/*/models; do
+              if ! test -d "$PDB_ARCH_DIR"; then
+                continue
+              fi
+
+              PDB_ARCH_NAME="$(basename "$(dirname "$PDB_ARCH_DIR")")"
+
+              for MODEL_FILE in "$PDB_ARCH_DIR"/*.yml; do
+                if ! test -f "$MODEL_FILE"; then
+                  continue
+                fi
+
+                MODEL_NAME="$(basename "$MODEL_FILE" .yml)"
+                cp "$MODEL_FILE" "$BUILD_DIR/models/windows-${PDB_ARCH_NAME}_${MODEL_NAME}.yml"
+              done
+            done
+          fi
+
           rm -f db.sqlite
 
           MODEL_FILES=$(find models/ -name '*.yml' -size +0c)
@@ -85,6 +109,26 @@ components:
                   --db db.sqlite \
                   --platform "$ROOTFS_NAME" \
                   $ROOTFS_MODELS
+              fi
+            done
+
+            for PDB_ARCH_DIR in "$PDB_DIR"/*/models; do
+              if ! test -d "$PDB_ARCH_DIR"; then
+                continue
+              fi
+
+              PDB_ARCH_NAME="$(basename "$(dirname "$PDB_ARCH_DIR")")"
+              PLATFORM_NAME="windows-${PDB_ARCH_NAME}"
+              PDB_MODELS=$(find models/ -name "${PLATFORM_NAME}_*.yml" -size +0c)
+              if test -n "$PDB_MODELS"; then
+                log "Exporting PDB models for $PLATFORM_NAME to SQLite..."
+                revng \
+                  model \
+                  export \
+                  sqlite \
+                  --db db.sqlite \
+                  --platform "$PLATFORM_NAME" \
+                  $PDB_MODELS
               fi
             done
           fi
@@ -121,8 +165,6 @@ components:
             fi
           fi
 
-        install: |
-          cd "$BUILD_DIR"
           mkdir -p "${DESTDIR}${ORCHESTRA_ROOT}/share/revng"
           if test -f db.sqlite; then
             cp db.sqlite "${DESTDIR}${ORCHESTRA_ROOT}/share/revng/db.sqlite"
