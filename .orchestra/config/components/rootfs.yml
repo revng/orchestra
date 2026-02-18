@@ -75,9 +75,11 @@ rootfs/(@= name @):
       build_dependencies:
         - debootstrap
       configure: |
+        mkdir -p "$BUILD_DIR"
+
+      install: |
         log() { echo "$@" >&2; }
 
-        mkdir -p "$BUILD_DIR"
         cd "$BUILD_DIR"
 
         rm -rf rootfs/
@@ -155,8 +157,6 @@ rootfs/(@= name @):
 
         log "Rootfs (@= name @) ready."
 
-      install: |
-        cd "$BUILD_DIR"
         mkdir -p "${DESTDIR}${ORCHESTRA_ROOT}/share/roots/(@= name @)"
         cp -a rootfs/* "${DESTDIR}${ORCHESTRA_ROOT}/share/roots/(@= name @)/"
         chmod -R u+rwX "${DESTDIR}${ORCHESTRA_ROOT}/share/roots/(@= name @)/"
@@ -171,9 +171,11 @@ rootfs/(@= name @)/debug-info:
         - revng
         - rootfs/(@= name @)
       configure: |
+        mkdir -p "$BUILD_DIR"
+
+      install: |
         log() { echo "$@" >&2; }
 
-        mkdir -p "$BUILD_DIR"
         cd "$BUILD_DIR"
 
         ROOTFS_DIR="$ORCHESTRA_ROOT/share/roots/(@= name @)"
@@ -190,9 +192,6 @@ rootfs/(@= name @)/debug-info:
         done
 
         log "Debug info fetching complete."
-
-      install: |
-        cd "$BUILD_DIR"
 
         SYMBOLS_SRC="$BUILD_DIR/cache/revng/debug-symbols/elf"
         SYMBOLS_DST="${DESTDIR}${ORCHESTRA_ROOT}/share/roots/(@= name @)/symbols-cache"
