@@ -21,11 +21,11 @@
 - -Wl,--no-undefined -Wno-unused-command-line-argument -stdlib=libc++
 #! Use the mold linker
 - -fuse-ld=mold
-#! Make the mold linker always behave like it's linking a shared library
-#! This is to work around the behavior where mold will make some symbols
-#! local in a main executable even though they're `inline` in C++.
+#! Make the mold linker always export global symbols, even in a main
+#! executable, this allows `inline` variables to be referenced by a main
+#! executable and a shared library.
 #! See: https://github.com/rui314/mold/issues/1401#issuecomment-2598001460
-- -Wl,--shared -fPIC
+- -Wl,--export-dynamic
 #@ end
 
 #@data/values
