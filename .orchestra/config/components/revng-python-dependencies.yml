@@ -76,7 +76,7 @@ requirements: |-
   xdg
 
   marko
-  mkdocs
+  mkdocs<2.0
   mkdocs-graphviz
   mkdocs-material
 
