@@ -42,6 +42,7 @@
 configure_args: --target-type 'revng-qa\..*'
 build_dependencies:
   - ninja
+  - glibc
   - revng-qa
   - toolchain/win32-vc16/vc
   - toolchain/win32-vc19/vc
