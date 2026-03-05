@@ -342,21 +342,14 @@ toolchain/(@= name @)/vc:
         # Disable .Net and mshtml
         export WINEDLLOVERRIDES="mscoree,mshtml="
 
-        (@ if not triple.endswith("-vc12") and not triple.endswith("-vc13"): @)
-            # Run one dedicated mspdbsrv.exe per instance of the executable
-            export _MSPDBSRV_ENDPOINT_="$(python3 -c 'import uuid; print(uuid.uuid4())')"
-            wine "$SCRIPT_DIR"/(@= bin @)/mspdbsrv.ex*e -start -spawn &
-            MSPDBSRV_PID="$!"
+        # Make a separate wineprefix
+        export WINEPREFIX=$(mktemp -d --tmpdir tmp.msvc-wineprefix.XXXXXXXXXX)
 
-            # Stop mspdbsrv.exe upon exit
-            trap 'wine "$SCRIPT_DIR"/(@= bin @)/mspdbsrv.ex*e -stop || true' EXIT;
-
-            # Wait for mspdbsrv.exe to be up and running
-            while ! [[ "$(readlink -f "/proc/$MSPDBSRV_PID/exe")" == *"wine"* ]]; do
-                sleep 0.2
-            done
-            sleep 0.2
-        (@ end @)
+        function cleanup() {
+          wineserver --kill || true
+          rm -rf "$WINEPREFIX"
+        }
+        trap cleanup EXIT
 
         PROGRAM_NAME="$(basename $0)"
         (@ if not triple.startswith("i386-"): @)
