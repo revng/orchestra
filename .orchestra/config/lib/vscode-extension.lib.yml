@@ -11,6 +11,7 @@
 #@      build_dependencies=[],
 #@      development_packages=[],
 #@      binary_archives=None,
+#@      pre_npm_install=None,
 #@  ):
 
 #@ if/end repository:
@@ -75,8 +76,11 @@ builds:
         "$SOURCE_DIR/" "$BUILD_DIR/build/"
 
       cd "$BUILD_DIR/build"
+      (@ if pre_npm_install: -@)
+      (@-= pre_npm_install @)
+      (@- end @)
+      
       export ORCHESTRA_NODE_CACHE="$BUILD_DIR/cache:$ORCHESTRA_NODE_CACHE"
-
       npm install --no-audit --omit peer (@= " ".join(development_packages) @)
       # The above command doesn't run postinstall automatically, see npm/cli#4804
       # Run it manually via `npm run`
