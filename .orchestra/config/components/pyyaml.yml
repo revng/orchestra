@@ -9,7 +9,7 @@ dependencies:
 - cython
 requirements: |-
   --global-option=--with-libyaml
-  pyyaml==6.0.1
+  pyyaml==6.0.3
 #@ end
 
 #@overlay/match by=overlay.all, expects=1
