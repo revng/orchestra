@@ -41,7 +41,7 @@ requirements: |-
   cmakelang
 
   # Applications/Script dependencies
-  ariadne[asgi-file-uploads]>=0.23.0
+  ariadne[asgi-file-uploads]>=0.23.0,<0.29.0
   boto3<=1.35.99
   cffi>=1.17.1,<2.0
   Jinja2
@@ -55,6 +55,7 @@ requirements: |-
   pyelftools
   zstandard
   click==8.2.1
+  starlette[full]>=0.52.1
 
   # This is our fork of the python-idb package that includes some fixes.
   https://github.com/revng/python-idb/archive/08ba07a.tar.gz
@@ -68,15 +69,15 @@ requirements: |-
   https://github.com/revng/llvmcpy/archive/9eca23b.tar.gz
 
   # uvicorn[standard] but without watchfiles (since it requires rust)
-  uvicorn==0.32.0
-  httptools>=0.5.0
+  uvicorn==0.41.0
+  httptools>=0.6.3
   python-dotenv>=0.13
   websockets>=10.4
 
   xdg
 
   marko
-  mkdocs
+  mkdocs<2.0
   mkdocs-graphviz
   mkdocs-material
 

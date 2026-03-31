@@ -13,6 +13,10 @@ build_dependencies:
 development_packages:
 - revng-model
 - revng-pipeline-description
+#! Since the vscode_extension machine does not run a proper build system we
+#! just copy the yaml schema directory in the build directory
+pre_npm_install: |
+  cp -a "${ORCHESTRA_ROOT}/share/revng/pipeline/pipeline-description-schema.yml" .
 #@ end
 
 #@overlay/match by=overlay.all, expects=1
