@@ -166,6 +166,11 @@ FULL_PACKAGES+=(time)
 #
 FULL_PACKAGES+=(inkscape)
 
+#
+# Needed by `rootfs/*` derived by Debian
+#
+FULL_PACKAGES+=(fakeroot)
+
 
 #
 # Actual installation of packages
