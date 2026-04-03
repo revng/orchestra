@@ -1,0 +1,39 @@
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/create-component.lib.yml", "single_build_component")
+
+#@ repository_url = "https://git.launchpad.net/ubuntu/+source/debootstrap"
+#@ tag = "import/1.0.142build1"
+
+#@yaml/text-templated-strings
+---
+#@ def debootstrap_args():
+configure: |
+  mkdir -p "$BUILD_DIR"
+  git clone \
+    --depth 1 \
+    --branch "(@= tag @)" \
+    "(@= repository_url @)" \
+    "$BUILD_DIR/debootstrap"
+
+dependencies:
+  - zstd
+
+install: |
+  cd "$BUILD_DIR/debootstrap"
+
+  mkdir -p "${DESTDIR}${ORCHESTRA_ROOT}/share/debootstrap/scripts"
+  mkdir -p "${DESTDIR}${ORCHESTRA_ROOT}/bin"
+
+  cp -a scripts/* "${DESTDIR}${ORCHESTRA_ROOT}/share/debootstrap/scripts/"
+  install -m 0644 functions "${DESTDIR}${ORCHESTRA_ROOT}/share/debootstrap/"
+
+  sed 's|@VERSION@|(@= tag @)|g' debootstrap \
+    > "${DESTDIR}${ORCHESTRA_ROOT}/bin/debootstrap"
+  chmod 0755 "${DESTDIR}${ORCHESTRA_ROOT}/bin/debootstrap"
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  debootstrap: #@ single_build_component(**debootstrap_args())
