@@ -1,0 +1,26 @@
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/create-component.lib.yml", "single_build_component")
+
+#@ version = "1.22.0"
+#@ hash = "397708bef1afa0defdc041bb0d3684570d97135076370257438c871600c1c587"
+
+#@yaml/text-templated-strings
+---
+#@ def skopeo_args():
+configure: |
+  mkdir -p "$BUILD_DIR"
+  cd "$BUILD_DIR"
+  fetch.sh \
+    --hash 'sha256-(@= hash @)' \
+    'https://github.com/lework/skopeo-binary/releases/download/v(@= version @)/skopeo-linux-amd64'
+
+install: |
+  cd "$BUILD_DIR"
+  install -m 755 skopeo-linux-amd64 "${DESTDIR}${ORCHESTRA_ROOT}/bin/skopeo"
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  skopeo: #@ single_build_component(**skopeo_args())
