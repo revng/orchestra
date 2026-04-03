@@ -8,6 +8,7 @@ components:
     builds:
       default:
         dependencies:
+          - test/revng-db
           - test/revng
           - revng-vscode-web
           - llvm-documentation

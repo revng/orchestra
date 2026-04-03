@@ -63,9 +63,22 @@ build_dependencies:
   - test/revng-qa
   - clang-release
   - nodejs-support
+  - rootfs/windows-7-x86
+  - rootfs/windows-8-x86-64
+  - rootfs/windows-8-1-x86-64
+  - rootfs/windows-aarch64
+  - rootfs/windows-x86-64
 pre_install: |
   export REVNG_OPTIONS="--debug-log=verify"
   export PYPELINE_STORAGE_PROVIDER="local://?inline"
+#@ end
+
+#@ def revng_db_test():
+configure_args: --target-type 'revng-db\..*'
+build_dependencies:
+  - ninja
+  - revng
+  - model-db
 #@ end
 
 #@overlay/match by=overlay.all, expects=1
@@ -75,3 +88,4 @@ pre_install: |
 components:
   _: #@ template.replace(revng_test_component("test/revng-qa", revng_qa_test()))
   _: #@ template.replace(revng_test_component("test/revng", revng_test()))
+  _: #@ template.replace(revng_test_component("test/revng-db", revng_db_test()))
