@@ -1,0 +1,287 @@
+#@ load("@ytt:template", "template")
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/ninja.lib.yml", "ninja")
+
+#@yaml/text-templated-strings
+---
+
+#! Summary of how model-db works:
+#!
+#! This component is downstream of revng. It uses it to import debug info from
+#! different sources and collect them all in a single SQLite database that can be
+#! then efficiently queried at run-time.
+#!
+#! The component relies on two sources of debug info:
+#!
+#! 1. `rootfs/$DISTRO/debug-info`: this is a component that fetches debug info
+#!    (using `revng model fetch-debuginfo`) from the binaries of the component
+#!    `rootfs/$DISTRO`.
+#!    `rootfs/$DISTRO` basically uses `debootstrap` to unpack a
+#!    Debian-derivative.
+#! 2. `win32metadata/pdbs/$ARCHITECTURE`: this is a component that uses the
+#!    `win32metadata` project (by Microsoft) to build `.pdb`s for all the
+#!    information in there.
+#! 3. `test/revng-qa`: in `share/revng/test/tests/well-known-models` we have a
+#!    set of binaries containing interesting debug info.
+#!
+#! Note: this component does not use `rootfs/windows-*`. Those are only used to
+#!       extract the apisetschema.dll libraries for testing purposes.
+#!       In fact, we can't use the same approach we use on Linux, i.e., fetch
+#!       debug info from Microsoft servers. Unfortunately, those debug symbols do
+#!       not contain almost any useful information.
+#!       On the other hand, `win32metadata` is rather information rich and, since
+#!       the Windows API only tends to grow, it's rather backward-compatible.
+
+#! List of Linux rootfs configurations (must match rootfs.yml)
+#@ linux_rootfs_names = [
+#@   "ubuntu-20-04-x86-64",
+#@   "ubuntu-22-04-x86-64",
+#@   "ubuntu-24-04-x86-64",
+#@   "ubuntu-24-04-i386",
+#@   "ubuntu-24-04-arm",
+#@   "ubuntu-24-04-aarch64",
+#@   "ubuntu-24-04-s390x",
+#@   "debian-bookworm-mipsel",
+#@   "debian-buster-mips",
+#@ ]
+
+#! List of PDB architectures (must match pdb.yml)
+#@ pdb_archs = ["x86-64", "i386", "aarch64"]
+
+#@yaml/text-templated-strings
+---
+#@ def create_models_component(name, build_dependencies, install_destination, import_command, configure_body, pre_install=""):
+(@= name @):
+  skip_post_install: true
+  builds:
+    default:
+      build_dependencies:
+        - revng
+        - ninja
+        #@ for dep in build_dependencies:
+        - (@= dep @)
+        #@ end
+      configure: |
+        mkdir -p "$BUILD_DIR"
+        cd "$BUILD_DIR"
+
+        OUTPUT_DIR="$BUILD_DIR/models"
+
+        cat > build.ninja <<'EOF'
+        rule import
+          command = (@= import_command @) $in -o $out
+          description = Importing $in
+        EOF
+
+        (@= configure_body @)
+
+      install: |
+        cd "$BUILD_DIR"
+
+        (@ if pre_install != "": -@)
+        (@= pre_install @)
+        (@ end -@)
+
+        (@= ninja @)
+
+        DESTINATION="${DESTDIR}${ORCHESTRA_ROOT}/(@= install_destination @)"
+        if test -d models; then
+          mkdir -p "$DESTINATION"
+          cd models && find . -name "*.yml" -exec install -Dm644 {} "$DESTINATION/{}" \;
+        fi
+#@ end
+
+#@yaml/text-templated-strings
+---
+#@ def rootfs_models_args(name):
+#@ path = "share/roots/linux/" + name
+name: rootfs/(@= name @)/models
+build_dependencies:
+  - rootfs/(@= name @)/debug-info
+install_destination: (@= path @)
+import_command: REVNG_NO_FETCH_DEBUG_INFO=1 revng analyze import-binary
+pre_install: |-
+  export XDG_CACHE_HOME="$BUILD_DIR/cache"
+  mkdir -p "$XDG_CACHE_HOME"
+
+  SOURCE_DIR="$ORCHESTRA_ROOT/(@= path @)"
+  SYMBOLS_CACHE="$SOURCE_DIR/symbols-cache"
+  if test -d "$SYMBOLS_CACHE"; then
+    mkdir -p "$XDG_CACHE_HOME/revng/debug-symbols/elf"
+    cp -a "$SYMBOLS_CACHE"/* "$XDG_CACHE_HOME/revng/debug-symbols/elf/"
+  fi
+configure_body: |-
+  # Set to 10 for debugging purposes
+  MAX_BINARIES=0
+
+  SOURCE_DIR="$ORCHESTRA_ROOT/(@= path @)"
+
+  COUNT=0
+  for ELF_FILE in $(find "$SOURCE_DIR" \
+    -not -path "$SOURCE_DIR/symbols-cache/*" \
+    -not -path "*/debug/.build-id/*" \
+    -not -path "*/lib/debug/*" \
+    -not -name "*.debug" \
+    -type f); do
+
+    if ! head -c 4 "$ELF_FILE" 2>/dev/null | grep -qP '\x7fELF'; then
+      continue
+    fi
+
+    COUNT=$((COUNT + 1))
+    if test "$MAX_BINARIES" -gt 0 && test "$COUNT" -gt "$MAX_BINARIES"; then
+      break
+    fi
+
+    RELATIVE_PATH="${ELF_FILE#$SOURCE_DIR/}"
+    OUTPUT="$OUTPUT_DIR/${RELATIVE_PATH}.yml"
+    mkdir -p "$(dirname "$OUTPUT")"
+    echo "build $OUTPUT: import $ELF_FILE" >> build.ninja
+  done
+#@ end
+
+#@yaml/text-templated-strings
+---
+#@ def pdb_models_args(arch):
+#@ path = "share/win32metadata/pdbs/" + arch
+name: win32metadata/pdbs/(@= arch @)/models
+build_dependencies:
+  - win32metadata/pdbs/(@= arch @)
+install_destination: (@= path @)
+import_command: revng model import debug-info
+configure_body: |-
+  # Set to 10 for debugging purposes
+  MAX_BINARIES=0
+
+  SOURCE_DIR="$ORCHESTRA_ROOT/(@= path @)"
+
+  COUNT=0
+  for PDB_FILE in $(find "$SOURCE_DIR" -name "*.pdb"); do
+    COUNT=$((COUNT + 1))
+    if test "$MAX_BINARIES" -gt 0 && test "$COUNT" -gt "$MAX_BINARIES"; then
+      break
+    fi
+
+    RELATIVE_PATH="${PDB_FILE#$SOURCE_DIR/}"
+    OUTPUT="$OUTPUT_DIR/${RELATIVE_PATH}.yml"
+    mkdir -p "$(dirname "$OUTPUT")"
+    echo "build $OUTPUT: import $PDB_FILE" >> build.ninja
+  done
+#@ end
+
+#@yaml/text-templated-strings
+---
+#@ def well_known_models_args():
+name: test/revng-qa/models
+build_dependencies:
+  - test/revng-qa
+install_destination: share/revng/test/tests/well-known-models
+import_command: REVNG_NO_FETCH_DEBUG_INFO=1 revng analyze import-binary
+configure_body: |-
+  WELL_KNOWN_DIR="$ORCHESTRA_ROOT/share/revng/test/tests/well-known-models"
+
+  for BINARY in "$WELL_KNOWN_DIR/"*revng-qa.compiled-with-debug-info-*; do
+    BASENAME="$(basename "$BINARY")"
+    OUTPUT="$OUTPUT_DIR/${BASENAME}.yml"
+    mkdir -p "$(dirname "$OUTPUT")"
+    echo "build $OUTPUT: import $BINARY" >> build.ninja
+  done
+#@ end
+
+#@ def model_db_dependencies():
+#@ deps = ["revng", "test/revng-qa/models"]
+#@ for name in linux_rootfs_names:
+#@   deps.append("rootfs/" + name + "/models")
+#@ end
+#@ for arch in pdb_archs:
+#@   deps.append("win32metadata/pdbs/" + arch + "/models")
+#@ end
+#@ return deps
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  #@ for name in linux_rootfs_names:
+  _: #@ template.replace(create_models_component(**rootfs_models_args(name)))
+  #@ end
+  #@ for arch in pdb_archs:
+  _: #@ template.replace(create_models_component(**pdb_models_args(arch)))
+  #@ end
+  _: #@ template.replace(create_models_component(**well_known_models_args()))
+  model-db:
+    skip_post_install: true
+    builds:
+      default:
+        build_dependencies: #@ model_db_dependencies()
+        configure: |
+          mkdir -p "$BUILD_DIR"
+
+        install: |
+          function log() {
+            echo "$@" > /dev/stderr;
+          }
+
+          cd "$BUILD_DIR"
+
+          DB_NAME=prototypes.sqlite
+          rm -f "$DB_NAME"
+
+          function export-to-db() {
+            OPERATING_SYSTEM="$1"
+            shift
+
+            PLATFORM="$1"
+            shift
+
+            revng \
+              model \
+              export \
+              sqlite \
+              --db "$DB_NAME" \
+              --platform "$PLATFORM" \
+              --operating-system "$OPERATING_SYSTEM" \
+              "$@"
+          }
+
+          # Import Linux rootfs models
+          LINUX_ROOTS_DIR="$ORCHESTRA_ROOT/share/roots/linux"
+          if test -d "$LINUX_ROOTS_DIR"; then
+            for ROOTFS_DIR in $(find "$LINUX_ROOTS_DIR" -mindepth 1 -maxdepth 1 -type d); do
+              ROOTFS_NAME="$(basename "$ROOTFS_DIR")"
+              MODELS=$(find "$ROOTFS_DIR" -name "*.yml" 2>/dev/null)
+              if test -n "$MODELS"; then
+                log "Exporting models from $ROOTFS_NAME to DB"
+                export-to-db "Linux" "$ROOTFS_NAME" $MODELS
+              fi
+            done
+          fi
+
+          # Import PDB models
+          PDB_DIR="$ORCHESTRA_ROOT/share/win32metadata/pdbs"
+          if test -d "$PDB_DIR"; then
+            for PDB_ARCH_DIR in $(find "$PDB_DIR" -mindepth 1 -maxdepth 1 -type d); do
+              PDB_ARCH_NAME="$(basename "$PDB_ARCH_DIR")"
+              MODELS=$(find "$PDB_ARCH_DIR" -name "*.yml" 2>/dev/null)
+              if test -n "$MODELS"; then
+                log "Exporting PDB models for $PDB_ARCH_NAME to DB"
+                export-to-db "Windows" "windows-$PDB_ARCH_NAME" $MODELS
+              fi
+            done
+          fi
+
+          # Import well-known models
+          WELL_KNOWN_DIR="$ORCHESTRA_ROOT/share/revng/test/tests/well-known-models"
+          MODELS=$(find "$WELL_KNOWN_DIR" -name "*.yml" 2>/dev/null)
+          if test -n "$MODELS"; then
+            for MODEL in $MODELS; do
+              BASENAME="$(basename "$MODEL" .yml)"
+              PLATFORM="linux-$(echo "$BASENAME" | grep -oP 'libc-\K[^-]+')"
+              log "Exporting well-known model $BASENAME to DB"
+              export-to-db "Linux" "$PLATFORM" "$MODEL"
+            done
+          fi
+
+          mkdir -p "${DESTDIR}${ORCHESTRA_ROOT}/share/revng"
+          cp "$DB_NAME" "${DESTDIR}${ORCHESTRA_ROOT}/share/revng/$DB_NAME"
