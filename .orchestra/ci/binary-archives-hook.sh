@@ -174,7 +174,7 @@ EOF
     sudo -i podman login -u "$PODMAN_REGISTRY_USER" \
         -p "$PODMAN_REGISTRY_PASSWORD" \
         "$(cut -d/ -f1 <<< "$PODMAN_IMAGE_TARGET")"
-    sudo -i podman push "$LOCAL_IMAGE" "$PODMAN_IMAGE_TARGET:$BRANCH"
+    sudo -i podman push "$LOCAL_IMAGE" "$PODMAN_IMAGE_TARGET:${BRANCH////-}"
     if [ "$BRANCH" == "master" ]; then
         sudo -i podman push "$LOCAL_IMAGE" "$PODMAN_IMAGE_TARGET:latest"
     fi

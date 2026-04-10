@@ -48,13 +48,15 @@ requirements: |-
   gql[aiohttp]==3.5.2
   https://github.com/revng/grandiso-networkx/archive/043ce4b.tar.gz
   jsonschema>=4.17.3,<4.18.0
+  jsonschema-to-typeddict>=1.4.2,<2.0
   networkx>=3.3
   pefile
   pycparser
   pydot>=3.0.2
   pyelftools
   zstandard
-  click==8.2.1
+  click>=8.3.0,<9.0
+  click-option-group>=0.5.9,<1.0
   starlette[full]>=0.52.1
 
   # This is our fork of the python-idb package that includes some fixes.
