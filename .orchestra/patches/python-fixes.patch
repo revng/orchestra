@@ -1,0 +1,33 @@
+--- a/Modules/_remote_debugging_module.c
++++ b/Modules/_remote_debugging_module.c
+@@ -872,7 +872,7 @@ _Py_RemoteDebug_GetAsyncioDebugAddress(proc_handle_t* handle)
+         PyErr_SetString(PyExc_RuntimeError, "Failed to find the AsyncioDebug section in the process.");
+         _PyErr_ChainExceptions1(exc);
+     }
+-#elif defined(__linux__)
++#elif defined(__linux__) && HAVE_PROCESS_VM_READV
+     // On Linux, search for asyncio debug in executable or DLL
+     address = search_linux_map_for_section(handle, "AsyncioDebug", "python");
+     if (address == 0) {
+--- a/Python/remote_debug.h
++++ b/Python/remote_debug.h
+@@ -891,7 +891,7 @@ _Py_RemoteDebug_GetPyRuntimeAddress(proc_handle_t* handle)
+             handle->pid);
+         _PyErr_ChainExceptions1(exc);
+     }
+-#elif defined(__linux__)
++#elif defined(__linux__) && HAVE_PROCESS_VM_READV
+     // On Linux, search for 'python' in executable or DLL
+     address = search_linux_map_for_section(handle, "PyRuntime", "python");
+     if (address == 0) {
+--- i/Modules/_hacl/include/krml/internal/target.h
++++ w/Modules/_hacl/include/krml/internal/target.h
+@@ -153,7 +153,8 @@ typedef double float64_t;
+ #  elif defined(LEGACY_MACOS)
+ #    define KRML_ALIGNED_MALLOC(X, Y) _mm_malloc(Y, X)
+ #  else
+-#    define KRML_ALIGNED_MALLOC(X, Y) aligned_alloc(X, Y)
++#    include <malloc.h>
++#    define KRML_ALIGNED_MALLOC(X, Y) memalign(X, Y)
+ #  endif
+ #endif
