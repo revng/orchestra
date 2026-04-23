@@ -8,7 +8,7 @@ dependencies:
 - libyaml
 - cython
 requirements: |-
-  --global-option=--with-libyaml
+  --config-settings='--global-option=--with-libyaml'
   pyyaml==6.0.3
 #@ end
 
