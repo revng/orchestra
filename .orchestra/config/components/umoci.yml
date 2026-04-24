@@ -1,0 +1,26 @@
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/create-component.lib.yml", "single_build_component")
+
+#@ version = "0.6.0"
+#@ hash = "b51c267ec394499e42c6fde47f240b7b7dba57ea49df0b5acd304378b82a3b71"
+
+#@yaml/text-templated-strings
+---
+#@ def umoci_args():
+configure: |
+  mkdir -p "$BUILD_DIR"
+  cd "$BUILD_DIR"
+  fetch.sh \
+    --hash 'sha256-(@= hash @)' \
+    'https://github.com/opencontainers/umoci/releases/download/v(@= version @)/umoci.linux.amd64'
+
+install: |
+  cd "$BUILD_DIR"
+  install -m 755 umoci.linux.amd64 "${DESTDIR}${ORCHESTRA_ROOT}/bin/umoci"
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  umoci: #@ single_build_component(**umoci_args())

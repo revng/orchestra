@@ -12,6 +12,7 @@ extra_cmake_args:
   - "-DClang_DIR=$ORCHESTRA_ROOT/lib64/llvm/llvm/lib/cmake/clang"
   - "-DMLIR_DIR=$ORCHESTRA_ROOT/lib64/llvm/llvm/lib/cmake/mlir"
   - "-DTARGET_CLANG=$ORCHESTRA_ROOT/link-only/bin/clang"
+  - "-DREVNG_SYSTEM_CONFIG=$ORCHESTRA_DOTDIR/support/revng.yml"
 extra_compiler_flags: #@ data.values.revng_extra_compiler_flags
 build_dependencies:
   - host-cxx-toolchain

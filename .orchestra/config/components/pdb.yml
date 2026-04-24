@@ -1,0 +1,77 @@
+#@ load("@ytt:template", "template")
+#@ load("@ytt:overlay", "overlay")
+
+#@yaml/text-templated-strings
+---
+#@ def pdb_configurations():
+- name: x86-64
+  target_triple: x86_64-pc-windows-msvc
+  vc_component: toolchain/win64-vc19/vc
+  vc_triple: x86_64-winsdk-vc19
+  arch_rsp_flags: "--arch-rsp baseSettings.x64.rsp"
+- name: i386
+  target_triple: i386-pc-windows-msvc
+  vc_component: toolchain/win32-vc19/vc
+  vc_triple: i386-winsdk-vc19
+  arch_rsp_flags: "--arch-rsp baseSettings.x86.rsp --arch-rsp baseSettings.32.rsp"
+- name: aarch64
+  target_triple: aarch64-pc-windows-msvc
+  vc_component: toolchain/win64-aarch64-vc19/vc
+  vc_triple: aarch64-winsdk-vc19
+  arch_rsp_flags: "--arch-rsp baseSettings.arm64.rsp --arch-rsp baseSettings.64.rsp"
+#@ end
+
+#@yaml/text-templated-strings
+---
+#@ def create_pdb_component(name, target_triple, vc_component, vc_triple, arch_rsp_flags):
+win32metadata/pdbs/(@= name @):
+  skip_post_install: true
+  builds:
+    default:
+      build_dependencies:
+        - clang-release
+        - (@= vc_component @)
+        - win32metadata
+        - ninja
+      configure: |
+        function log() {
+          echo "$@" > /dev/stderr;
+        }
+
+        mkdir -p "$BUILD_DIR"
+
+        log "Generating ninja build for (@= name @)"
+        python3 "$ORCHESTRA_DOTDIR/support/compile-to-pdb.py" \
+          --win32meta-root "$ORCHESTRA_ROOT/share/win32metadata" \
+          --clang "$ORCHESTRA_ROOT/bin/clang" \
+          --lld-link "$ORCHESTRA_ROOT/bin/lld-link" \
+          --vc19-include "$ORCHESTRA_ROOT/lib/vc/(@= vc_triple @)/VC/include" \
+          --target-triple "(@= target_triple @)" \
+          (@= arch_rsp_flags @) \
+          --output-dir "$BUILD_DIR"
+
+      install: |
+        function log() {
+          echo "$@" > /dev/stderr;
+        }
+
+        cd "$BUILD_DIR"
+
+        log "Building PDBs"
+        ninja -j"$(nproc)"
+
+        mkdir -p "${DESTDIR}${ORCHESTRA_ROOT}/share/win32metadata/pdbs/(@= name @)"
+        for PDB_FILE in *.pdb; do
+          if test -f "$PDB_FILE"; then
+            cp "$PDB_FILE" "${DESTDIR}${ORCHESTRA_ROOT}/share/win32metadata/pdbs/(@= name @)/"
+          fi
+        done
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  #@ for configuration in pdb_configurations():
+  _: #@ template.replace(create_pdb_component(**configuration))
+  #@ end

@@ -9,7 +9,7 @@ dependencies:
 requirements: |-
   wheel
   no-manylinux
-  setuptools
+  setuptools==80.4.0
 #@ end
 
 #@overlay/match by=overlay.all, expects=1

@@ -13,6 +13,7 @@ extra_cmake_args:
 build_dependencies:
 - host-cxx-toolchain
 dependencies:
+- python
 - host-libcxx
 #@ end
 

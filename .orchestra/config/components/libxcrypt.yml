@@ -2,7 +2,7 @@
 #@ load("@ytt:overlay", "overlay")
 #@ load("/lib/create-component.lib.yml", "single_build_component")
 
-#@ source_url = "https://github.com/besser82/libxcrypt/releases/download/v4.4.28/libxcrypt-4.4.28.tar.xz"
+#@ source_url = "https://github.com/besser82/libxcrypt/releases/download/v4.5.2/libxcrypt-4.5.2.tar.xz"
 
 #@yaml/text-templated-strings
 ---

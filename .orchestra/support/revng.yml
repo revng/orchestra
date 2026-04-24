@@ -1,0 +1,4 @@
+translation-ldflags:
+- --sysroot=$INSTALL_ROOT/link-only
+- -rpath=$INSTALL_ROOT/lib
+- -L$INSTALL_ROOT/lib
