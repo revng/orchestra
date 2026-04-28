@@ -59,6 +59,7 @@ requirements: |-
   click-option-group>=0.5.9,<1.0
   starlette[full]>=0.52.1
   psycopg[c,pool]>=3.3.3,<4.0
+  hypercorn>=0.18.0,<1.0
 
   # This is our fork of the python-idb package that includes some fixes.
   https://github.com/revng/python-idb/archive/08ba07a.tar.gz
