@@ -5,7 +5,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def qemu_component(target_suffixes, extra_cflags="", use_asan=False):
+#@ def qemu_component(target_suffixes, extra_path_prepend="", extra_build_dependencies=[], extra_cflags="", use_asan=False):
 repository: qemu
 license: LICENSE
 default_build: optimized
@@ -17,9 +17,12 @@ builds:
     (@= flavor @):
       configure: |
         mkdir -p "$BUILD_DIR"
-        cd "$BUILD_DIR";
-        # export PATH="$ORCHESTRA_ROOT/link-only/bin:$ORCHESTRA_ROOT/lib64/llvm/llvm/bin:$PATH";
-        which -a clang;
+        cd "$BUILD_DIR"
+        #! When `extra_path_prepend` is set, the hard-flags wrapper at
+        #! `link-only/bin/clang` will resolve to the clang found there (e.g.
+        #! llvm's clang) while still applying HARD_FLAGS_COMPILE so the
+        #! orchestra sysroot is used.
+        (@ if extra_path_prepend: @)export PATH="(@= extra_path_prepend @):$PATH"(@ end @)
         "$SOURCE_DIR/configure" \
           --cc="(@= data.values.regular_c_compiler @)" \
           --cxx="(@= data.values.regular_cxx_compiler @)" \
@@ -55,7 +58,9 @@ builds:
         (@= make @) install
       build_dependencies:
         - host-c-toolchain
-        - llvm
+        #@ for extra_dep in extra_build_dependencies:
+        - (@= extra_dep @)
+        #@ end
       dependencies:
         - zlib
         - glib
@@ -68,7 +73,13 @@ builds:
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  qemu: #@ qemu_component(["linux-user", "libtcg"], "-fPIC")
+  #! `qemu` builds with the default toolchain (clang from `clang-release`,
+  #! reachable via `regular_{c,cxx}_compiler`). Any compiler would do.
+  qemu: #@ qemu_component(["linux-user", "libtcg"], extra_cflags="-fPIC")
+  #! `qemu-helpers` *must* use the clang from the `llvm` component: the
+  #! `-fembed-bitcode` output has to be ABI-compatible with the LLVM bitcode
+  #! tooling we ship in `llvm`. Prepending `lib/llvm/llvm/bin` to PATH makes
+  #! the hard-flags wrapper at `link-only/bin/clang` resolve to llvm's clang.
   #! TODO: we need to make CSAA compatible with optimized code so that we can
   #!       then just add -fembed-bitcode to a regular build.
   #!       Note that it might not be hard, we haven't tried.
@@ -77,4 +88,4 @@ components:
   #!       in common code, so some extra work needs to be done there as well. If
   #!       we try to use CONFIG_LLVM_HELPERS where not allowed, we'll get a nice
   #!       "attempt to use a poisoned identifier" error.
-  qemu-helpers: #@ qemu_component(["llvm-helpers"], "-fPIC -Wno-gcc-compat -DGEN_LLVM_HELPERS -O0 -Xclang -disable-O0-optnone -fembed-bitcode")
+  qemu-helpers: #@ qemu_component(["llvm-helpers"], extra_path_prepend="$ORCHESTRA_ROOT/lib/llvm/llvm/bin", extra_build_dependencies=["llvm"], extra_cflags="-fPIC -Wno-gcc-compat -DGEN_LLVM_HELPERS -O0 -Xclang -disable-O0-optnone -fembed-bitcode")
