@@ -171,6 +171,10 @@ FULL_PACKAGES+=(inkscape)
 #
 FULL_PACKAGES+=(fakeroot)
 
+#
+# Needed to run tests against the PRSS
+#
+FULL_PACKAGES+=(postgresql-18)
 
 #
 # Actual installation of packages
@@ -187,21 +191,44 @@ else
 fi
 
 export DEBIAN_FRONTEND=noninteractive
-apt-get -qq update
+
+# When in standard or full mode we need to download the keys for additional
+# repos, install wget and ca-certificates
+if [[ "$INSTALL_TYPE" = "standard" || "$INSTALL_TYPE" = "full" ]]; then
+  apt-get -qq update
+  apt-get -qq install --no-install-recommends --yes ca-certificates wget
+fi
 
 if [[ "$INSTALL_TYPE" = "standard" || "$INSTALL_TYPE" = "full" ]]; then
   # Add the official wine APT repo for it to be installed later
-  apt-get -qq install --no-install-recommends --yes ca-certificates wget
   dpkg --add-architecture i386
   mkdir -p /etc/apt/keyrings
   chmod 755 /etc/apt/keyrings
   wget -O /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key
   WINE_SOURCES="https://dl.winehq.org/wine-builds/ubuntu/dists/$UBUNTU_CODENAME/winehq-$UBUNTU_CODENAME.sources"
   wget -NP /etc/apt/sources.list.d/ "$WINE_SOURCES"
-  apt-get -qq update
 fi
 
+if [[ "$INSTALL_TYPE" = "full" ]]; then
+  wget -O /etc/apt/keyrings/postgres.key https://www.postgresql.org/media/keys/ACCC4CF8.asc
+  cat - > /etc/apt/sources.list.d/postgres.sources <<EOF
+Types: deb
+URIs: https://apt.postgresql.org/pub/repos/apt
+Suites: ${UBUNTU_CODENAME}-pgdg
+Architectures: amd64
+Components: main
+Signed-By: /etc/apt/keyrings/postgres.key
+EOF
+fi
+
+apt-get -qq update
 apt-get -qq install --no-install-recommends --yes --allow-downgrades "${PACKAGES_TO_INSTALL[@]}"
+
+# Postgres does not install on $PATH, add a symlink
+if [[ "$INSTALL_TYPE" = "full" ]]; then
+  ln -sf /usr/lib/postgresql/18/bin/initdb   /usr/bin/initdb
+  ln -sf /usr/lib/postgresql/18/bin/postgres /usr/bin/postgres
+fi
 
 # Install twine manually, as the version provided by the ubuntu
 # repositories is too old
