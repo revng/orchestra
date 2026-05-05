@@ -68,6 +68,7 @@ cp -a "$BASE_DIR/README.md" .
 
 echo "Copying revng"
 cp -a "$BASE_DIR/revng" revng
+cp -a "$BASE_DIR/revng" revng2
 
 
 cd "${DISTRIBUTABLE_PATH}/root"
@@ -127,11 +128,12 @@ find . -type d -empty -delete
 
 if [ "$RUN_TESTS" -eq 1 ]; then
   TEST_CMD=(
-    ./revng
-    graphql
-    --analyses-list=revng-initial-auto-analysis
-    --produce-artifacts
+    ./revng2
+    quick
+    artifact
+    emit-c
     "$TEST_BINARY"
+    -o /dev/null
   )
 
   # Orchestra adds quite a few environment variables, which we want to avoid to use when doing self-test
