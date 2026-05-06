@@ -20,6 +20,18 @@
 
 #@yaml/text-templated-strings
 ---
+#@ def _cmake_python_options():
+- -DPython_ROOT_DIR="$ORCHESTRA_ROOT"
+- -DPython_FIND_STRATEGY=LOCATION
+- -DPython_FIND_VIRTUALENV=STANDARD
+- -DPython3_ROOT_DIR="$ORCHESTRA_ROOT"
+- -DPython3_FIND_STRATEGY=LOCATION
+- -DPython3_FIND_VIRTUALENV=STANDARD
+#@ end
+#@ cmake_python_options = _cmake_python_options()
+
+#@yaml/text-templated-strings
+---
 #@ def cmdline_cmake_base_configuration(
 #@        cmake_build_type=mandatory,
 #@        extra_compiler_flags="",
@@ -33,7 +45,7 @@
 - -DCMAKE_BUILD_RPATH="$RPATH_PLACEHOLDER/lib:$RPATH_PLACEHOLDER/(@= data.values.sanitizers_libs_path @):$RPATH_PLACEHOLDER/lib/revng/analyses"
 - -DCMAKE_INSTALL_RPATH="$RPATH_PLACEHOLDER/lib:$RPATH_PLACEHOLDER/(@= data.values.sanitizers_libs_path @):$RPATH_PLACEHOLDER/lib/revng/analyses"
 - -DCMAKE_BUILD_TYPE="(@= cmake_build_type @)"
-- -DPython_FIND_VIRTUALENV=STANDARD
+- #@ template.replace(cmake_python_options)
 #@ end
 
 #@ cmake_release_base_configuration = expand_args(cmdline_cmake_base_configuration(cmake_build_type="Release"))
