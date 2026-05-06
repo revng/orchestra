@@ -1,9 +1,11 @@
 #@ load("@ytt:data", "data")
 #@ load("@ytt:overlay", "overlay")
+#@ load("@ytt:template", "template")
 #@ load("/components/llvm-common.lib.yml", "configure_llvm")
 #@ load("/lib/optimization-flavors.lib.yml", "typical_project_flavors")
 #@ load("/lib/fn-args.lib.yml", "mandatory")
 #@ load("/lib/ninja.lib.yml", "ninja")
+#@ load("/lib/cmake.lib.yml", "cmake_python_options")
 
 #@yaml/text-templated-strings
 ---
@@ -16,6 +18,7 @@
 - -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT/lib/llvm/llvm"
 - -DLLVM_USE_LINKER=mold
 - -DLLVM_ENABLE_ZSTD=ON
+- #@ template.replace(cmake_python_options)
 #@ end
 
 #@yaml/text-templated-strings
