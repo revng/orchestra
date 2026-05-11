@@ -18,7 +18,7 @@
 - -DCMAKE_INSTALL_PREFIX="$ORCHESTRA_ROOT/lib/llvm/llvm"
 - -DLLVM_USE_LINKER=mold
 - -DLLVM_ENABLE_ZSTD=ON
-- #@ template.replace(cmake_python_options)
+- #@ template.replace(cmake_python_options(3))
 #@ end
 
 #@yaml/text-templated-strings
