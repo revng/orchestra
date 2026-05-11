@@ -1,6 +1,6 @@
 #@ load("@ytt:overlay", "overlay")
 #@ load("@ytt:data", "data")
-#@ load("/lib/cmake.lib.yml", "cmake_boost_configuration", "typical_cmake_builds")
+#@ load("/lib/cmake.lib.yml", "cmake_boost_configuration", "typical_cmake_builds", "cmake_python_options")
 #@ load("@ytt:template", "template")
 
 ---
@@ -8,6 +8,7 @@
 test: true
 extra_cmake_args:
   - #@ template.replace(cmake_boost_configuration)
+  - #@ template.replace(cmake_python_options(3))
   - "-DLLVM_DIR=$ORCHESTRA_ROOT/lib64/llvm/llvm/lib/cmake/llvm"
   - "-DClang_DIR=$ORCHESTRA_ROOT/lib64/llvm/llvm/lib/cmake/clang"
   - "-DMLIR_DIR=$ORCHESTRA_ROOT/lib64/llvm/llvm/lib/cmake/mlir"

@@ -1,6 +1,7 @@
 #@ load("@ytt:data", "data")
 #@ load("@ytt:overlay", "overlay")
-#@ load("/lib/cmake.lib.yml", "typical_cmake_builds")
+#@ load("@ytt:template", "template")
+#@ load("/lib/cmake.lib.yml", "typical_cmake_builds", "cmake_python_options")
 
 ---
 #@ def build_args():
@@ -10,6 +11,7 @@ pre_configure_script: |
 configure_dir: '"$SOURCE_DIR/standalone"'
 extra_cmake_args:
 - -DBUILD_SHARED_LIBS=ON
+- #@ template.replace(cmake_python_options(""))
 build_dependencies:
 - host-cxx-toolchain
 dependencies:
