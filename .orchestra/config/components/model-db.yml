@@ -256,6 +256,9 @@ components:
             PLATFORM="$1"
             shift
 
+            PREFIX="$1"
+            shift
+
             revng \
               model \
               export \
@@ -263,6 +266,7 @@ components:
               --db "$DB_NAME" \
               --platform "$PLATFORM" \
               --operating-system "$OPERATING_SYSTEM" \
+              --prefix "$PREFIX" \
               "$@"
           }
 
@@ -274,7 +278,7 @@ components:
               MODELS=$(find "$ROOTFS_DIR" -name "*.yml" 2>/dev/null)
               if test -n "$MODELS"; then
                 log "Exporting models from $ROOTFS_NAME to DB"
-                export-to-db "Linux" "$ROOTFS_NAME" $MODELS
+                export-to-db "Linux" "$ROOTFS_NAME" "$ROOTFS_DIR" $MODELS
               fi
             done
           fi
@@ -287,7 +291,7 @@ components:
               MODELS=$(find "$PDB_ARCH_DIR" -name "*.yml" 2>/dev/null)
               if test -n "$MODELS"; then
                 log "Exporting PDB models for $PDB_ARCH_NAME to DB"
-                export-to-db "Windows" "windows-$PDB_ARCH_NAME" $MODELS
+                export-to-db "Windows" "windows-$PDB_ARCH_NAME" "$PDB_ARCH_DIR" $MODELS
               fi
             done
           fi
@@ -300,7 +304,7 @@ components:
               BASENAME="$(basename "$MODEL" .yml)"
               PLATFORM="linux-$(echo "$BASENAME" | grep -oP 'libc-\K[^-]+')"
               log "Exporting well-known model $BASENAME to DB"
-              export-to-db "Linux" "$PLATFORM" "$MODEL"
+              export-to-db "Linux" "$PLATFORM" "$WELL_KNOWN_DIR" "$MODEL"
             done
           fi
 
