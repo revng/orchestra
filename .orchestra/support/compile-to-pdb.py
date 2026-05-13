@@ -195,8 +195,8 @@ def main():
 
         # Rules
         f.write("rule cc\n")
-        f.write("  command = CLANG_DEBUG_INFO_ALLOWED_FILES=$allowed_files"
-                " $clang @$compile_rsp -o $out $in\n")
+        f.write("  command = $clang @$compile_rsp $allowed_flags"
+                " -o $out $in\n")
         f.write("  description = CC $partition\n\n")
 
         # Link .obj into a dummy DLL just to produce the PDB.
@@ -222,9 +222,13 @@ def main():
             dll_e = esc(obj_dir / f"{name}.dll")
             pdb_e = esc(output_dir / f"{name}.pdb")
 
+            allowed_flags = " ".join(
+                f"-fdebug-info-allowed-file={esc(p)}" for p in allowed
+            )
+
             f.write(f"build {obj_e}: cc {cpp_e}\n")
             f.write(f"  partition = {name}\n")
-            f.write(f"  allowed_files = {':'.join(allowed)}\n")
+            f.write(f"  allowed_flags = {allowed_flags}\n")
 
             f.write(f"build {dll_e} | {pdb_e}: link {obj_e}\n")
             f.write(f"  pdb = {pdb_e}\n")

@@ -40,8 +40,11 @@ win32metadata/pdbs/(@= name @):
 
         mkdir -p "$BUILD_DIR"
 
+        COMPILE_TO_PDB="$ORCHESTRA_DOTDIR/support/compile-to-pdb.py"
+        echo "5b3682a678a6d61ab6455bdd85c5dddaaa5b4b68faa999db568cbcd0a672b0ce ${COMPILE_TO_PDB}" | sha256sum -c -
+
         log "Generating ninja build for (@= name @)"
-        python3 "$ORCHESTRA_DOTDIR/support/compile-to-pdb.py" \
+        python3 "${COMPILE_TO_PDB}" \
           --win32meta-root "$ORCHESTRA_ROOT/share/win32metadata" \
           --clang "$ORCHESTRA_ROOT/bin/clang" \
           --lld-link "$ORCHESTRA_ROOT/bin/lld-link" \
