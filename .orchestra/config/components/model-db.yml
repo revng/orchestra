@@ -197,6 +197,11 @@ configure_body: |-
   WELL_KNOWN_DIR="$ORCHESTRA_ROOT/share/revng/test/tests/well-known-models"
 
   for BINARY in "$WELL_KNOWN_DIR/"*revng-qa.compiled-with-debug-info-*; do
+    # Skip artifacts left in the install destination by a previous run
+    # (e.g. our own *.yml outputs) — only re-import real ELFs.
+    case "$BINARY" in
+      *.yml) continue ;;
+    esac
     BASENAME="$(basename "$BINARY")"
     OUTPUT="$OUTPUT_DIR/${BASENAME}.yml"
     mkdir -p "$(dirname "$OUTPUT")"
