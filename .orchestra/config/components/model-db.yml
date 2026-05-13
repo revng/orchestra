@@ -32,17 +32,20 @@
 #!       On the other hand, `win32metadata` is rather information rich and, since
 #!       the Windows API only tends to grow, it's rather backward-compatible.
 
-#! List of Linux rootfs configurations (must match rootfs.yml)
-#@ linux_rootfs_names = [
-#@   "ubuntu-20-04-x86-64",
-#@   "ubuntu-22-04-x86-64",
-#@   "ubuntu-24-04-x86-64",
-#@   "ubuntu-24-04-i386",
-#@   "ubuntu-24-04-arm",
-#@   "ubuntu-24-04-aarch64",
-#@   "ubuntu-24-04-s390x",
-#@   "debian-bookworm-mipsel",
-#@   "debian-buster-mips",
+#! List of Linux rootfs configurations (must match rootfs.yml). The
+#! `architecture` here uses revng's model::Architecture names (not the
+#! Debian package architectures used in rootfs.yml) so they can be plugged
+#! straight into revng's configuration.yml at build time.
+#@ linux_rootfs_specs = [
+#@   {"name": "ubuntu-20-04-x86-64", "architecture": "x86_64"},
+#@   {"name": "ubuntu-22-04-x86-64", "architecture": "x86_64"},
+#@   {"name": "ubuntu-24-04-x86-64", "architecture": "x86_64"},
+#@   {"name": "ubuntu-24-04-i386", "architecture": "x86"},
+#@   {"name": "ubuntu-24-04-arm", "architecture": "arm"},
+#@   {"name": "ubuntu-24-04-aarch64", "architecture": "aarch64"},
+#@   {"name": "ubuntu-24-04-s390x", "architecture": "systemz"},
+#@   {"name": "debian-bookworm-mipsel", "architecture": "mipsel"},
+#@   {"name": "debian-buster-mips", "architecture": "mips"},
 #@ ]
 
 #! List of PDB architectures (must match pdb.yml)
@@ -93,7 +96,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def rootfs_models_args(name):
+#@ def rootfs_models_args(name, architecture):
 #@ path = "share/roots/linux/" + name
 name: rootfs/(@= name @)/models
 build_dependencies:
@@ -110,6 +113,19 @@ pre_install: |-
     mkdir -p "$XDG_CACHE_HOME/revng/debug-symbols/elf"
     cp -a "$SYMBOLS_CACHE"/* "$XDG_CACHE_HOME/revng/debug-symbols/elf/"
   fi
+
+  # Tell revng to treat this rootfs as a search root for debug info.
+  # Without it, DwarfImporter never reaches the build-id/.gnu_debuglink
+  # finder and the resulting models would have no per-function prototypes.
+  export XDG_CONFIG_HOME="$BUILD_DIR/config"
+  mkdir -p "$XDG_CONFIG_HOME/revng"
+  cat > "$XDG_CONFIG_HOME/revng/configuration.yml" <<EOF
+  rootfs:
+    (@= name @):
+      path: $SOURCE_DIR
+      architecture: (@= architecture @)
+      operating-system: Linux
+  EOF
 configure_body: |-
   # Set to 10 for debugging purposes
   MAX_BINARIES=0
@@ -190,8 +206,8 @@ configure_body: |-
 
 #@ def model_db_dependencies():
 #@ deps = ["revng", "test/revng-qa/models"]
-#@ for name in linux_rootfs_names:
-#@   deps.append("rootfs/" + name + "/models")
+#@ for spec in linux_rootfs_specs:
+#@   deps.append("rootfs/" + spec["name"] + "/models")
 #@ end
 #@ for arch in pdb_archs:
 #@   deps.append("win32metadata/pdbs/" + arch + "/models")
@@ -203,8 +219,8 @@ configure_body: |-
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  #@ for name in linux_rootfs_names:
-  _: #@ template.replace(create_models_component(**rootfs_models_args(name)))
+  #@ for spec in linux_rootfs_specs:
+  _: #@ template.replace(create_models_component(**rootfs_models_args(**spec)))
   #@ end
   #@ for arch in pdb_archs:
   _: #@ template.replace(create_models_component(**pdb_models_args(arch)))
