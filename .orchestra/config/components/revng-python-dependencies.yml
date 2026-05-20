@@ -17,15 +17,14 @@ requirements: |-
   black>=25.1.0,<26.0
   flake8>=7.0.0,<8.0
   flake8-breakpoint>=1.1.0,<2.0
-  flake8-builtins>=2.1.0,<3.0
+  flake8-builtins>=3.1.0,<4.0
   flake8-comprehensions>=3.10.1,<4.0
   flake8-eradicate>=1.4.0,<2.0
-  flake8-return>=1.2.0,<2.0
   flake8-simplify>=0.19.3,<1.0
   pep8-naming>=0.13.3,<1.0
-  isort>=5.11.4,<6.0
+  isort>=8.0.0,<9.0
   codespell>=2.2.2,<3.0
-  mypy==1.17.0
+  mypy==1.20.2
 
   # Python types, needed for mypy to work correctly
   boto3-stubs[s3]
@@ -47,7 +46,7 @@ requirements: |-
   Jinja2
   gql[aiohttp]==3.5.2
   https://github.com/revng/grandiso-networkx/archive/043ce4b.tar.gz
-  jsonschema>=4.17.3,<4.18.0
+  https://github.com/revng/jsonschema/archive/c17ffb2.tar.gz
   jsonschema-to-typeddict>=1.4.2,<2.0
   networkx>=3.3
   pefile

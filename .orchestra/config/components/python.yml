@@ -6,7 +6,7 @@
 #@yaml/text-templated-strings
 ---
 #@ def python_component():
-#@ python_version = "3.12.7"
+#@ python_version = "3.14.4"
 #@ source_url = "https://www.python.org/ftp/python/" + python_version + "/Python-" + python_version + ".tar.xz"
 license: LICENSE
 builds:
@@ -21,6 +21,7 @@ builds:
         "$BUILD_DIR/Python/initconfig.c"
 
       cd "$BUILD_DIR"
+      patch -p1 < "${ORCHESTRA_DOTDIR}/patches/python-fixes.patch"
 
       # orchestra's libc has a buggy getaddrinfo; we expect users to have a newer libc
       ac_cv_buggy_getaddrinfo=no ./configure \
@@ -29,7 +30,6 @@ builds:
         --enable-optimizations \
         --enable-shared \
         --enable-ipv6 \
-        --disable-test-modules \
         --with-ensurepip=install \
         --with-lto \
         --with-readline \
@@ -51,13 +51,36 @@ builds:
       ln -s idle3 "${INSTALLDIR}"/bin/idle
       ln -s pydoc3 "${INSTALLDIR}"/bin/pydoc
 
+      PY_VER=$(echo "(@= python_version @)" | grep -Po '^\d\.\d+')
+      PYTHON_DIR="${INSTALLDIR}/lib/python${PY_VER}"
+
       # Python installs pip alongside itself, this means that there will be
       # some modules in `lib/python3.XX/site-packages` present due to this
       # component. Account for them in the orchestra infrastructure.
       mkdir -p "${INSTALLDIR}/share/orchestra/python-packages"
-      find "${INSTALLDIR}/lib/python3.12/site-packages" -maxdepth 1 -type d -printf '%f\n' | \
+      find "${PYTHON_DIR}/site-packages" -maxdepth 1 -type d -printf '%f\n' | \
         grep -P '^[A-Za-z][\w_]*$' > \
           "${INSTALLDIR}/share/orchestra/python-packages/python.txt"
+
+      # Remove the test directories, this contributes ~150MB to the install
+      # size without any practical benefit for us
+      rm -r "${PYTHON_DIR}/test" "${PYTHON_DIR}/idlelib/idle_test"
+
+      if [ "$RUN_TESTS" -eq 1 ]; then
+        LD_LIBRARY_PATH=$(realpath .) \
+          ./python -m test -j0 \
+            `# A whole bunch of these fail because we disabled USERSITE` \
+            -x test_embed \
+            -i test.test_cmd_line.CmdLineTest.test_empty_PYTHONPATH_issue16309 \
+            `# This fails due to libc being in 'link-only'` \
+            -i test.test_ctypes.test_find.FindLibraryLinux.test_find_library_with_ld \
+            `# This fails due to outdated glibc` \
+            -i test.test_posix.PosixTester.test_makedev \
+            `# This hangs indefinitely when running in a container, cause unknown` \
+            -i 'test.test_socket.RDSTest.*' \
+            `# This sometimes fails when run in a container` \
+            -i test.test_struct.StructTest.test_endian_table_init_subinterpreters
+      fi
     build_dependencies:
       - host-c-toolchain
     dependencies:
@@ -70,6 +93,7 @@ builds:
       - sqlite
       - libb2
       - xz
+      - zstd
       - host-libc
 #@ end
 
