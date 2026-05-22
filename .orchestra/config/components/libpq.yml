@@ -1,0 +1,49 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/create-component.lib.yml", "single_build_component")
+#@ load("/lib/make.lib.yml", "make")
+
+#@ pg_version = "18.3"
+#@ source_url = "https://ftp.postgresql.org/pub/source/v" + pg_version + "/postgresql-" + pg_version + ".tar.bz2"
+
+#@yaml/text-templated-strings
+---
+#@ def libpq_args():
+license: COPYRIGHT
+configure: |
+  mkdir -p "$BUILD_DIR"
+  extract.sh --into "$BUILD_DIR" (@= source_url @)
+
+  cd "$BUILD_DIR"
+  ./configure \
+    --prefix="$ORCHESTRA_ROOT" \
+    --with-openssl \
+    --without-readline \
+    --without-icu \
+    --without-zlib
+#! Run the `make` commands manually, if running `make` in the `BUILD_DIR` the
+#! entirety of postgres would be built, but we're only interested in libpq.
+install: |
+  cd "$BUILD_DIR"
+
+  (@= make @) -C src/include
+  (@= make @) -C src/interfaces/libpq
+
+  (@= make @) -C src/include install DESTDIR="$DESTDIR"
+  (@= make @) -C src/interfaces/libpq install DESTDIR="$DESTDIR"
+
+  rm "${DESTDIR}${ORCHESTRA_ROOT}/lib/libpq.a"
+  rm -r "${DESTDIR}${ORCHESTRA_ROOT}/include/postgresql/server"
+  rm -r "${DESTDIR}${ORCHESTRA_ROOT}/share/postgresql"
+build_dependencies:
+  - host-c-toolchain
+dependencies:
+  - host-libc
+  - openssl
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  libpq: #@ single_build_component(**libpq_args())

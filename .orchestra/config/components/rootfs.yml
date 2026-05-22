@@ -1,5 +1,6 @@
 #@ load("@ytt:template", "template")
 #@ load("@ytt:overlay", "overlay")
+#@ load("/lib/ninja.lib.yml", "ninja")
 
 #@yaml/text-templated-strings
 ---
@@ -339,13 +340,24 @@ rootfs/(@= name @)/debug-info:
         mkdir -p "$XDG_CACHE_HOME"
 
         log "Fetching debug info for (@= name @)..."
-        find "$ROOTFS_DIR" -type f | while read ELF_FILE; do
-          if head -c 4 "$ELF_FILE" 2>/dev/null | grep -q $'\x7fELF'; then
-            log "  $ELF_FILE"
-            revng model fetch-debuginfo "$ELF_FILE" || true
-          fi
-        done || true
+        mkdir -p .flags
 
+        cat > build.ninja <<EOF
+        rule fetch_debuginfo
+          command = revng model fetch-debuginfo \$in || true && touch \$out
+          description = fetch-debuginfo \$in
+        EOF
+
+        find "$ROOTFS_DIR" -type f \( ! -path "$ROOTFS_DIR/symbols-cache/*" \) | \
+        while read -r ELF_FILE; do
+          if head -c 4 "$ELF_FILE" 2>/dev/null | grep -q $'\x7fELF'; then
+            HASH=$(sha256sum <<< "$ELF_FILE" | cut -d' ' -f1)
+            ESCAPED=$(sed -e 's| |$ |g' <<< "$ELF_FILE")
+            echo "build .flags/$HASH: fetch_debuginfo $ESCAPED" >> build.ninja
+          fi
+        done
+
+        (@= ninja @)
         log "Debug info fetching complete."
 
         SYMBOLS_SRC="$BUILD_DIR/cache/revng/debug-symbols/elf"
