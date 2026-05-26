@@ -53,6 +53,7 @@ github_installation_id = config["github_installation_id"]
 default_user_target_components = config["default_user_target_components"]
 target_components = config["target_components"]
 revng_orchestra_repo_url = config["revng_orchestra_repo_url"]
+disable_pr_ci = config["disable_pr_ci"]
 
 _installation_token_info = None
 
@@ -372,6 +373,9 @@ def gitlab_hook():
 
     elif event == "Merge Request Hook" and attributes.get("action", "") in ("open", "update") \
             and attributes.get("state", "") == "opened":
+        if disable_pr_ci:
+            return "PR CI jobs have been disabled", 202
+
         trigger_ci(
             data["user"]["username"],
             attributes["source"]["git_http_url"] + " " + attributes["source"]["git_ssh_url"],
@@ -418,6 +422,9 @@ def github_hook():
     event = headers.get("X-Github-Event", "")
 
     if event == "pull_request" and data.get("action", "") in ('opened', 'synchronize'):
+        if disable_pr_ci:
+            return "PR CI jobs have been disabled", 202
+
         pull_request = data["pull_request"]
 
         username = data["sender"]["login"]
