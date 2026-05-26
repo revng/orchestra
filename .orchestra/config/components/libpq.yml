@@ -26,9 +26,7 @@ configure: |
 install: |
   cd "$BUILD_DIR"
 
-  (@= make @) -C src/include
-  (@= make @) -C src/interfaces/libpq
-
+  (@= make @) -C src/bin/pg_config install DESTDIR="$DESTDIR"
   (@= make @) -C src/include install DESTDIR="$DESTDIR"
   (@= make @) -C src/interfaces/libpq install DESTDIR="$DESTDIR"
 
