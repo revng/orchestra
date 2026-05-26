@@ -22,7 +22,7 @@ cd "$ORCHESTRA_ROOT"
 for component in "$@"; do
   echo "$component"
   orc inspect component dependencies --installed --runtime "$component"
-done | sort | uniq | \
+done | grep -v '^\s*$' | sort | uniq | \
 while IFS= read -r component; do
   orc inspect component installed-files "${component}"
 done | \

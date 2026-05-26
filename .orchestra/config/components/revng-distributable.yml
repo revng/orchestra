@@ -10,7 +10,7 @@ configure: |
   mkdir -p "$BUILD_DIR"
 install: |
   INSTALLER="$ORCHESTRA_DOTDIR/support/revng-distributable/install.sh"
-  echo "c26cfa7a562472e9db3148804d77cc11f1e273956c4c2331f1466dfc09555a30 $INSTALLER" | \
+  echo "d9e98a9209b0822d0e8a96cf7a4685d97a7e4bb8fb1355ad41ac9c6c69dd187b $INSTALLER" | \
     sha256sum --quiet -c -
   "$INSTALLER" "(@= name @)" "(@= "\" \"".join(components) @)"
 build_dependencies:
@@ -23,5 +23,5 @@ skip_post_install: true
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  revng-distributable: #@ single_build_component(**revng_distributable("revng", ["revng"]))
-  revng-distributable-public-demo: #@ single_build_component(**revng_distributable("revng-public-demo", ["revng", "toolchain/host/gcc"]))
+  revng-distributable: #@ single_build_component(**revng_distributable("revng", ["revng", "model-db"]))
+  revng-distributable-public-demo: #@ single_build_component(**revng_distributable("revng-public-demo", ["revng", "toolchain/host/gcc", "model-db"]))
