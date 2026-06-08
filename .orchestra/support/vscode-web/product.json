@@ -5,7 +5,7 @@
         "applicationName": "revng-web",
         "dataFolderName": ".revng-web",
         "extensionEnabledApiProposals": {
-            "revng.revng": ["fileSearchProvider", "fileSearchProviderNew"]
+            "revng.revng": ["fileSearchProvider", "fileSearchProvider2"]
         }
     },
     "webviewEndpoint": "/static/out/vs/workbench/contrib/webview/browser/pre/",

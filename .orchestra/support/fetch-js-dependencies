@@ -12,7 +12,7 @@ from binascii import hexlify
 from dataclasses import dataclass
 from pathlib import Path
 from subprocess import DEVNULL, PIPE, run
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 YARN_DESERIALIZE_LOCKFILE = """
 const fs = require('fs');
@@ -29,24 +29,49 @@ class PackageInfo:
     hash_: str
 
 
-def decode_hash(string: str) -> str:
+def _decode_hash(string: str) -> Tuple[str, str]:
     algo, hash_ = string.split("-", 1)
     decoded_hash = hexlify(b64decode(hash_)).decode("utf-8")
-    return f"{algo}-{decoded_hash}"
+    return (algo, decoded_hash)
+
+
+def decode_integrity(string: str) -> str:
+    hash_map = {}
+    if " " in string:
+        for part in string.split(" "):
+            algo, hash_ = _decode_hash(part)
+            hash_map[algo] = hash_
+    else:
+        algo, hash_ = _decode_hash(string)
+        hash_map[algo] = hash_
+
+    for algo in ("sha512", "sha1"):
+        if algo in hash_map:
+            return f"{algo}-{hash_map[algo]}"
+
+    raise ValueError(f"Unknown hashes: {list(hash_map.keys())}")
 
 
 def parse_npm_dependencies(lockfile) -> List[PackageInfo]:
     info = []
     for raw_name, dep_info in lockfile["packages"].items():
-        if raw_name == "":
+        if (
+            raw_name == ""
+            or not raw_name.startswith("node_modules/")
+            or dep_info.get("link") is True
+            or dep_info.get("extraneous") is True
+        ):
             continue
 
-        name = raw_name.rsplit("node_modules/", 1)[-1]
-        if dep_info.get("resolved") is not None:
+        name = dep_info.get("name", raw_name.split("node_modules/")[-1])
+        if "resolved" in dep_info:
             dep_url = dep_info["resolved"]
-            dep_hash = decode_hash(dep_info["integrity"])
+            if "integrity" in dep_info:
+                dep_hash = decode_integrity(dep_info["integrity"])
+            else:
+                dep_hash = "none"
             basename = os.path.basename(dep_url)
-            if match := re.match(r"@(?P<prefix>[\w_-]*)/", name):
+            if match := re.match(r"@(?P<prefix>[\w\._-]*)/", name):
                 basename = f"{match['prefix']}-{basename}"
             info.append(PackageInfo(dep_url, basename, dep_hash))
         elif dep_info.get("peer", False) is True or dep_info.get("optional", False) is True:
@@ -79,7 +104,7 @@ def parse_yarn_dependencies(parsed_lockfile: Dict[str, dict]):
                 # We want to put the prefix only if it's not a git repo checkout
                 basename = f"{match['prefix']}-{basename}"
             if "integrity" in dep_info:
-                dep_hash = decode_hash(dep_info["integrity"])
+                dep_hash = decode_integrity(dep_info["integrity"])
             else:
                 dep_hash = "none"
             info.append(PackageInfo(dep_url, basename, dep_hash))

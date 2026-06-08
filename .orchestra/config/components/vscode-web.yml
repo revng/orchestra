@@ -27,17 +27,20 @@ builds:
         --exclude-from=<(git -C "$SOURCE_DIR" ls-files --exclude-standard -oi --directory) \
         "$SOURCE_DIR/" .
 
-      true > "$BUILD_DIR/yarn-cat-lock"
-      find . -type f -name yarn.lock ! -path '*/node_modules/*' -printf '%h\n' | sort | \
+      true > "$BUILD_DIR/npm-cat-lock"
+      find . -type f -name package-lock.json ! -path '*/node_modules/*' -printf '%h\n' | \
+      sort | \
       while IFS= read -r directory; do
         pushd "$directory" &> /dev/null
-        cat yarn.lock >> "$BUILD_DIR/yarn-cat-lock"
-        "$ORCHESTRA_DOTDIR"/support/fetch-js-dependencies yarn
+        if [[ "$directory" != */test/* ]]; then
+          cat package-lock.json >> "$BUILD_DIR/npm-cat-lock"
+        fi
+        "$ORCHESTRA_DOTDIR"/support/fetch-js-dependencies npm
         popd &> /dev/null
       done
 
       cd "$BUILD_DIR"
-      sha256sum yarn-cat-lock > yarn-cat-lock.sha256
+      sha256sum npm-cat-lock > npm-cat-lock.sha256
 
     install: |
       cd "$BUILD_DIR/vscode"
@@ -45,28 +48,34 @@ builds:
         --exclude-from=<(git -C "$SOURCE_DIR" ls-files --exclude-standard -oi --directory) \
         "$SOURCE_DIR/" .
 
-      true > "$BUILD_DIR/yarn-cat-lock"
-      find . -type f -name yarn.lock ! -path '*/node_modules/*' -printf '%h\n' | sort | \
+      if [ -f "$BUILD_DIR/npm-cat-lock" ]; then
+        mv "$BUILD_DIR/npm-cat-lock" "$BUILD_DIR/npm-cat-lock.old"
+      fi
+      find . -type f -name package-lock.json ! -path '*/node_modules/*' ! -path '*/test/*' -printf '%h\n' | \
+      sort | \
       while IFS= read -r directory; do
-        cat "$directory/yarn.lock" >> "$BUILD_DIR/yarn-cat-lock"
+        cat "$directory/package-lock.json" >> "$BUILD_DIR/npm-cat-lock"
       done
 
       pushd "$BUILD_DIR" &> /dev/null
-      if ! sha256sum --quiet -c yarn-cat-lock.sha256; then
+      if ! sha256sum --quiet -c npm-cat-lock.sha256; then
         echo "One or more package locks have changed since configure, please reconfigure or clean" > /dev/stderr
         exit 1
       fi
       popd &> /dev/null
 
+
+      export ORCHESTRA_NODE_CACHE="$SOURCE_ARCHIVES/npm:$ORCHESTRA_NODE_CACHE"
       # Install dependencies, this process is mostly offline with the following exceptions
       # (to the best of our knowledge):
       # * vscode-web, when building electron targets, will download the prebuilt electron for the
       #   target to bundle with the build js files (this will be accounted for when building
       #   targets using electron)
       npm_config_nodedir="$ORCHESTRA_ROOT" \
+      VSCODE_SKIP_NODE_VERSION_CHECK=1 \
       ELECTRON_SKIP_BINARY_DOWNLOAD=1 \
       PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
-        yarn
+        npm install
 
       # Build vscode
       revng/web/build.sh \
