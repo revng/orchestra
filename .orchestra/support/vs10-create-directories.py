@@ -11,7 +11,7 @@ def log(message):
     sys.stderr.write(message + "\n")
 
 def post_pipe(name):
-    return name.split("|")[1] if "|" in name else name
+    return (name.split("|")[1] if "|" in name else name).strip()
 
 def visit(tree, entry, prefix, result):
     name = post_pipe(tree[entry][0])
