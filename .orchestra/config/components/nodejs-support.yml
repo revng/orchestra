@@ -8,6 +8,7 @@
 #@ def nodejs_support_args():
 dependencies:
   - nodejs
+  - python
 configure: |
   JS_DIR="$ORCHESTRA_DOTDIR/support/nodejs-support"
   mkdir -p "$BUILD_DIR"
