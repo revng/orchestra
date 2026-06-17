@@ -35,7 +35,9 @@
         (@- end @)
 
         ninja install
-      build_dependencies: #@ options["build_dependencies"]
+      build_dependencies:
+      - revng-qa
+      - #@ template.replace(options["build_dependencies"])
 #@ end
 
 #@ def revng_qa_test():
@@ -43,7 +45,6 @@ configure_args: --target-type 'revng-qa\..*'
 build_dependencies:
   - ninja
   - glibc
-  - revng-qa
   - toolchain/win32-vc16/vc
   - toolchain/win32-vc19/vc
   - toolchain/win64-vc19/vc
@@ -59,7 +60,6 @@ configure_args: --target-type 'revng\..*'
 build_dependencies:
   - ninja
   - revng
-  - revng-qa
   - test/revng-qa
   - clang-release
   - nodejs-support
@@ -77,7 +77,6 @@ pre_install: |
 configure_args: --target-type 'revng-db\..*'
 build_dependencies:
   - ninja
-  - revng-qa
   - revng
   - model-db
 #@ end
