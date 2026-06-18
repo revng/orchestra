@@ -11,7 +11,8 @@ components:
           - test/revng-prss
           - test/revng-db
           - test/revng
-          - revng-vscode-web
+          - revng-ui-web
+          - revng-ui-native
           - llvm-documentation
           - revng-distributable
           - revng-distributable-public-demo

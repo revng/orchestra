@@ -3,7 +3,7 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def vscode_web_component():
+#@ def _vscode_component_base(opts):
 repository: vscode
 license: LICENSE.txt
 default_build: default
@@ -42,6 +42,7 @@ builds:
       cd "$BUILD_DIR"
       sha256sum npm-cat-lock > npm-cat-lock.sha256
 
+      (@= opts["configure"] @)
     install: |
       cd "$BUILD_DIR/vscode"
       rsync -aq \
@@ -78,14 +79,39 @@ builds:
         npm install
 
       # Build vscode
-      revng/web/build.sh \
-        "${DESTDIR}${ORCHESTRA_ROOT}/share/vscode-web-vanilla.tar.xz" \
-        (@= "1" if flavor == "default" else "0" @)
+      VSCODE_MINIFY=(@= "1" if flavor == "default" else "0" @)
+      (@= opts["install"] @)
   #@ end
+#@ end
+
+#@yaml/text-templated-strings
+---
+#@ def vscode_web():
+configure: ""
+install: |
+  revng/web/build.sh \
+    "${DESTDIR}${ORCHESTRA_ROOT}/share/vscode-web-vanilla.tar.xz" \
+    "$VSCODE_MINIFY"
+#@ end
+
+#@yaml/text-templated-strings
+---
+#@ def vscode_electron():
+configure: |
+  ELECTRON_VERSION=$(jq -r .devDependencies.electron vscode/package.json)
+  fetch.sh --no-copy \
+    "https://github.com/electron/electron/releases/download/v${ELECTRON_VERSION}/electron-v${ELECTRON_VERSION}-linux-x64.zip"
+install: |
+  ELECTRON_VERSION=$(jq -r .devDependencies.electron package.json)
+  revng/electron/build.sh \
+    "${DESTDIR}${ORCHESTRA_ROOT}/share/vscode-electron-vanilla.tar.xz" \
+    "$VSCODE_MINIFY" \
+    "${SOURCE_ARCHIVES}/electron-v${ELECTRON_VERSION}-linux-x64.zip"
 #@ end
 
 #@overlay/match by=overlay.all, expects=1
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  vscode-web: #@ vscode_web_component()
+  vscode-web: #@ _vscode_component_base(vscode_web())
+  vscode-electron: #@ _vscode_component_base(vscode_electron())
