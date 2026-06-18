@@ -1,0 +1,49 @@
+{
+    "nameShort": "rev.ng UI",
+    "nameLong": "rev.ng UI",
+    "applicationName": "revng-ui",
+    "dataFolderName": ".revng-ui",
+    "sharedDataFolderName": ".revng-ui",
+    "documentationUrl": "https://docs.rev.ng/",
+    "serverApplicationName": "revng-ui-server",
+    "tunnelApplicationName": "revng-ui-tunnel",
+    "win32DirName": "rev.ng UI",
+    "reportIssueUrl": "https://github.com/revng/revng/issues/new",
+    "urlProtocol": "revng-ui-electron",
+    "builtinExtensions": [
+        "cpp",
+        "diff",
+        "html",
+        "json",
+        "markdown-basics",
+        "markdown-math",
+        "references-view",
+        "revng-color-theme",
+        "revng",
+        "theme-abyss",
+        "theme-defaults",
+        "theme-kimbie-dark",
+        "theme-monokai",
+        "theme-monokai-dimmed",
+        "theme-quietlight",
+        "theme-red",
+        "theme-seti",
+        "theme-solarized-dark",
+        "theme-solarized-light",
+        "theme-tomorrow-night-blue",
+        "yaml"
+    ],
+    "configurationDefaults": {
+        "workbench.startupEditor": "none",
+        "window.menuBarVisibility": "classic",
+        "editor.foldingMaximumRegions": 65000,
+        "files.autoSave": "off",
+        "editor.colorTheme": "revng",
+        "workbench.colorTheme": "revng",
+        "window.confirmSaveUntitledWorkspace": false,
+        "window.restoreWindows": "none"
+    },
+    "extensionEnabledApiProposals": {
+        "revng.revng": ["fileSearchProvider", "fileSearchProvider2"]
+    }
+}
