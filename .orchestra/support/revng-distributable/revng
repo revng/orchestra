@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+SCRIPT_DIR=$(realpath "$(dirname "${BASH_SOURCE[0]}")")
 # shellcheck disable=SC1091
-source "$DIR/environment"
-export REAL_ARGV0="$0"
+source "$SCRIPT_DIR/environment"
 
-exec "$DIR/root/bin/revng" "$@"
+EXECUTABLE_NAME=$(basename "$0")
+exec "$SCRIPT_DIR/root/bin/$EXECUTABLE_NAME" "$@"
