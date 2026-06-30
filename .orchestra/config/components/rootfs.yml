@@ -322,7 +322,7 @@ rootfs/(@= name @)/debug-info:
   builds:
     default:
       build_dependencies:
-        - revng
+        - fetch-debuginfo
         - rootfs/(@= name @)
       configure: |
         mkdir -p "$BUILD_DIR"
@@ -336,15 +336,12 @@ rootfs/(@= name @)/debug-info:
 
         ROOTFS_DIR="$ORCHESTRA_ROOT/share/roots/linux/(@= name @)"
 
-        export XDG_CACHE_HOME="$BUILD_DIR/cache"
-        mkdir -p "$XDG_CACHE_HOME"
-
         log "Fetching debug info for (@= name @)..."
         mkdir -p .flags
 
         cat > build.ninja <<EOF
         rule fetch_debuginfo
-          command = revng model fetch-debuginfo \$in || true && touch \$out
+          command = fetch-debuginfo -o '$BUILD_DIR/cache' \$in || true && touch \$out
           description = fetch-debuginfo \$in
         EOF
 
@@ -360,7 +357,7 @@ rootfs/(@= name @)/debug-info:
         (@= ninja @)
         log "Debug info fetching complete."
 
-        SYMBOLS_SRC="$BUILD_DIR/cache/revng/debug-symbols/elf"
+        SYMBOLS_SRC="$BUILD_DIR/cache/debug-symbols/elf"
         SYMBOLS_DST="${DESTDIR}${ORCHESTRA_ROOT}/share/roots/linux/(@= name @)/symbols-cache"
 
         if test -d "$SYMBOLS_SRC"; then

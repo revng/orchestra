@@ -1,0 +1,29 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/create-component.lib.yml", "single_build_component")
+
+#@ path = "python/revng/internal/cli/_commands/fetch_debuginfo/common.py"
+#@ base_url = "https://raw.githubusercontent.com/revng/revng/refs/heads/next-develop"
+#@ hash = "7f89147439a214e4b04aa2525af3f5853450ff89ed96de2a923fc2bd87950537"
+
+#@yaml/text-templated-strings
+---
+#@ def fetch_debuginfo_args():
+configure: |
+  mkdir -p "$BUILD_DIR"
+  cd "$BUILD_DIR"
+
+  wget -qO fetch-debuginfo "(@= base_url @)/(@= path @)"
+  echo '(@= hash @) fetch-debuginfo' | sha256sum --quiet -c -
+install: |
+  cp -a "$BUILD_DIR/fetch-debuginfo" "${DESTDIR}${ORCHESTRA_ROOT}/bin/"
+  chmod +x "${DESTDIR}${ORCHESTRA_ROOT}/bin/fetch-debuginfo"
+dependencies:
+  - revng-python-dependencies
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  fetch-debuginfo: #@ single_build_component(**fetch_debuginfo_args())
