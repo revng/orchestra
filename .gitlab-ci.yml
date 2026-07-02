@@ -17,10 +17,7 @@ push-to-master:
     - mass-testing
   stage: promotion
   rules:
-    # The $DO_NOT_RUN_THIS_JOB variable is never defined, so when gitlab
-    # evaluates the `if` below it will always be false, effectively disabling
-    # this job
-    - if: $PUSHED_REF == "refs/heads/next-develop" && $DO_NOT_RUN_THIS_JOB
+    - if: $PUSHED_REF == "refs/heads/next-develop"
   script:
     - git clone --branch develop "${ORCHESTRA_CONFIG_REPO_HTTP_URL:-https://github.com/revng/orchestra.git}"
     - cd orchestra
