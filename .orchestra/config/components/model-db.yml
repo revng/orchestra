@@ -100,6 +100,7 @@
 #@ path = "share/roots/linux/" + name
 name: rootfs/(@= name @)/models
 build_dependencies:
+  - rootfs/(@= name @)
   - rootfs/(@= name @)/debug-info
 install_destination: (@= path @)
 import_command: REVNG_NO_FETCH_DEBUG_INFO=1 revng analyze import-binary
