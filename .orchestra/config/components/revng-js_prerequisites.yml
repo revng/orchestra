@@ -1,7 +1,7 @@
 #@ load("@ytt:overlay", "overlay")
 #@ load("/lib/create-component.lib.yml", "single_build_component")
 
-#@ package_json_sha = "d99c352cb57dc80384654999135dceb6b528a5cd46242e1c5246d993359f61f9"
+#@ package_json_sha = "95b8ff5252ea0e36af2372cdf1a6da891ef26e8ce176df2a0a151616fb3debc9"
 
 #@yaml/text-templated-strings
 ---
