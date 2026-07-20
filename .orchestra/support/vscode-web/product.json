@@ -19,11 +19,10 @@
         "files.autoSave": "off",
         "editor.colorTheme": "revng",
         "workbench.colorTheme": "revng",
-        "revng.general.profiles": [
+        "revng.general.bookmarks": [
             {
-                "id": "9b473245-159e-4984-a052-f2d9131314ea",
-                "name": "Local",
-                "directURLs": ["http://127.0.0.1:8000/"]
+                "endpoint": "pipelinefs-direct://127.0.0.1:8000/",
+                "projectIDs": ["none"]
             }
         ]
     },

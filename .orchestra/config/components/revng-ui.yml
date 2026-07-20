@@ -16,6 +16,7 @@ development_packages:
 #! just copy the yaml schema directory in the build directory
 pre_npm_install: |
   cp -a "${ORCHESTRA_ROOT}/share/revng/pipeline/pipeline-description-schema.yml" .
+package_script: package-web
 #@ end
 
 #@overlay/match by=overlay.all, expects=1
