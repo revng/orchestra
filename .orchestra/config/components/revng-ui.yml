@@ -12,7 +12,6 @@ build_dependencies:
 - revng
 development_packages:
 - revng-model
-- revng-pipeline-description
 #! Since the vscode_extension machine does not run a proper build system we
 #! just copy the yaml schema directory in the build directory
 pre_npm_install: |
