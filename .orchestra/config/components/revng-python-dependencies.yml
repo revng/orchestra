@@ -28,7 +28,6 @@ requirements: |-
   mypy==1.20.2
 
   # Python types, needed for mypy to work correctly
-  boto3-stubs[s3]
   types-backports
   types-PyYAML
   types-requests
@@ -41,11 +40,9 @@ requirements: |-
   cmakelang
 
   # Applications/Script dependencies
-  ariadne[asgi-file-uploads]>=0.23.0,<0.29.0
-  boto3<=1.35.99
-  cffi>=1.17.1,<2.0
   Jinja2
-  gql[aiohttp]==3.5.2
+  aiohttp>=3.14.3,<4.0
+  websockets>=10.4
   https://github.com/revng/grandiso-networkx/archive/043ce4b.tar.gz
   https://github.com/revng/jsonschema/archive/c17ffb2.tar.gz
   jsonschema-to-typeddict>=1.4.2,<2.0
@@ -71,12 +68,6 @@ requirements: |-
   psutil
   build
   https://github.com/revng/llvmcpy/archive/9eca23b.tar.gz
-
-  # uvicorn[standard] but without watchfiles (since it requires rust)
-  uvicorn==0.41.0
-  httptools>=0.6.3
-  python-dotenv>=0.13
-  websockets>=10.4
 
   xdg
 
