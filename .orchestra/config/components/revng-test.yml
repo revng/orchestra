@@ -63,6 +63,7 @@ build_dependencies:
   - test/revng-qa
   - clang-release
   - nodejs-support
+  - qemu-helpers
   - rootfs/windows-7-x86
   - rootfs/windows-8-x86-64
   - rootfs/windows-8-1-x86-64

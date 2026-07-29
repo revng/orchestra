@@ -1,8 +1,10 @@
+import asyncio
 import json
 import signal
 import sys
 import webbrowser
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
+from contextlib import asynccontextmanager
 from subprocess import Popen
 
 from starlette.applications import Starlette
@@ -11,7 +13,8 @@ from starlette.responses import JSONResponse
 from starlette.routing import Mount, Route
 from starlette.staticfiles import StaticFiles
 
-import uvicorn
+from hypercorn.asyncio import serve
+from hypercorn.config import Config
 
 from revng.internal.cli.commands_registry import Command, CommandsRegistry, Options
 from revng.support import get_root
@@ -27,32 +30,6 @@ def log(msg: str):
 class VSCodeWebCommand(Command):
     def __init__(self):
         super().__init__(("web-ui",), "Start rev.ng's Web UI")
-        self.process = None
-        self.app = Starlette(
-            routes=[
-                Route("/product.json", self.product),
-                Mount("/", app=StaticFiles(directory=str(ROOT), html=True)),
-            ],
-            on_startup=[self.startup],
-            on_shutdown=[self.shutdown],
-        )
-
-    async def product(self, request: Request):
-        with open(ROOT / "product.json") as f:
-            data = json.load(f)
-
-        data["webviewEndpoint"] = f"http://127.0.0.1:{self.args.port}" + data["webviewEndpoint"]
-        return JSONResponse(data)
-
-    def startup(self):
-        log(f"serving at vscode web at 127.0.0.1:{self.args.port}")
-        if self.args.open:
-            webbrowser.open(f"http://127.0.0.1:{self.args.port}/")
-
-    def shutdown(self):
-        if self.process is not None:
-            self.process.send_signal(signal.SIGINT)
-            self.process.wait()
 
     def register_arguments(self, parser: ArgumentParser):
         parser.formatter_class = RawDescriptionHelpFormatter
@@ -60,13 +37,43 @@ class VSCodeWebCommand(Command):
         parser.add_argument("-p", "--port", type=int, default=8090, help="Port to use")
         parser.add_argument("-o", "--open", action="store_true", help="Open in web browser")
         parser.add_argument("--daemon", action="store_true", help="Also start the daemon process")
+        parser.add_argument("-C", "--chdir", help="Target directory for the daemon")
 
     def run(self, options: Options):
-        self.args = options.parsed_args
-        port = options.parsed_args.port
-        if options.parsed_args.daemon:
-            self.process = Popen(["revng", "daemon"])
-        uvicorn.run(self.app, host="127.0.0.1", port=port, log_level="info", access_log=False)
+        args = options.parsed_args
+        process = None
+        if args.daemon:
+            process = Popen(["revng2", "project", "daemon"], cwd=args.chdir)
+
+        @asynccontextmanager
+        async def lifespan(app):
+            log(f"serving at vscode web at 127.0.0.1:{args.port}")
+            if args.open:
+                webbrowser.open(f"http://127.0.0.1:{args.port}/")
+
+            yield
+
+            if process is not None:
+                process.send_signal(signal.SIGINT)
+                process.wait()
+
+        async def product(request: Request):
+            with open(ROOT / "product.json") as f:
+                data = json.load(f)
+
+            data["webviewEndpoint"] = f"http://127.0.0.1:{args.port}" + data["webviewEndpoint"]
+            return JSONResponse(data)
+
+        app = Starlette(
+            routes=[
+                Route("/product.json", product),
+                Mount("/", app=StaticFiles(directory=str(ROOT), html=True)),
+            ],
+            lifespan=lifespan,
+        )
+
+        config = Config.from_mapping(bind=[f"127.0.0.1:{args.port}"])
+        asyncio.run(serve(app, config))
 
 
 def setup(commands_registry: CommandsRegistry):

@@ -103,7 +103,7 @@ build_dependencies:
   - rootfs/(@= name @)
   - rootfs/(@= name @)/debug-info
 install_destination: (@= path @)
-import_command: REVNG_NO_FETCH_DEBUG_INFO=1 revng analyze import-binary
+import_command: REVNG_NO_FETCH_DEBUG_INFO=1 revng2 quick analyze --analyses parse-binary
 pre_install: |-
   export XDG_CACHE_HOME="$BUILD_DIR/cache"
   mkdir -p "$XDG_CACHE_HOME"
@@ -193,7 +193,7 @@ name: test/revng-qa/models
 build_dependencies:
   - test/revng-qa
 install_destination: share/revng/test/tests/well-known-models
-import_command: REVNG_NO_FETCH_DEBUG_INFO=1 revng analyze import-binary
+import_command: REVNG_NO_FETCH_DEBUG_INFO=1 revng2 quick analyze --analyses parse-binary
 configure_body: |-
   WELL_KNOWN_DIR="$ORCHESTRA_ROOT/share/revng/test/tests/well-known-models"
 

@@ -26,7 +26,6 @@ done | grep -v '^\s*$' | sort | uniq | \
 while IFS= read -r component; do
   orc inspect component installed-files "${component}"
 done | \
-grep -vP '^include/(?!revng/PipelineC/(Prototypes|ForwardDeclarationsC)\.h)' | \
 grep -vP '^share/doc/(?!revng)' | \
 grep -vE \
   -e 'cmake' \
@@ -55,7 +54,7 @@ cp -a "$BASE_DIR/environment" environment
 
 # shellcheck disable=SC2094
 {
-  orchestra environment | grep -E "^export (PATH|REVNG_TRANSLATE_LDFLAGS|LLVM_SYMBOLIZER_PATH|AWS_EC2_METADATA_DISABLED|HARD_|RPATH_PLACEHOLDER)"
+  orchestra environment | grep -E "^export (PATH|LLVM_SYMBOLIZER_PATH|HARD_|RPATH_PLACEHOLDER)"
   cat <<EOF
 unset ORCHESTRA_DOTDIR
 unset ORCHESTRA_ROOT
