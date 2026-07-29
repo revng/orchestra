@@ -78,6 +78,10 @@ requirements: |-
 
   yachalk
   yq
+
+  # Not needed directly by revng, used by mass-testing
+  boto3-stubs[s3]
+  boto3<=1.35.99
 #@ end
 
 #@overlay/match by=overlay.all, expects=1
