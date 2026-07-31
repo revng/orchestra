@@ -30,10 +30,6 @@
           --destination . \
           (@= options["configure_args"] @)
 
-        (@ if "pre_install" in options: -@)
-        (@-= options["pre_install"] @)
-        (@- end @)
-
         ninja install
       build_dependencies:
       - revng-qa
@@ -69,9 +65,6 @@ build_dependencies:
   - rootfs/windows-8-1-x86-64
   - rootfs/windows-aarch64
   - rootfs/windows-x86-64
-pre_install: |
-  export REVNG_OPTIONS="--debug-log=verify"
-  export PYPELINE_STORAGE_PROVIDER="local://?inline"
 #@ end
 
 #@ def revng_db_test():
