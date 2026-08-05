@@ -43,7 +43,7 @@ class VSCodeWebCommand(Command):
         args = options.parsed_args
         process = None
         if args.daemon:
-            process = Popen(["revng2", "project", "daemon"], cwd=args.chdir)
+            process = Popen(["revng", "project", "daemon"], cwd=args.chdir)
 
         @asynccontextmanager
         async def lifespan(app):

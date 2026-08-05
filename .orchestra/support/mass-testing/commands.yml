@@ -1,4 +1,4 @@
 - name: revng-regression.decompile
   timeout: 300
   memory_limit: 3700000000
-  command: revng2 quick artifact emit-recompilable-archive %INPUT%
+  command: revng quick artifact emit-recompilable-archive %INPUT%

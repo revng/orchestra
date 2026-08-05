@@ -67,7 +67,6 @@ cp -a "$BASE_DIR/README.md" .
 
 echo "Copying revng"
 cp -a "$BASE_DIR/revng" revng
-cp -a "$BASE_DIR/revng" revng2
 
 
 cd "${DISTRIBUTABLE_PATH}/root"
@@ -127,7 +126,7 @@ find . -type d -empty -delete
 
 if [ "$RUN_TESTS" -eq 1 ]; then
   TEST_CMD=(
-    ./revng2
+    ./revng
     quick
     artifact
     emit-c

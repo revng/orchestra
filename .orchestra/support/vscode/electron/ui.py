@@ -46,7 +46,7 @@ class RevngUICommand(Command):
 
     async def arun(self, args):
         socket_path_out = NamedTemporaryFile()
-        daemon_cmd = ["revng2", "project", "daemon", "--socket-location-file", socket_path_out.name]
+        daemon_cmd = ["revng", "project", "daemon", "--socket-location-file", socket_path_out.name]
         daemon_kwargs = {"cwd": args.chdir, "stdout": DEVNULL, "stderr": STDOUT}
         daemon_process = await apopen(*daemon_cmd, **daemon_kwargs)
         daemon_alread_running = False
