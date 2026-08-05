@@ -1,0 +1,44 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/create-component.lib.yml", "single_build_component")
+
+#@yaml/text-templated-strings
+---
+#@ def revng_ui_web_args():
+binary_archives: private
+dependencies:
+- revng
+build_dependencies:
+- revng-ui-web-extension
+- revng-theme
+- vscode-web
+configure: |
+  mkdir -p "$BUILD_DIR"
+install: |
+  source "$ORCHESTRA_DOTDIR/support/vscode/common.sh"
+  install_command "${ORCHESTRA_DOTDIR}/support/vscode/web/web-ui.py"
+
+  INSTALL_DIR="${DESTDIR}${ORCHESTRA_ROOT}/share/vscode-web"
+  mkdir -p "$INSTALL_DIR/static"
+  tar -xf "${ORCHESTRA_ROOT}/share/vscode-web-vanilla.tar.xz" -C"$INSTALL_DIR"
+
+  copy_extensions "$INSTALL_DIR/static/extensions" \
+                  share/vscode-extensions/revng-color-theme.vsix \
+                  share/vscode-extensions/revng-web.vsix
+
+  # Copy product.json and icons to to INSTALL_DIR
+  cp -a "$ORCHESTRA_DOTDIR/support/vscode/web/product.json" "$INSTALL_DIR/product.json"
+  cp -a "$ORCHESTRA_DOTDIR/support/logo/logo.ico" "$INSTALL_DIR/static/favicon.ico"
+  cp -a "$ORCHESTRA_DOTDIR/support/logo/logo.png" "$INSTALL_DIR/static/code-192.png"
+  cp -a "$ORCHESTRA_DOTDIR/support/logo/logo.png" "$INSTALL_DIR/static/code-512.png"
+
+  # Remove all extensions not specified in `product.json:.builtinExtensions`
+  remove_extraneous_extensions "$INSTALL_DIR/product.json" \
+                               "$INSTALL_DIR/static/extensions"
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  revng-ui-web: #@ single_build_component(**revng_ui_web_args())

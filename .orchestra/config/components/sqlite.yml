@@ -2,7 +2,7 @@
 #@ load("@ytt:overlay", "overlay")
 #@ load("/lib/create-component.lib.yml", "single_build_component")
 
-#@ source_url = "https://github.com/sqlite/sqlite/archive/refs/tags/version-3.39.4.tar.gz"
+#@ source_url = "https://github.com/sqlite/sqlite/archive/refs/tags/version-3.53.2.tar.gz"
 
 #@yaml/text-templated-strings
 ---
@@ -11,11 +11,17 @@ license: source/LICENSE.md
 configure: |
   mkdir -p "$BUILD_DIR/source"
   extract.sh --into "$BUILD_DIR/source" "(@= source_url @)"
-  cd "$BUILD_DIR" && ./source/configure \
+
+  cd "$BUILD_DIR"
+
+  # Some features do not have a configure flag, enable them manually via CFLAGS
+  CFLAGS="-DSQLITE_ENABLE_RBU -DSQLITE_ENABLE_FTS3_PARENTHESIS" \
+  ./source/configure \
     --prefix="$ORCHESTRA_ROOT" \
     --enable-shared \
-    --enable-all \
-    --with-pic \
+    --disable-static \
+    `# Enable all extensions for sqlite, unfortunately --all is not enough` \
+    --fts3 --column-metadata --update-limit --all \
     --disable-tcl
 build_system: make
 build_dependencies:

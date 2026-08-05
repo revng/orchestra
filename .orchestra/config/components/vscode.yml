@@ -1,0 +1,117 @@
+#@ load("@ytt:overlay", "overlay")
+#@ load("@ytt:data", "data")
+
+#@yaml/text-templated-strings
+---
+#@ def _vscode_component_base(opts):
+repository: vscode
+license: LICENSE.txt
+default_build: default
+binary_archives: private
+builds:
+  #@ for flavor in ["default", "debug"]:
+  (@= flavor @):
+    build_dependencies:
+    - host-c-toolchain
+    - revng-js-prerequisites
+    - libxkbfile
+    - libx11
+    - nodejs-support
+    configure: |
+      rm -rf "$BUILD_DIR/vscode"
+      mkdir -p "$BUILD_DIR/vscode"
+      cd "$BUILD_DIR/vscode"
+
+      rsync -aq \
+        --exclude=.git \
+        --exclude-from=<(git -C "$SOURCE_DIR" ls-files --exclude-standard -oi --directory) \
+        "$SOURCE_DIR/" .
+
+      true > "$BUILD_DIR/npm-cat-lock"
+      find . -type f -name package-lock.json ! -path '*/node_modules/*' -printf '%h\n' | \
+      sort | \
+      while IFS= read -r directory; do
+        pushd "$directory" &> /dev/null
+        if [[ "$directory" != */test/* ]]; then
+          cat package-lock.json >> "$BUILD_DIR/npm-cat-lock"
+        fi
+        "$ORCHESTRA_DOTDIR"/support/fetch-js-dependencies npm
+        popd &> /dev/null
+      done
+
+      cd "$BUILD_DIR"
+      sha256sum npm-cat-lock > npm-cat-lock.sha256
+
+      (@= opts["configure"] @)
+    install: |
+      cd "$BUILD_DIR/vscode"
+      rsync -aq \
+        --exclude-from=<(git -C "$SOURCE_DIR" ls-files --exclude-standard -oi --directory) \
+        "$SOURCE_DIR/" .
+
+      if [ -f "$BUILD_DIR/npm-cat-lock" ]; then
+        mv "$BUILD_DIR/npm-cat-lock" "$BUILD_DIR/npm-cat-lock.old"
+      fi
+      find . -type f -name package-lock.json ! -path '*/node_modules/*' ! -path '*/test/*' -printf '%h\n' | \
+      sort | \
+      while IFS= read -r directory; do
+        cat "$directory/package-lock.json" >> "$BUILD_DIR/npm-cat-lock"
+      done
+
+      pushd "$BUILD_DIR" &> /dev/null
+      if ! sha256sum --quiet -c npm-cat-lock.sha256; then
+        echo "One or more package locks have changed since configure, please reconfigure or clean" > /dev/stderr
+        exit 1
+      fi
+      popd &> /dev/null
+
+
+      export ORCHESTRA_NODE_CACHE="$SOURCE_ARCHIVES/npm:$ORCHESTRA_NODE_CACHE"
+      # Install dependencies, this process is mostly offline with the following exceptions
+      # (to the best of our knowledge):
+      # * vscode-web, when building electron targets, will download the prebuilt electron for the
+      #   target to bundle with the build js files (this will be accounted for when building
+      #   targets using electron)
+      npm_config_nodedir="$ORCHESTRA_ROOT" \
+      VSCODE_SKIP_NODE_VERSION_CHECK=1 \
+      ELECTRON_SKIP_BINARY_DOWNLOAD=1 \
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
+        npm install
+
+      # Build vscode
+      VSCODE_MINIFY=(@= "1" if flavor == "default" else "0" @)
+      (@= opts["install"] @)
+  #@ end
+#@ end
+
+#@yaml/text-templated-strings
+---
+#@ def vscode_web():
+configure: ""
+install: |
+  revng/web/build.sh \
+    "${DESTDIR}${ORCHESTRA_ROOT}/share/vscode-web-vanilla.tar.xz" \
+    "$VSCODE_MINIFY"
+#@ end
+
+#@yaml/text-templated-strings
+---
+#@ def vscode_electron():
+configure: |
+  ELECTRON_VERSION=$(jq -r .devDependencies.electron vscode/package.json)
+  fetch.sh --no-copy \
+    "https://github.com/electron/electron/releases/download/v${ELECTRON_VERSION}/electron-v${ELECTRON_VERSION}-linux-x64.zip"
+install: |
+  ELECTRON_VERSION=$(jq -r .devDependencies.electron package.json)
+  revng/electron/build.sh \
+    "${DESTDIR}${ORCHESTRA_ROOT}/share/vscode-electron-vanilla.tar.xz" \
+    "$VSCODE_MINIFY" \
+    "${SOURCE_ARCHIVES}/electron-v${ELECTRON_VERSION}-linux-x64.zip"
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  vscode-web: #@ _vscode_component_base(vscode_web())
+  vscode-electron: #@ _vscode_component_base(vscode_electron())

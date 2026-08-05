@@ -1,0 +1,47 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/create-component.lib.yml", "single_build_component")
+
+#@yaml/text-templated-strings
+---
+#@ def revng_ui_native_args():
+binary_archives: private
+dependencies:
+- revng
+build_dependencies:
+- revng-ui-native-extension
+- revng-theme
+- vscode-electron
+configure: |
+  mkdir -p "$BUILD_DIR"
+install: |
+  source "$ORCHESTRA_DOTDIR/support/vscode/common.sh"
+  install_command "${ORCHESTRA_DOTDIR}/support/vscode/electron/ui.py"
+
+  INSTALL_DIR="${DESTDIR}${ORCHESTRA_ROOT}/share/vscode-electron"
+  mkdir -p "$INSTALL_DIR"
+  tar -xf "${ORCHESTRA_ROOT}/share/vscode-electron-vanilla.tar.xz" -C"$INSTALL_DIR"
+
+  copy_extensions "$INSTALL_DIR/resources/app/extensions" \
+                  share/vscode-extensions/revng-color-theme.vsix \
+                  share/vscode-extensions/revng-node.vsix
+
+  # Copy product.json and icons to to INSTALL_DIR
+  APP_DIR="$INSTALL_DIR/resources/app"
+  cp -a "$ORCHESTRA_DOTDIR/support/vscode/electron/product.json" "$APP_DIR/product.json"
+  cp -a "$ORCHESTRA_DOTDIR/support/logo/logo.png" "$APP_DIR/resources/linux/code.png"
+  cp -a "$ORCHESTRA_DOTDIR/support/logo/logo.png" "$APP_DIR/resources/linux/code.png"
+  cp -a "$ORCHESTRA_DOTDIR/support/logo/logo.svg" "$APP_DIR/out/media/code-icon.svg"
+  cp -a "$ORCHESTRA_DOTDIR/support/logo/logo.svg" \
+        "$APP_DIR/out/vs/workbench/browser/media/code-icon.svg"
+
+  # Remove all extensions not specified in `product.json:.builtinExtensions`
+  remove_extraneous_extensions "$APP_DIR/product.json" \
+                               "$INSTALL_DIR/resources/app/extensions"
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  revng-ui-native: #@ single_build_component(**revng_ui_native_args())

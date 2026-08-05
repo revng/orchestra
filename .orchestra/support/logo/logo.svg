@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   version="1.0"
+   width="700.000000pt"
+   height="700.000000pt"
+   viewBox="0 0 700.000000 700.000000"
+   preserveAspectRatio="xMidYMid meet"
+   id="svg3"
+   sodipodi:docname="revng.svg"
+   inkscape:version="1.3.2 (091e20ef0f, 2023-11-25, custom)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs3">
+    <linearGradient
+       id="SVGID_1_"
+       gradientUnits="userSpaceOnUse"
+       x1="203.7673"
+       y1="132.7634"
+       x2="233.4113"
+       y2="22.1308"
+       gradientTransform="matrix(5.8056595,0,0,5.8186695,-918.80109,-100.11158)">
+	<stop
+   offset="0"
+   style="stop-color:#D56B36"
+   id="stop1" />
+
+	<stop
+   offset="4.462330e-02"
+   style="stop-color:#D76331"
+   id="stop2" />
+
+	<stop
+   offset="0.2232"
+   style="stop-color:#DF4820"
+   id="stop3" />
+
+	<stop
+   offset="0.3818"
+   style="stop-color:#E33816"
+   id="stop4" />
+
+	<stop
+   offset="0.5031"
+   style="stop-color:#E53212"
+   id="stop5" />
+
+	<stop
+   offset="0.6426"
+   style="stop-color:#E02723"
+   id="stop6" />
+
+	<stop
+   offset="0.9161"
+   style="stop-color:#D20A4E"
+   id="stop7" />
+
+	<stop
+   offset="1"
+   style="stop-color:#CD005C"
+   id="stop8" />
+
+</linearGradient>
+  </defs>
+  <sodipodi:namedview
+     id="namedview3"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="pt"
+     inkscape:zoom="1.3210714"
+     inkscape:cx="466.66667"
+     inkscape:cy="699.43228"
+     inkscape:window-width="1914"
+     inkscape:window-height="1032"
+     inkscape:window-x="0"
+     inkscape:window-y="20"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg3" />
+  <path
+     class="st0"
+     d="M 289.35669,677.84447 C 134.92611,649.33297 17.651809,513.75801 17.651809,350.25344 c 0,-65.16904 19.15867,-125.68327 51.08978,-177.46938 z m 121.33822,0 c 154.43038,-28.5115 271.70488,-164.08646 271.70488,-327.59103 0,-65.16904 -19.1586,-125.68327 -51.0899,-177.46938 z M 351.47701,552.74311 554.67529,87.831419 C 498.36039,43.609599 427.53141,17.425465 350.31611,17.425465 c -74.89301,0 -143.39981,25.020334 -199.13412,66.914764 z"
+     id="path8"
+     style="fill:url(#SVGID_1_);stroke-width:5.81211" />
+</svg>

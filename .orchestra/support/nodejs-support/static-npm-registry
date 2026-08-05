@@ -3,6 +3,8 @@
 # This file is distributed under the MIT License. See LICENSE.md for details.
 #
 
+import fcntl
+import io
 import json
 import os
 import re
@@ -10,7 +12,8 @@ import sys
 import tarfile
 from base64 import b64encode
 from collections import defaultdict
-from hashlib import sha512
+from contextlib import contextmanager
+from hashlib import sha256, sha512
 from http.server import BaseHTTPRequestHandler
 from os.path import basename
 from pathlib import Path
@@ -42,7 +45,9 @@ def safe_int(value: str) -> int | str:
 def find_last_package_version(packages):
     if len(packages) == 1:
         return packages[0]["version"]
-    sorted_packages = sorted(packages, key=lambda p: [safe_int(v) for v in p["version"].split(".")])
+    sorted_packages = sorted(
+        packages, key=lambda p: [safe_int(v) for v in re.split(r"[.-]", p["version"])]
+    )
     return sorted_packages[-1]["version"]
 
 
@@ -77,17 +82,64 @@ def fix_package_jsons(grouped_packages):
     return result
 
 
+def _get_cache_file(name: str):
+    cache_home = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache"))
+    return cache_home / "revng/static-npm-registry" / f"{name}.json"
+
+
+@contextmanager
+def _lock_file(file: io.IOBase):
+    try:
+        fcntl.flock(file, fcntl.LOCK_EX)
+        yield
+    finally:
+        fcntl.flock(file, fcntl.LOCK_UN)
+
+
 def parse_packages(directories: List[str]):
-    packages = []
+    paths_absolute = [os.path.abspath(d).encode() for d in directories]
+    hash_ = sha256(b"\0".join(paths_absolute)).hexdigest()
+
+    cache_file = _get_cache_file(hash_)
+    if cache_file.is_file():
+        with open(cache_file, "r") as f, _lock_file(f):
+            cached_data = json.load(f)
+    else:
+        cached_data = {"tars": {}, "packages": {}}
+
+    tar_data = {}
+    read_paths = set()
+    did_parse = False
     for directory in directories:
         if not os.path.isdir(directory):
             continue
         with os.scandir(directory) as scan:
-            packages.extend([parse_tgz(entry.path) for entry in scan if entry.is_file()])
-    grouped_pkgs = defaultdict(list)
-    for package in packages:
-        grouped_pkgs[package[0]["name"]].append(package)
-    return fix_package_jsons(grouped_pkgs)
+            for entry in scan:
+                if not entry.is_file():
+                    continue
+
+                path = os.path.abspath(entry.path)
+                read_paths.add(path)
+                if path in cached_data["tars"]:
+                    tar_data[path] = cached_data["tars"][path]
+                else:
+                    tar_data[path] = parse_tgz(entry.path)
+                    did_parse = True
+
+    if did_parse or read_paths != cached_data["tars"].keys():
+        grouped_pkgs = defaultdict(list)
+        for package in tar_data.values():
+            grouped_pkgs[package[0]["name"]].append(package)
+        package_data = fix_package_jsons(grouped_pkgs)
+
+        data = {"tars": tar_data, "packages": package_data}
+        cache_file.parent.mkdir(parents=True, exist_ok=True)
+        with open(cache_file, "w") as f, _lock_file(f):
+            json.dump(data, f)
+    else:
+        package_data = cached_data["packages"]
+
+    return package_data
 
 
 PACKAGES = parse_packages(sys.argv[2:])

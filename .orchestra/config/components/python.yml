@@ -6,7 +6,7 @@
 #@yaml/text-templated-strings
 ---
 #@ def python_component():
-#@ python_version = "3.14.4"
+#@ python_version = "3.14.6"
 #@ source_url = "https://www.python.org/ftp/python/" + python_version + "/Python-" + python_version + ".tar.xz"
 license: LICENSE
 builds:
@@ -33,10 +33,9 @@ builds:
         --with-ensurepip=install \
         --with-lto \
         --with-readline \
-        --with-system-ffi \
         --with-system-expat \
         --without-static-libpython \
-        CC="gcc -ljemalloc"
+        CC=gcc LDFLAGS="-fuse-ld=lld -ljemalloc"
 
       grep -v HAVE_SYS_AUXV_H pyconfig.h > pyconfig.h.tmp
       mv pyconfig.h.tmp pyconfig.h
@@ -76,9 +75,11 @@ builds:
             -i test.test_ctypes.test_find.FindLibraryLinux.test_find_library_with_ld \
             `# This fails due to outdated glibc` \
             -i test.test_posix.PosixTester.test_makedev \
+            -i test.test_subprocess.ProcessTestCase.test_pipesize_default \
             `# This hangs indefinitely when running in a container, cause unknown` \
             -i 'test.test_socket.RDSTest.*' \
             `# This sometimes fails when run in a container` \
+            -x test_perf_profiler \
             -i test.test_struct.StructTest.test_endian_table_init_subinterpreters
       fi
     build_dependencies:
