@@ -178,6 +178,30 @@ EOF
     if [ "$BRANCH" == "master" ]; then
         sudo -i podman push "$LOCAL_IMAGE" "$PODMAN_IMAGE_TARGET:latest"
     fi
+
+    #
+    # Push docs
+    #
+    if [[ "$BRANCH" = "master" ]]; then
+        mkdir "$WORKDIR/docs"
+        pushd "$WORKDIR/docs" &> /dev/null
+
+        # Extract docs from tar
+        tar -xf "$TAR_FILE" \
+            --strip-components=6 \
+            'revng-public-demo/root/share/doc/revng/html/'
+        chmod -R u=rwX,go=rX .
+
+        # register the ssh key and push the docs via rsync
+        echo "$DOCS_SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+        rsync -qaz --stats \
+              --delay-updates \
+              --delete-after \
+              . \
+              "$DOCS_RSYNC_TARGET:/"
+
+        popd &> /dev/null
+    fi
 fi
 
 #
