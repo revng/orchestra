@@ -32,6 +32,7 @@ grep -vE \
   -e 'node_modules' \
   -e 'node_cache' \
   -e 'man/' \
+  -e '^include/' \
   -e '^lib64/pkgconfig/' \
   -e '^share/aclocal/' \
   -e '^share/bash-completion/' \
