@@ -20,4 +20,4 @@ ARG CONFIG_JSON
 RUN [ -f config.json ] || echo "$CONFIG_JSON" > config.json
 
 # Sanity check
-RUN revng --version
+RUN revng --help > /dev/null 2>&1
