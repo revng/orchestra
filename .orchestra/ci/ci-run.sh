@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+git clone --branch feature/nix-flake --depth 1 https://github.com/revng/revng.git
+cd revng
+exec ./nix-configuration/ci/build-and-push.sh
+
 # rev.ng CI script
 # This script runs after the `ci.sh` script has checked out the correct
 # orchestra branch and passed control to it. This script takes care of:
