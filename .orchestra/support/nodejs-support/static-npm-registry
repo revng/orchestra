@@ -105,11 +105,20 @@ def parse_packages(directories: List[str]):
         with open(cache_file, "r") as f, _lock_file(f):
             cached_data = json.load(f)
     else:
-        cached_data = {"tars": {}, "packages": {}}
+        cached_data = {"tars_metadata": {}, "tars": {}, "packages": {}}
 
     tar_data = {}
     read_paths = set()
     did_parse = False
+    tars_metadata = cached_data.get("tars_metadata", {})
+
+    def metadata_matches(path: str, stat):
+        if path not in tars_metadata:
+            return False
+
+        meta = tars_metadata[path]
+        return meta["size"] == stat.st_size and meta["mtime"] == stat.st_mtime_ns
+
     for directory in directories:
         if not os.path.isdir(directory):
             continue
@@ -120,10 +129,12 @@ def parse_packages(directories: List[str]):
 
                 path = os.path.abspath(entry.path)
                 read_paths.add(path)
-                if path in cached_data["tars"]:
+                stat = entry.stat()
+                if metadata_matches(path, stat) and path in cached_data["tars"]:
                     tar_data[path] = cached_data["tars"][path]
                 else:
                     tar_data[path] = parse_tgz(entry.path)
+                    tars_metadata[path] = {"size": stat.st_size, "mtime": stat.st_mtime_ns}
                     did_parse = True
 
     if did_parse or read_paths != cached_data["tars"].keys():
@@ -132,7 +143,10 @@ def parse_packages(directories: List[str]):
             grouped_pkgs[package[0]["name"]].append(package)
         package_data = fix_package_jsons(grouped_pkgs)
 
-        data = {"tars": tar_data, "packages": package_data}
+        # Filter out only the metadata entries that were actually used,
+        # otherwise the tars_metadata dict could grow out of control
+        live_metadata = {p: m for p, m in tars_metadata.items() if p in read_paths}
+        data = {"tars_metadata": live_metadata, "tars": tar_data, "packages": package_data}
         cache_file.parent.mkdir(parents=True, exist_ok=True)
         with open(cache_file, "w") as f, _lock_file(f):
             json.dump(data, f)
