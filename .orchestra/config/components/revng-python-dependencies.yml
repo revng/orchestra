@@ -73,7 +73,8 @@ requirements: |-
 
   marko
   mkdocs<2.0
-  mkdocs-graphviz<2.0
+  mkdocs-graphviz==2.0.2
+  mkdocs-toggle-sidebar-plugin
   mkdocs-material
 
   yachalk
