@@ -7,6 +7,7 @@ stages:
 push-to-develop:
   stage: build
   script:
+    - git config --global http.version HTTP/1.1
     - git clone "${ORCHESTRA_CONFIG_REPO_HTTP_URL:-https://github.com/revng/orchestra.git}"
     - cd orchestra
     - .orchestra/ci/ci.sh
@@ -19,6 +20,7 @@ push-to-master:
   rules:
     - if: $PUSHED_REF == "refs/heads/next-develop"
   script:
+    - git config --global http.version HTTP/1.1
     - git clone --branch develop "${ORCHESTRA_CONFIG_REPO_HTTP_URL:-https://github.com/revng/orchestra.git}"
     - cd orchestra
     - .orchestra/ci/ci-regression.sh
