@@ -193,7 +193,7 @@ EOF
         chmod -R u=rwX,go=rX .
 
         # register the ssh key and push the docs via rsync
-        echo "$DOCS_SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+        base64 -d <<< "$DOCS_SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
         rsync -qaz --stats \
               --delay-updates \
               --delete-after \
