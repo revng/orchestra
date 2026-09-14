@@ -116,6 +116,7 @@ FULL_PACKAGES+=(graphviz)
 # revng dependencies
 #
 MINIMAL_PACKAGES+=(doxygen)
+MINIMAL_PACKAGES+=(graphviz)
 MINIMAL_PACKAGES+=(shellcheck)
 
 #
