@@ -1,101 +1,81 @@
-import asyncio
+# This file implements 3 closely related commands, which all do the the
+# following:
+# 1. Spawn the revng daemon manager
+# 2. Run vscode in a new window, with optionally a `--folder-uri`
+# Each command does things slightly differently:
+# * `revng ui`: spawns the UI without additional arguments
+# * `revng project ui`: adds a `--folder-uri` for the current project directory
+# * `revng quick ui`: creates a temporary project directory and pre-fills the
+#                     UI with the correct `--folder-uri`
+
 import signal
-import sys
-from asyncio.exceptions import CancelledError
-from asyncio.subprocess import DEVNULL, STDOUT
-from contextlib import suppress
-from tempfile import NamedTemporaryFile
+from pathlib import Path
+from subprocess import Popen, run
+from tempfile import NamedTemporaryFile, TemporaryDirectory
 
 import click
 
-from revng.internal.cli.common import CommandRegistry, cli_logger
+from revng.internal.cli.common import CommandRegistry
 from revng.support import get_root
 
 
-def map_coroutines(*coroutines) -> list[asyncio.Task]:
-    async def wrapper(index, coro):
-        return (index, await coro)
+def _run_vscode(no_manager: bool, wait: bool, uri: str | None):
+    if not no_manager:
+        run(["revng", "internal", "daemon-manager"], check=True)
 
-    return [asyncio.create_task(wrapper(i, coro)) for i, coro in enumerate(coroutines)]
-
-
-def apopen(*args, **kwargs):
-    cli_logger.debug_log(f"Running command: {args}")
-    return asyncio.create_subprocess_exec(*args, **kwargs)
-
-
-async def arun(chdir: str):
-    socket_path_out = NamedTemporaryFile(prefix="revng-ui-socket-path-")
-    daemon_cmd = ["revng", "project", "daemon", "--socket-location-file", socket_path_out.name]
-    daemon_kwargs = {"cwd": chdir, "stdout": DEVNULL, "stderr": STDOUT}
-    daemon_process = await apopen(*daemon_cmd, **daemon_kwargs)
-    daemon_alread_running = False
-    while True:
-        with open(socket_path_out.name) as f:
-            socket_path = f.read()
-        if socket_path.strip() != "":
-            break
-        else:
-            await asyncio.sleep(0.05)
-
-    with suppress(TimeoutError):
-        await asyncio.wait_for(daemon_process.wait(), 1)
-
-    if daemon_process.returncode is not None:
-        if daemon_process.returncode == 4:
-            cli_logger.debug_log("Daemon is already running in another instance")
-            daemon_alread_running = True
-        else:
-            cli_logger.debug_log(f"Daemon process exited with {daemon_process.returncode}, exiting")
-            sys.exit(1)
-
-    uri = f"pipelinefs-direct://!unix{socket_path}/-/none/-/"
     vscode_binary = get_root() / "share/vscode-electron/bin/code-oss"
+    cmd: list[str] = [str(vscode_binary), "--new-window"]
+    if uri is not None:
+        cmd.extend(("--folder-uri", uri))
 
-    if daemon_alread_running:
-        # If there it means that there is an existing `revng ui` instance
-        # running, focus its window.
-        vscode_process = await apopen(vscode_binary, "--focus", "--wait", "--folder-uri", uri)
-        await vscode_process.wait()
-        sys.exit(0)
+    if wait:
+        with NamedTemporaryFile() as temp_file:
+            cmd.extend(("--wait", "--window-id-file", temp_file.name))
+            vscode_process = Popen(cmd)
 
-    vscode_process = await apopen(vscode_binary, "--new-window", "--wait", "--folder-uri", uri)
+            def sigint_handler(signo, frame):
+                window_id = ""
+                while window_id == "":
+                    with open(temp_file.name, "r") as f:
+                        window_id = f.read()
+                run([vscode_binary, "--close-window-id", window_id], check=True)
 
-    stop = False
-    while not stop:
-        try:
-            done, pending = await asyncio.wait(
-                map_coroutines(daemon_process.wait(), vscode_process.wait()),
-                return_when=asyncio.FIRST_COMPLETED,
-            )
-        except CancelledError:
-            cli_logger.debug_log("SIGINT received, closing rev.ng UI")
-            vscode_close_process = await apopen(vscode_binary, "--close", "--folder-uri", uri)
-            await vscode_close_process.wait()
-            await vscode_process.wait()
-            await daemon_process.wait()
-            return
-
-        if list(done)[0].result()[0] == 0:
-            # Daemon has stopped working, restart it
-            cli_logger.debug_log("Daemon process exited, restarting it")
-            daemon_process = await apopen(*daemon_cmd, **daemon_kwargs)
-        else:
-            # VSCode has been closed
-            cli_logger.debug_log("rev.ng UI has been closed, stopping daemon and quitting")
-            daemon_process.send_signal(signal.SIGINT)
-            await daemon_process.wait()
-            stop = True
-
-        for task in pending:
-            task.cancel()
+            signal.signal(signal.SIGINT, sigint_handler)
+            vscode_process.wait()
+    else:
+        run(cmd, check=True)
 
 
-@click.command(name="ui", help="Start rev.ng's UI\n\n\b\nLaunch a revng daemon with the UI")
+no_manager_option = click.option(
+    "--no-manager", is_flag=True, hidden=True, help="Don't start the daemon manager"
+)
+wait_option = click.option("--wait", is_flag=True, help="Wait for the UI instance to close")
+
+
+@click.command(name="ui", help="Start rev.ng's UI with a temporary project")
+def quick_ui():
+    with TemporaryDirectory(prefix="tmp.revng-quick-ui.") as tmp_dir:
+        (Path(tmp_dir) / "revng.yml").touch()
+        _run_vscode(False, True, f"pipelinefs-direct://!unix{tmp_dir}/revng.sock/-/none/-/")
+
+
+@click.command(name="ui", help="Start rev.ng's UI, opening the current project")
 @click.option("-C", "--chdir", help="Target directory for the daemon")
-def ui(chdir: str):
-    asyncio.run(arun(chdir))
+@no_manager_option
+@wait_option
+def project_ui(no_manager: bool, wait: bool, chdir: str | None):
+    socket_path = ((Path.cwd() if chdir is None else Path(chdir)) / "revng.sock").resolve()
+    _run_vscode(no_manager, wait, f"pipelinefs-direct://!unix{socket_path!s}/-/none/-/")
+
+
+@click.command(name="ui", help="Start rev.ng's UI")
+@no_manager_option
+@wait_option
+def ui(no_manager: bool, wait: bool):
+    _run_vscode(no_manager, wait, None)
 
 
 def setup(registry: CommandRegistry):
     registry.register((), ui)
+    registry.register(("project",), project_ui)
+    registry.register(("quick",), quick_ui)
