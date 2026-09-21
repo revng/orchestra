@@ -11,7 +11,6 @@ environment:
   - JOBS: #@ str(datavalue("parallelism"))
   - PKG_CONFIG_PATH: $ORCHESTRA_ROOT/lib/pkgconfig:$ORCHESTRA_ROOT/share/pkgconfig${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
   - INSTALL_LINK_ONLY_PATH: $ORCHESTRA_ROOT/link-only
-  - LIBGL_DRIVERS_PATH: $ORCHESTRA_ROOT/lib/dri${LIBGL_DRIVERS_PATH:+:${LIBGL_DRIVERS_PATH}}
   - NPM_CONFIG_USERCONFIG: $ORCHESTRA_ROOT/share/npmrc
   - NODE_PATH: $ORCHESTRA_ROOT/lib/node_modules${NODE_PATH:+:${NODE_PATH}}
   - ORCHESTRA_NODE_CACHE: $ORCHESTRA_ROOT/share/node_cache
