@@ -2,6 +2,11 @@
 #@ load("@ytt:overlay", "overlay")
 #@ load("/lib/fn-args.lib.yml", "mandatory")
 
+#! Hashes of the support scripts, so that changing one rebuilds the toolchains
+#@ msvc_run_sha = "3d32a7967c44122882d140509884fbd8470a38b6e9a7766475a02a3656ef4460"
+#@ msvc_create_wineprefix_sha = "4fa76099271e317186737ecb7eb19b8ae6f3ec0a1fbb00d2950dd288249547dd"
+#@ msvc_dispatch_sha = "4b20c31486dfb83ca2cd68a133b95425fb344e740ecc3f53e420b868b4d80734"
+
 #@ def vc12_params():
 #! cl.exe version 12.00.8168
 #! link.exe version 6.00.8168
@@ -320,51 +325,33 @@ toolchain/(@= name @)/vc:
 
         (@= extract @)
 
+        # The wrappers only say what tells the toolchains apart; the work is
+        # in the support scripts next to them.
+        for SCRIPT in msvc-run msvc-create-wineprefix; do
+            cp "$ORCHESTRA_DOTDIR/support/$SCRIPT" .
+        done
+
+        # Check the support scripts have the expected hash, so that orchestra
+        # rebuilds this component whenever we change them
+        sha256sum -c - <<'EOF'
+        (@= msvc_run_sha @)  msvc-run
+        (@= msvc_create_wineprefix_sha @)  msvc-create-wineprefix
+        EOF
+
         cat > cl.exe <<'EOF'
         #!/usr/bin/env bash
 
-        SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}"; )" &> /dev/null && pwd 2> /dev/null; )";
-
         set -euo pipefail
 
-        # Genius
-        shopt -s nocaseglob
-        export INCLUDE="(@= ";".join(["$SCRIPT_DIR/" + path for path in include]) @)"
-        export LIB="(@= ";".join(["$SCRIPT_DIR/" + path for path in lib]) @)"
+        MSVC_TOOLCHAIN="$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}"; )" &> /dev/null && pwd 2> /dev/null; )";
+        export MSVC_TOOLCHAIN
+        export MSVC_BIN="(@= bin @)"
+        export MSVC_PROGRAM="$(basename "$0")"
+        export MSVC_ASSEMBLER="(@= "ml.exe" if triple.startswith("i386-") else "ml64.exe" @)"
+        export INCLUDE="(@= ";".join(["$MSVC_TOOLCHAIN/" + path for path in include]) @)"
+        export LIB="(@= ";".join(["$MSVC_TOOLCHAIN/" + path for path in lib]) @)"
 
-        # Make sure we do not spawn any window (avoid lag)
-        unset DISPLAY
-        unset WAYLAND_DISPLAY
-
-        # Wine automatically tries to enumerate GPUs, set Mesa-related variables
-        # to force software rendering
-        export LIBGL_ALWAYS_SOFTWARE=1
-        export VK_LOADER_DRIVERS_DISABLE='*'
-
-        # Suppress wine debug information
-        export WINEDEBUG="fixme-all,warn-all,-winediag,-systray"
-
-        # Disable .Net and mshtml
-        export WINEDLLOVERRIDES="mscoree,mshtml="
-
-        # Make a separate wineprefix
-        export WINEPREFIX=$(mktemp -d --tmpdir tmp.msvc-wineprefix.XXXXXXXXXX)
-
-        function cleanup() {
-          wineserver --kill || true
-          rm -rf "$WINEPREFIX"
-        }
-        trap cleanup EXIT
-
-        PROGRAM_NAME="$(basename $0)"
-        (@ if not triple.startswith("i386-"): @)
-        if [[ "${PROGRAM_NAME}" =~ ^ml.exe$ ]]; then
-            PROGRAM_NAME="ml64.exe"
-        fi
-        (@ end @)
-
-        wine "$SCRIPT_DIR"/(@= bin @)/$PROGRAM_NAME "$@"
-
+        exec "$MSVC_TOOLCHAIN/msvc-run" "$@"
         EOF
 
         cp cl.exe dumpbin.exe
@@ -379,20 +366,13 @@ toolchain/(@= name @)/vc:
         cd "$BUILD_DIR"
         mkdir -p bin
 
-        cat > bin/(@= triple @)-cl <<'EOF'
-        #!/usr/bin/env bash
+        for PROGRAM in cl dumpbin ml link; do
+            cp "$ORCHESTRA_DOTDIR/support/msvc-dispatch" "bin/(@= triple @)-$PROGRAM"
+        done
 
-        SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}"; )" &> /dev/null && pwd 2> /dev/null; )";
-
-        FILE_NAME="$(basename $0)"
-        TRIPLE="${FILE_NAME%-*}"
-        PROGRAM_NAME="${FILE_NAME##*-}"
-        exec "$SCRIPT_DIR/../lib/vc/$TRIPLE/$PROGRAM_NAME.exe" "$@"
+        sha256sum -c - <<'EOF'
+        (@= msvc_dispatch_sha @)  bin/(@= triple @)-cl
         EOF
-
-        cp bin/(@= triple @)-cl bin/(@= triple @)-dumpbin
-        cp bin/(@= triple @)-cl bin/(@= triple @)-ml
-        cp bin/(@= triple @)-cl bin/(@= triple @)-link
 
         chmod +x bin/(@= triple @)-cl
         chmod +x bin/(@= triple @)-dumpbin
@@ -406,7 +386,27 @@ toolchain/(@= name @)/vc:
 
         (@ if not triple.startswith("aarch64-"): @)
         if test "$RUN_TESTS" -eq 1; then
-          cat > test.c <<'EOF'
+          # Build in a directory of its own: `$BUILD_DIR` is reused across
+          # invocations and all of its contents get installed, so a leftover
+          # test binary would end up in the orchestra root.
+          TEST_DIRECTORY="$(mktemp --tmpdir tmp.msvc-test.XXXXXXXXXX -d)"
+
+          # Point the wrappers at a throw-away directory, so that we leave
+          # nothing behind in the shared prefixes
+          MSVC_WINEPREFIXES="$(mktemp --tmpdir tmp.msvc-wine-prefixes.XXXXXXXXXX -d)"
+          export MSVC_WINEPREFIXES
+
+          function cleanup() {
+            # `wineserver --kill` fails when there is no server to kill; let
+            # it, or we would skip the cleanup below and return its status
+            if test -n "${WINEPREFIX:-}"; then
+              wineserver --kill || true
+            fi
+            rm -rf "$MSVC_WINEPREFIXES" "$TEST_DIRECTORY"
+          }
+          trap cleanup EXIT
+
+          cat > "$TEST_DIRECTORY/test.c" <<'EOF'
         #include <stdio.h>
 
         int main() {
@@ -415,22 +415,25 @@ toolchain/(@= name @)/vc:
         }
         EOF
 
-          WINE_TMP_DIRECTORY_32="$(mktemp --tmpdir tmp.wine-prefix.XXXXXXXXXX -d)"
-          trap 'WINEPREFIX="$WINE_TMP_DIRECTORY_32" wineserver -k && rm -rf "$WINE_TMP_DIRECTORY_32"' EXIT
+          CL="$PWD/bin/(@= triple @)-cl"
+          cd "$TEST_DIRECTORY"
 
           (@ if debug_info: @)
-          WINEPREFIX="$WINE_TMP_DIRECTORY_32" ./bin/(@= triple @)-cl test.c -nologo /DEBUG:FASTLINK /Zi
+          "$CL" test.c -nologo /DEBUG:FASTLINK /Zi
           (@ else: @)
-          WINEPREFIX="$WINE_TMP_DIRECTORY_32" ./bin/(@= triple @)-cl test.c -nologo 
+          "$CL" test.c -nologo
           (@ end @)
           export WINEDEBUG=-all
 
+          # Run the result in the very prefix the wrapper just built for
+          # itself, the only one in there
+          WINEPREFIX="$(find "$MSVC_WINEPREFIXES" -mindepth 1 -maxdepth 1 -type d)"
+          export WINEPREFIX
+
           if [[ "(@= triple @)" =~ ^i386- ]]; then
-            WINEPREFIX="$WINE_TMP_DIRECTORY_32" wine test.exe
+            wine test.exe
           else
-            WINE_TMP_DIRECTORY_64="$(mktemp --tmpdir tmp.wine-prefix.XXXXXXXXXX -d)"
-            trap 'WINEPREFIX="$WINE_TMP_DIRECTORY_64" wineserver -k && rm -rf "$WINE_TMP_DIRECTORY_64"' EXIT
-            WINEPREFIX="$WINE_TMP_DIRECTORY_64" wine64 test.exe
+            wine64 test.exe
           fi
         fi
         (@ end @)

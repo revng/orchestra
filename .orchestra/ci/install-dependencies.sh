@@ -130,6 +130,9 @@ FULL_PACKAGES+=(p7zip-full)
 PACKAGES+=(aria2)
 PACKAGES+=(msitools)
 PACKAGES+=(p7zip-full)
+# util-linux: the `cl.exe` wrapper uses `flock` to make sure the shared
+# wineprefix is created exactly once
+PACKAGES+=(util-linux)
 # winbind: `mspdb100.dll` tries to make some kind of connection that requires
 # this package. Without it, the following command will fail:
 #

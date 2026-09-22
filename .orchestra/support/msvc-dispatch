@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+# Front-end for the MSVC toolchains. Installed as `bin/<triple>-<program>`,
+# it works out which toolchain and which program it was invoked as and hands
+# over to the wrapper for it.
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]:-$0}")" &> /dev/null && pwd)"
+
+FILE_NAME="$(basename "$0")"
+TRIPLE="${FILE_NAME%-*}"
+PROGRAM_NAME="${FILE_NAME##*-}"
+
+exec "$SCRIPT_DIR/../lib/vc/$TRIPLE/$PROGRAM_NAME.exe" "$@"
