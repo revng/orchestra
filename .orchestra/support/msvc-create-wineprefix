@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+# Creates `$WINEPREFIX`. Run by `msvc-run` under `flock`, so that concurrent
+# invocations of the MSVC toolchains create it exactly once: several
+# `wineboot`s on the same prefix race with each other.
+
+set -euo pipefail
+
+# Somebody else got here first while we were waiting for the lock
+if [[ -e "$WINEPREFIX/.complete" ]]; then
+    exit 0
+fi
+
+# Only ever removes a prefix whose creation did not complete, and only while
+# holding the lock, so nobody can be using it
+rm -rf "${WINEPREFIX:?}"
+
+# wine refuses to create a prefix when the parent directory is not ours, and
+# /tmp is not, so make the directory ourselves
+mkdir -p "$WINEPREFIX"
+
+if ! wineboot --init > /dev/null 2>&1; then
+    echo "Cannot create $WINEPREFIX" >&2
+    exit 1
+fi
+
+# `wineboot` returns before the registry has been written out, and wine only
+# writes it when the server shuts down. We hold the lock and just created this
+# prefix, so nothing else can be attached to it. The server may also have
+# exited on its own already, which is just as good -- so rather than trust the
+# exit code, check that the registry is really there before declaring the
+# prefix complete.
+wineserver --kill > /dev/null 2>&1 || true
+
+if [[ ! -s "$WINEPREFIX/system.reg" ]]; then
+    echo "Registry of $WINEPREFIX was never written out" >&2
+    exit 1
+fi
+
+echo "$MSVC_WINE_IDENTITY" > "$WINEPREFIX/.complete"

@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+
+# Runs one program of an MSVC toolchain under wine. The per-toolchain wrapper
+# that invokes us exports what tells the toolchains apart:
+#
+#   MSVC_TOOLCHAIN   the directory the toolchain was installed in
+#   MSVC_BIN         where its programs live inside it
+#   MSVC_PROGRAM     which one of them to run
+#   MSVC_ASSEMBLER   what `ml.exe` means for this target
+#   INCLUDE, LIB     the search paths, as MSVC expects them
+
+set -euo pipefail
+
+# Genius
+shopt -s nocaseglob
+
+# Make sure we do not spawn any window (avoid lag)
+unset DISPLAY
+unset WAYLAND_DISPLAY
+
+# Wine automatically tries to enumerate GPUs, set Mesa-related variables to
+# force software rendering
+export LIBGL_ALWAYS_SOFTWARE=1
+export VK_LOADER_DRIVERS_DISABLE='*'
+
+# Suppress wine debug information
+export WINEDEBUG="fixme-all,warn-all,-winediag,-systray"
+
+# Disable .Net and mshtml
+export WINEDLLOVERRIDES="mscoree,mshtml="
+
+# Put wine prefixes in `$MSVC_WINEPREFIXES`.
+# Note: wine upgrades create a new directory.
+MSVC_WINEPREFIXES="${MSVC_WINEPREFIXES:-${XDG_CACHE_HOME:-$HOME/.cache}/revng/msvc-wine-prefixes}"
+
+# Which wine we are talking about, e.g.
+# `wine-9.0 (Ubuntu 9.0~repack-4build3) /usr/bin/wine-stable`
+MSVC_WINE_IDENTITY="$(wine --version) $(readlink -f "$(command -v wine)")"
+export MSVC_WINE_IDENTITY
+MSVC_WINE_NAME="$(printf '%s' "$MSVC_WINE_IDENTITY" | sha256sum | cut -d ' ' -f 1)"
+export WINEPREFIX="$MSVC_WINEPREFIXES/$MSVC_WINE_NAME"
+
+# `--close` is not optional: the daemons `wineboot` leaves behind would
+# otherwise inherit the lock file descriptor and hold the lock forever,
+# deadlocking every other invocation.
+if [[ ! -e "$WINEPREFIX/.complete" ]]; then
+    mkdir -p "$MSVC_WINEPREFIXES"
+    flock --close --exclusive "$MSVC_WINEPREFIXES" "$MSVC_TOOLCHAIN/msvc-create-wineprefix"
+fi
+
+PROGRAM_NAME="$MSVC_PROGRAM"
+if [[ "$PROGRAM_NAME" == "ml.exe" ]]; then
+    PROGRAM_NAME="$MSVC_ASSEMBLER"
+fi
+
+# Run one dedicated mspdbsrv.exe per invocation and shut it down when we are
+# done. The wineprefix is shared, so one left running would stay around for
+# the rest of the build and, having inherited our stdout and stderr, would
+# keep whoever is reading them (ninja) waiting forever for an EOF that never
+# comes.
+#
+# `-stop` reports "server not found" whenever there was no PDB to write, which
+# is most invocations, and a trap that ends on a failing command replaces our
+# exit status with its own -- so both its output and its outcome have to be
+# discarded.
+MSPDBSRV=("$MSVC_TOOLCHAIN/$MSVC_BIN"/mspdbsrv.ex*e)
+if [[ -e "${MSPDBSRV[0]}" ]]; then
+    _MSPDBSRV_ENDPOINT_="revng-$$-$(date +%s%N)"
+    export _MSPDBSRV_ENDPOINT_
+    trap 'wine "${MSPDBSRV[0]}" -stop < /dev/null > /dev/null 2>&1 || true' EXIT
+fi
+
+wine "$MSVC_TOOLCHAIN/$MSVC_BIN/$PROGRAM_NAME" "$@"
