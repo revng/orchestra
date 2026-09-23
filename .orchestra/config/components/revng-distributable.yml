@@ -5,7 +5,9 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def revng_distributable(name=mandatory, components=mandatory):
+#@ def revng_distributable(name=mandatory, components=mandatory, binary_archives=None):
+#@ if/end binary_archives:
+binary_archives: (@= binary_archives @)
 configure: |
   mkdir -p "$BUILD_DIR"
 install: |
@@ -24,5 +26,6 @@ skip_post_install: true
 ---
 components:
   revng-distributable: #@ single_build_component(**revng_distributable("revng", ["revng", "model-db"]))
+  revng-ui-distributable: #@ single_build_component(**revng_distributable("revng-ui-distributable", ["revng-ui-native", "model-db"], "private"))
   revng-distributable-minimal: #@ single_build_component(**revng_distributable("revng-minimal", ["revng"]))
   revng-distributable-public-demo: #@ single_build_component(**revng_distributable("revng-public-demo", ["revng", "toolchain/host/gcc", "model-db"]))

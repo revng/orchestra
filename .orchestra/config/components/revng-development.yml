@@ -15,6 +15,7 @@ components:
           - revng-ui-native
           - llvm-documentation
           - revng-distributable
+          - revng-ui-distributable
           - revng-distributable-public-demo
         configure: mkdir -p "$BUILD_DIR"
         install: echo "Nothing to do"
