@@ -24,7 +24,7 @@ def _run_vscode(no_manager: bool, wait: bool, uri: str | None):
         run(["revng", "internal", "daemon-manager"], check=True)
 
     vscode_binary = get_root() / "share/vscode-electron/bin/code-oss"
-    cmd: list[str] = [str(vscode_binary), "--new-window"]
+    cmd: list[str] = [str(vscode_binary), "--force-workspace", "--new-window"]
     if uri is not None:
         cmd.extend(("--folder-uri", uri))
 
