@@ -44,6 +44,6 @@
         "window.restoreWindows": "none"
     },
     "extensionEnabledApiProposals": {
-        "revng.revng": ["fileSearchProvider", "fileSearchProvider2"]
+        "revng.revng": ["fileSearchProvider", "fileSearchProvider2", "dynamicContributions"]
     }
 }
