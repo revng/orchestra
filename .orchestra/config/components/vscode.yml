@@ -1,5 +1,6 @@
 #@ load("@ytt:overlay", "overlay")
 #@ load("@ytt:data", "data")
+#@ load("/lib/create-component.lib.yml", "single_build_component")
 
 #@yaml/text-templated-strings
 ---
@@ -109,9 +110,23 @@ install: |
     "${SOURCE_ARCHIVES}/electron-v${ELECTRON_VERSION}-linux-x64.zip"
 #@ end
 
+#@yaml/text-templated-strings
+---
+#@ def vscode_dts_args():
+repository: vscode
+binary_archives: private
+configure: |
+  mkdir -p "$BUILD_DIR"
+install: |
+  mkdir -p "${DESTDIR}${ORCHESTRA_ROOT}/share/vscode/dts"
+  cp -a "$SOURCE_DIR/src/vscode-dts/"*.ts \
+        "${DESTDIR}${ORCHESTRA_ROOT}/share/vscode/dts"
+#@ end
+
 #@overlay/match by=overlay.all, expects=1
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
+  vscode-dts: #@ single_build_component(**vscode_dts_args())
   vscode-web: #@ _vscode_component_base(vscode_web())
   vscode-electron: #@ _vscode_component_base(vscode_electron())
