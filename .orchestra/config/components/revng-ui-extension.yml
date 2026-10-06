@@ -11,13 +11,17 @@ binary_archives: private
 build_dependencies:
 - revng
 - vscode-dts
+- host-cxx-toolchain
 development_packages:
 - revng-model
 #! Since the vscode_extension machine does not run a proper build system we
-#! just copy the yaml schema directory in the build directory
+#! just copy the yaml schema directory in the build directory.
+#! Setting `npm_config_nodedir` is needed by `node-gyp` (the native extension
+#! builder) to locate orchestra's `node.h` header.
 pre_npm_install: |
   cp -a "${ORCHESTRA_ROOT}/share/revng/pipeline/pipeline-description-schema.yml" .
   export VSCODE_DTS_PATH="${ORCHESTRA_ROOT}/share/vscode/dts"
+  export npm_config_nodedir="${ORCHESTRA_ROOT}"
 package_script: (@= package_script @)
 #@ end
 

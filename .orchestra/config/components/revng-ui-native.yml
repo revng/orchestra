@@ -8,6 +8,7 @@
 binary_archives: private
 dependencies:
 - revng
+- host-libcxx
 build_dependencies:
 - revng-ui-native-extension
 - revng-theme
