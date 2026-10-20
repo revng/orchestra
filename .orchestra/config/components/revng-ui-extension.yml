@@ -10,12 +10,14 @@ license: LICENSE.md
 binary_archives: private
 build_dependencies:
 - revng
+- vscode-dts
 development_packages:
 - revng-model
 #! Since the vscode_extension machine does not run a proper build system we
 #! just copy the yaml schema directory in the build directory
 pre_npm_install: |
   cp -a "${ORCHESTRA_ROOT}/share/revng/pipeline/pipeline-description-schema.yml" .
+  export VSCODE_DTS_PATH="${ORCHESTRA_ROOT}/share/vscode/dts"
 package_script: (@= package_script @)
 #@ end
 

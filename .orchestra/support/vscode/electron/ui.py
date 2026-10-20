@@ -10,13 +10,64 @@
 
 import signal
 from pathlib import Path
+from string import Template
 from subprocess import Popen, run
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 
 import click
+from xdg import xdg_data_home
 
 from revng.internal.cli.common import CommandRegistry
 from revng.support import get_root
+
+DESKTOP_FILE = """[Desktop Entry]
+Type=Application
+Name=rev.ng UI
+Exec=${executable_path}
+Icon=revng-ui
+StartupWMClass=revng-ui
+NoDisplay=true
+"""
+
+
+def _install_revng_ui_desktop(executable_path: Path):
+    """
+    This lazily creates the `revng-ui.desktop` file and symlinks the needed
+    icons in `~/.local/share`. These steps are needed to guarantee that Window
+    Managers use the correct icon. WMs can pick one of 3 icon sources:
+    1. The `_NET_WM_ICON` X11 property
+    2. The `xdg-toplevel-icon` protocol, which is the wayland equivalent of (1)
+    3. The `.desktop` file
+    WMs implement a subset of these 3 sources, and each one has a different
+    order of precedence. The most common is (3) so the files are installed to
+    allow the correct icon to show up. Electron also sets (1) when setting the
+    `.icon` property, so the this covers sources (3) and (1).
+    """
+
+    contents = Template(DESKTOP_FILE).substitute(executable_path=str(executable_path.resolve()))
+    desktop_file = xdg_data_home() / "applications/revng-ui.desktop"
+    if desktop_file.is_file() and desktop_file.read_text() == contents:
+        return
+
+    desktop_file.parent.mkdir(parents=True, exist_ok=True)
+    desktop_file.write_text(contents)
+
+    def symlink_icon(size: str, source: Path, target: str):
+        icon_dir = xdg_data_home() / f"icons/hicolor/{size}/apps"
+        icon_dir.mkdir(parents=True, exist_ok=True)
+        image_file = icon_dir / target
+        if image_file.exists():
+            image_file.unlink()
+        image_file.symlink_to(source)
+
+    # Symlink the logos
+    logo_dir = get_root() / "share/revng-ui/logos"
+    symlink_icon("scalable", logo_dir / "logo.svg", "revng-ui.svg")
+    for size in (16, 24, 32, 48, 64, 128, 256, 512):
+        symlink_icon(f"{size}x{size}", logo_dir / f"{size}.png", "revng-ui.png")
+
+    # Force re-check of icons
+    (xdg_data_home() / "icons/hicolor").touch(exist_ok=True)
 
 
 def _run_vscode(no_manager: bool, wait: bool, uri: str | None):
@@ -24,7 +75,8 @@ def _run_vscode(no_manager: bool, wait: bool, uri: str | None):
         run(["revng", "internal", "daemon-manager"], check=True)
 
     vscode_binary = get_root() / "share/vscode-electron/bin/code-oss"
-    cmd: list[str] = [str(vscode_binary), "--new-window"]
+    _install_revng_ui_desktop(vscode_binary)
+    cmd: list[str] = [str(vscode_binary), "--force-workspace", "--new-window"]
     if uri is not None:
         cmd.extend(("--folder-uri", uri))
 
