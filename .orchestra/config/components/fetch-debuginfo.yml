@@ -4,7 +4,7 @@
 
 #@ path = "python/revng/internal/cli/_commands/fetch_debuginfo/common.py"
 #@ base_url = "https://raw.githubusercontent.com/revng/revng/refs/heads/next-develop"
-#@ hash = "7f89147439a214e4b04aa2525af3f5853450ff89ed96de2a923fc2bd87950537"
+#@ hash = "83490f8372a82a5edb4a03cafc10f579ce1e22042832dad27e95667ec2837595"
 
 #@yaml/text-templated-strings
 ---

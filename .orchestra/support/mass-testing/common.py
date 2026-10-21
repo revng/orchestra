@@ -7,11 +7,12 @@ import re
 from dataclasses import asdict, dataclass, field
 from hashlib import file_digest
 from pathlib import Path
-from typing import List
 
-import boto3
-from botocore.exceptions import ClientError as S3ClientError
-from mypy_boto3_s3 import S3Client as S3ClientOrig
+import httpx2
+
+httpx2.alias_httpx()
+
+from httpx_auth import AWS4Auth  # noqa: E402
 
 
 @dataclass
@@ -21,8 +22,8 @@ class BinaryEntry:
     text_size: int
     hash: str  # noqa: A003
     _path: Path
-    sources: List[str] = field(default_factory=list)
-    tags: List[str] = field(default_factory=list)
+    sources: list[str] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
 
     @staticmethod
     def from_dict(dict_: dict) -> "BinaryEntry":
@@ -45,40 +46,44 @@ class BinaryEntry:
 
 
 class S3Client:
-    def __init__(self, client: S3ClientOrig, bucket: str, path: str):
+    def __init__(self, client: httpx2.Client, bucket: str, path: str):
         self.client = client
         self.bucket = bucket
         self.path = path
 
-    def _get_key(self, name: str) -> str:
-        return os.path.join(self.path, name) if name != "" else self.path
+    def _get_url(self, name: str) -> httpx2.URL:
+        key = os.path.join(self.path, name) if name != "" else self.path
+        return self.client.base_url.copy_with(path=f"/{self.bucket}/{key}")
 
-    def _object_exists(self, key: str) -> bool:
-        try:
-            self.client.head_object(Key=key, Bucket=self.bucket)
-            return True
-        except S3ClientError as ex:
-            if ex.response["Error"]["Code"] == "404":
-                return False
-            raise ex
+    def _object_exists(self, url: httpx2.URL) -> bool:
+        response = self.client.head(url)
+        if response.status_code == 404:
+            return False
+        response.raise_for_status()
+        return True
 
     def put_object(self, name: str, path: str, skip_if_exists: bool = False):
-        key = self._get_key(name)
-        if skip_if_exists and self._object_exists(key):
+        url = self._get_url(name)
+        if skip_if_exists and self._object_exists(url):
             return
 
-        self.client.upload_file(
-            Filename=path, Key=key, Bucket=self.bucket, ExtraArgs={"ACL": "private"}
-        )
+        with open(path, "rb") as input_file:
+            content = input_file.read()
+
+        response = self.client.put(url, content=content, headers={"x-amz-acl": "private"})
+        response.raise_for_status()
 
     def get_object(self, name: str, path: str):
-        key = self._get_key(name)
-        self.client.download_file(Key=key, Bucket=self.bucket, Filename=path)
+        with self.client.stream("GET", self._get_url(name)) as response:
+            response.raise_for_status()
+            with open(path, "wb") as output_file:
+                for chunk in response.iter_bytes():
+                    output_file.write(chunk)
 
     def read_object(self, name: str) -> bytes:
-        key = self._get_key(name)
-        req = self.client.get_object(Key=key, Bucket=self.bucket)
-        return req["Body"].read()
+        response = self.client.get(self._get_url(name))
+        response.raise_for_status()
+        return response.content
 
 
 def get_s3_client(endpoint: str | None = None) -> S3Client | None:
@@ -95,14 +100,16 @@ def get_s3_client(endpoint: str | None = None) -> S3Client | None:
     if match_obj is None:
         raise ValueError("S3 endpoint invalid")
 
-    session = boto3.session.Session()
     proto = "https" if match_obj["proto"] == "s3s" else "http"
-    client = session.client(
-        "s3",
-        endpoint_url=f"{proto}://{match_obj['host']}",
-        region_name=match_obj["region"],
-        aws_access_key_id=match_obj["username"],
-        aws_secret_access_key=match_obj["password"],
+    client = httpx2.Client(
+        base_url=f"{proto}://{match_obj['host']}",
+        auth=AWS4Auth(  # type: ignore[arg-type]
+            access_id=match_obj["username"],
+            secret_key=match_obj["password"],
+            region=match_obj["region"],
+            service="s3",
+        ),
+        timeout=httpx2.Timeout(60.0),
     )
     return S3Client(client, match_obj["bucket"], match_obj["path"])
 
