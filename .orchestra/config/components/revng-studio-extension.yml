@@ -4,10 +4,11 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def revng_ui_args(package_script):
-repository: revng-ui
+#@ def revng_studio_args(package_script):
+repository: revng-studio
 license: LICENSE.md
 binary_archives: private
+subdir: extension
 build_dependencies:
 - revng
 - vscode-dts
@@ -29,5 +30,5 @@ package_script: (@= package_script @)
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  revng-ui-web-extension: #@ vscode_extension(**revng_ui_args("package-web"))
-  revng-ui-native-extension: #@ vscode_extension(**revng_ui_args("package-native"))
+  revng-studio-web-extension: #@ vscode_extension(**revng_studio_args("package-web"))
+  revng-studio-native-extension: #@ vscode_extension(**revng_studio_args("package-native"))

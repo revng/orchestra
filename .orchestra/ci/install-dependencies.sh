@@ -54,8 +54,8 @@ MINIMAL_PACKAGES=()
 PACKAGES=()
 
 # Array of additional dependencies that are required to:
-# * Build packages that are downstream of `revng` (e.g. `revng-ui`) or packages
-#   which the typical developer is not expected to build (e.g.
+# * Build packages that are downstream of `revng` (e.g. `revng-studio`) or
+#   packages which the typical developer is not expected to build (e.g.
 #   llvm-documentation)
 # * Required by CI script to perform CI-specific tasks (e.g. building the
 #   `revng` image with podman)
