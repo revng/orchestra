@@ -13,6 +13,7 @@
 #@      binary_archives=None,
 #@      pre_npm_install=None,
 #@      package_script="package",
+#@      subdir="",
 #@  ):
 
 #@ if/end repository:
@@ -37,12 +38,13 @@ builds:
     configure: |
       mkdir -p "$BUILD_DIR"
       cd "$BUILD_DIR"
-      cp -a "$SOURCE_DIR/"package{,-lock}.json .
+      cp -a "$SOURCE_DIR/(@= subdir @)/"package{,-lock}.json .
       "$ORCHESTRA_DOTDIR"/support/fetch-js-dependencies npm -o cache/
       sha256sum package-lock.json > package-lock.json.sha256
 
     install: |
       cd "$BUILD_DIR"
+      BASE_DIR="$SOURCE_DIR/(@= subdir @)"
       if ! sha256sum --quiet -c package-lock.json.sha256; then
         echo "The package-lock.json has changed, please clean or reconfigure" > /dev/stderr
         exit 1
@@ -55,26 +57,27 @@ builds:
         cp -a build/*.vsix "${DESTDIR}${ORCHESTRA_ROOT}/share/vscode-extensions"
       }
 
-      if [ -f source-hash ] && cmp -s source-hash <("$ORCHESTRA_DOTDIR"/support/directory-hash "$SOURCE_DIR"); then
+      if [ -f source-hash ] && cmp -s source-hash <("$ORCHESTRA_DOTDIR"/support/directory-hash "$BASE_DIR"); then
         do_install
         exit 0
       fi
 
-      "$ORCHESTRA_DOTDIR"/support/directory-hash "$SOURCE_DIR" > source-hash.tmp
+      "$ORCHESTRA_DOTDIR"/support/directory-hash "$BASE_DIR" > source-hash.tmp
 
       rsync \
         --archive --delete --quiet \
         --exclude=.git \
         --exclude-from=<(
           git \
-            -C "$SOURCE_DIR" \
+            -C "$BASE_DIR" \
             ls-files \
             --exclude-standard \
             --others \
             --ignored \
             --directory
         ) \
-        "$SOURCE_DIR/" "$BUILD_DIR/build/"
+        "$BASE_DIR/" "$BUILD_DIR/build/"
+      cp -a "$SOURCE_DIR/(@= license @)" "$BUILD_DIR/build/"
 
       cd "$BUILD_DIR/build"
       (@ if pre_npm_install: -@)

@@ -11,11 +11,11 @@ components:
           - test/revng-prss
           - test/revng-db
           - test/revng
-          - revng-ui-web
-          - revng-ui-native
+          - revng-studio-web
+          - revng-studio-native
           - llvm-documentation
           - revng-distributable
-          - revng-ui-distributable
+          - revng-studio-distributable
           - revng-distributable-public-demo
         configure: mkdir -p "$BUILD_DIR"
         install: echo "Nothing to do"

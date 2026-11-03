@@ -4,19 +4,20 @@
 
 #@yaml/text-templated-strings
 ---
-#@ def revng_ui_web_args():
+#@ def revng_studio_web_args():
+repository: revng-studio
 binary_archives: private
 dependencies:
 - revng
 build_dependencies:
-- revng-ui-web-extension
+- revng-studio-web-extension
 - revng-theme
 - vscode-web
 configure: |
   mkdir -p "$BUILD_DIR"
 install: |
-  source "$ORCHESTRA_DOTDIR/support/vscode/common.sh"
-  install_command "${ORCHESTRA_DOTDIR}/support/vscode/web/web-ui.py"
+  source "$ORCHESTRA_DOTDIR/support/vscode-common.sh"
+  install_command "${SOURCE_DIR}/vscode/web/web-ui.py"
 
   INSTALL_DIR="${DESTDIR}${ORCHESTRA_ROOT}/share/vscode-web"
   mkdir -p "$INSTALL_DIR/static"
@@ -27,10 +28,10 @@ install: |
                   share/vscode-extensions/revng-web.vsix
 
   # Copy product.json and icons to to INSTALL_DIR
-  cp -a "$ORCHESTRA_DOTDIR/support/vscode/web/product.json" "$INSTALL_DIR/product.json"
-  cp -a "$ORCHESTRA_DOTDIR/support/logo/logo.ico" "$INSTALL_DIR/static/favicon.ico"
-  cp -a "$ORCHESTRA_DOTDIR/support/logo/logo.png" "$INSTALL_DIR/static/code-192.png"
-  cp -a "$ORCHESTRA_DOTDIR/support/logo/logo.png" "$INSTALL_DIR/static/code-512.png"
+  cp -a "$SOURCE_DIR/vscode/web/product.json" "$INSTALL_DIR/product.json"
+  cp -a "$SOURCE_DIR/logos/logo.ico" "$INSTALL_DIR/static/favicon.ico"
+  cp -a "$SOURCE_DIR/logos/logo.png" "$INSTALL_DIR/static/code-192.png"
+  cp -a "$SOURCE_DIR/logos/logo.png" "$INSTALL_DIR/static/code-512.png"
 
   # Remove all extensions not specified in `product.json:.builtinExtensions`
   remove_extraneous_extensions "$INSTALL_DIR/product.json" \
@@ -41,4 +42,4 @@ install: |
 #@overlay/match-child-defaults missing_ok=True
 ---
 components:
-  revng-ui-web: #@ single_build_component(**revng_ui_web_args())
+  revng-studio-web: #@ single_build_component(**revng_studio_web_args())
