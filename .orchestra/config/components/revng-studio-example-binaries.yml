@@ -1,0 +1,69 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/create-component.lib.yml", "single_build_component")
+
+#@yaml/text-templated-strings
+---
+#@ def revng_studio_example_binaries_args():
+binary_archives: private
+build_dependencies:
+- test/revng-qa
+configure: |
+  mkdir -p "$BUILD_DIR/binaries"
+  cd "$BUILD_DIR/binaries"
+  fetch.sh \
+    --hash 'sha256-d254481d352a5a2b55848a4aeac6002ad594d4ab605e7f1fd49a25683b33559e' \
+    https://rev.ng/downloads/hostname
+install: |
+  cd "$BUILD_DIR/binaries"
+
+  TESTS_DIR="$ORCHESTRA_ROOT/share/revng/test/tests"
+  function find_matching() {
+    find "$1" -maxdepth 1 -type f | grep -P "$2"
+  }
+
+  cp -a "$(find_matching "$TESTS_DIR/runtime" "calc-x86-64-static-revng-qa.compiled-with-debug-info-[0-9a-f]+")" \
+        calc
+  cp -a "$(find_matching "$TESTS_DIR/analysis/Decompilation/clang" "linked-lists-revng-qa.compiled-[0-9a-f]+")" \
+        linked-lists
+
+  cat - > index.json <<EOF
+  [
+      {
+          "name": "linked-lists",
+          "description": "A program manipulating linked lists.",
+          "format": "ELF",
+          "architecture": "x86-64",
+          "size": $(wc -c < linked-lists),
+          "filename": "linked-lists"
+      },
+      {
+          "name": "calc",
+          "description": "A simple CLI calculator.",
+          "format": "ELF",
+          "architecture": "x86-64",
+          "size": $(wc -c < calc),
+          "filename": "calc"
+      },
+      {
+          "name": "hostname",
+          "description": "Linux command line utility.",
+          "format": "ELF",
+          "architecture": "x86-64",
+          "size": $(wc -c < hostname),
+          "filename": "hostname"
+      }
+  ]
+  EOF
+
+  TARGET_DIR="${DESTDIR}${ORCHESTRA_ROOT}/share/revng-studio"
+  mkdir -p "$TARGET_DIR"
+  cp -raT "$BUILD_DIR/binaries" "${TARGET_DIR}/binaries"
+  chmod ugo=r "$TARGET_DIR/binaries/"{hostname,calc,linked-lists}
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  revng-studio-example-binaries: #@ single_build_component(**revng_studio_example_binaries_args())

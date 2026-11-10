@@ -14,6 +14,7 @@ build_dependencies:
 - revng-studio-native-extension
 - revng-theme
 - vscode-electron
+- revng-studio-example-binaries
 configure: |
   mkdir -p "$BUILD_DIR"
 install: |
@@ -31,6 +32,10 @@ install: |
   copy_extensions "$INSTALL_DIR/resources/app/extensions" \
                   share/vscode-extensions/revng-color-theme.vsix \
                   share/vscode-extensions/revng-node.vsix
+
+  # Copy example binaries
+  cp -raT "$ORCHESTRA_ROOT/share/revng-studio/binaries" \
+          "$INSTALL_DIR/resources/app/extensions/revng/resources/binaries"
 
   # Copy product.json and icons to to INSTALL_DIR
   APP_DIR="$INSTALL_DIR/resources/app"
