@@ -13,6 +13,7 @@ build_dependencies:
 - revng-studio-web-extension
 - revng-theme
 - vscode-web
+- revng-studio-example-binaries
 configure: |
   mkdir -p "$BUILD_DIR"
 install: |
@@ -26,6 +27,10 @@ install: |
   copy_extensions "$INSTALL_DIR/static/extensions" \
                   share/vscode-extensions/revng-color-theme.vsix \
                   share/vscode-extensions/revng-web.vsix
+
+  # Copy example binaries
+  cp -raT "$ORCHESTRA_ROOT/share/revng-studio/binaries" \
+          "$INSTALL_DIR/static/extensions/revng/resources/binaries"
 
   # Copy product.json and icons to to INSTALL_DIR
   cp -a "$SOURCE_DIR/vscode/web/product.json" "$INSTALL_DIR/product.json"
