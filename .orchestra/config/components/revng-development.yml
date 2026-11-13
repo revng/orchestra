@@ -17,5 +17,6 @@ components:
           - revng-distributable
           - revng-studio-distributable
           - revng-distributable-public-demo
+          - revng-studio-tests
         configure: mkdir -p "$BUILD_DIR"
         install: echo "Nothing to do"

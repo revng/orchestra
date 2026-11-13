@@ -9,6 +9,7 @@
 #@ def pip_package(
 #@        name=mandatory,
 #@        requirements=mandatory,
+#@        extra_env=None,
 #@        dependencies=[]
 #@  ):
 (@= name @):
@@ -45,6 +46,9 @@
         export HARD_FLAGS_COMPILE="-I"$("${ORCHESTRA_DOTDIR}/support/get-python-path" include)" $HARD_FLAGS_COMPILE"
         export HARD_ALLOWED_INCLUDE_PATH="$HARD_ALLOWED_INCLUDE_PATH:/tmp"
         export HARD_ALLOWED_LIBRARY_PATH="$HARD_ALLOWED_LIBRARY_PATH:/tmp"
+        (@- if extra_env: @)
+        export (@= extra_env @)
+        (@- end @)
         python \
           -m pip \
           --disable-pip-version-check \
