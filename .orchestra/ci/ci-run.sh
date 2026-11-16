@@ -101,15 +101,24 @@ $(get_user_options)
 branches:
 EOF
 
-if ! [[ "$COMPONENT_TARGET_BRANCH" =~ ^(next-)?(develop|master)$ ]]; then
-    echo "  - $COMPONENT_TARGET_BRANCH" >> "$USER_OPTIONS"
-fi
-
-cat >> "$USER_OPTIONS" <<EOF
-  - next-develop
-  - develop
-  - master
-EOF
+USER_BRANCHES=()
+case $COMPONENT_TARGET_BRANCH in
+  master)
+    USER_BRANCHES=(master)
+    ;;
+  develop)
+    USER_BRANCHES=(develop master)
+    ;;
+  next-develop)
+    USER_BRANCHES=(next-develop develop master)
+    ;;
+  *)
+    USER_BRANCHES=("$COMPONENT_TARGET_BRANCH" next-develop develop master)
+    ;;
+esac
+for USER_BRANCH in "${USER_BRANCHES[@]}"; do
+    echo "  - $USER_BRANCH" >> "$USER_OPTIONS"
+done
 
 # Print debug information
 log "User options:"
