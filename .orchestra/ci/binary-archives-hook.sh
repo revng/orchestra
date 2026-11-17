@@ -65,7 +65,8 @@ trap cleanup EXIT
 REDIST_PATHS=()
 while IFS= read -r PATH_CHANGE; do
     if [[ "$PATH_CHANGE" = 'public/linux-x86-64/revng-distributable/default/'* || \
-          "$PATH_CHANGE" = 'public/linux-x86-64/revng-distributable-public-demo/default/'* ]]; then
+          "$PATH_CHANGE" = 'public/linux-x86-64/revng-distributable-public-demo/default/'* || \
+          "$PATH_CHANGE" = 'private/linux-x86-64/revng-studio-distributable/default/'* ]]; then
         REDIST_PATHS+=("$PATH_CHANGE")
     fi
 done < "$CHANGES_FILE"
