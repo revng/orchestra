@@ -32,6 +32,11 @@ set -euo pipefail
 # PODMAN_IMAGE_TARGET:
 #   The path where the revng-distributable image will be uploaded to
 #
+# DOCS_SSH_PRIVATE_KEY
+#   Private key to push the docs via rsync
+# DOCS_RSYNC_TARGET
+#   rsync target string where to copy the docs to
+#
 # Optional environment variables:
 #
 # BINARY_ARCHIVES_HOOKS_FORCE:
