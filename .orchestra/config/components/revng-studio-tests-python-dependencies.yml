@@ -1,0 +1,24 @@
+#@ load("@ytt:overlay", "overlay")
+#@ load("@ytt:template", "template")
+#@ load("/lib/pip.lib.yml", "pip_package")
+
+#@ def params():
+name: revng-studio-tests-python-dependencies
+dependencies:
+- revng-python-dependencies
+#! The `greenlet` package (a playwright dependency) uses the wrong C++ compiler
+#! path, specify the `CXX` environment variable to force it to be the correct
+#! one.
+extra_env: CXX="${ORCHESTRA_ROOT}/link-only/bin/g++"
+requirements: |-
+  playwright==1.65.1
+  # The `ffmpeg-python` package on pypi hasn't been updated since 2019, use a
+  # fork which has some fixes
+  https://github.com/beefjelly/ffmpeg-python/archive/d1c17eb53ff1b789d851abf466d6aeab25d1405b.tar.gz
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  _: #@ template.replace(pip_package(**params()))

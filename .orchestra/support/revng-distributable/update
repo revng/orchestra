@@ -6,9 +6,10 @@ import shutil
 import sys
 from argparse import ArgumentParser
 from pathlib import Path
+from string import Template
 from subprocess import PIPE, Popen, check_call
 from tempfile import TemporaryDirectory
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlsplit, urlunsplit
 from urllib.request import BaseHandler, HTTPBasicAuthHandler, HTTPCookieProcessor
 from urllib.request import HTTPPasswordMgrWithDefaultRealm, Request, build_opener
 
@@ -58,33 +59,30 @@ def main():
         "--force", action="store_true", help="Force update even if no new versions are available"
     )
     argparser.add_argument("--switch-to", help="Change branch")
-    argparser.add_argument("--update-url", help="Manually specify the update URL")
+    argparser.add_argument("--update-url", help="Manually specify the update URL template")
 
     args = argparser.parse_args()
-
-    if args.switch_to and args.update_url:
-        log("Cannot specify both --switch-to and --update-url")
-        return 1
 
     if args.switch_to is not None:
         branch = args.switch_to
     else:
-        branch = configuration.get("branch")
-        if branch in (None, ""):
+        if (branch := configuration.get("branch")) in (None, ""):
             log("config.json does not have a branch specified")
             return 1
 
-    if args.update_url:
-        update_url = args.update_url
+    if args.update_url is not None:
+        raw_update_url = args.update_url
     else:
-        update_url = f"https://rev.ng/downloads/revng-distributable/{branch}.tar.xz"
+        if (raw_update_url := configuration.get("update-url")) in (None, ""):
+            log("config.json does not have an update-url specified")
+            return 1
+    update_url = Template(raw_update_url).substitute({"BRANCH": branch})
 
     handlers: list[BaseHandler] = [HTTPCookieProcessor()]
     if configuration.get("user") not in (None, ""):
         password_manager = HTTPPasswordMgrWithDefaultRealm()
-        password_manager.add_password(
-            None, "https://rev.ng/", configuration["user"], configuration["pass"]
-        )
+        base_url = urlunsplit(urlsplit(update_url)._replace(path=""))
+        password_manager.add_password(None, base_url, configuration["user"], configuration["pass"])
         handlers.append(HTTPBasicAuthHandler(password_manager))
 
     opener = build_opener(*handlers)
@@ -167,6 +165,8 @@ def main():
 
             # Update and save the configuration
             log("Committing new config.json...")
+            if raw_update_url != configuration.get("update-url"):
+                configuration["update-url"] = raw_update_url
             configuration["branch"] = branch
             configuration["top-level-files"] = [f.name for f in new_top_level_files]
             configuration["last-archive"] = latest_version_tar_name
