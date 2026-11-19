@@ -41,6 +41,14 @@ set -euo pipefail
 # DOCS_RSYNC_TARGET
 #   rsync target string where to copy the docs to
 #
+# WEBSITE_SSH_PRIVATE_KEY
+#   Private key to push screenshot/videos to the website via sftp
+# WEBSITE_PUSH_TARGET
+#   lftp target host to connect to, containing username and host
+# VIDEOS_S3_TARGET
+#   s3cmd target where the videos will be copied to, containing the bucket name
+#   and prefix
+#
 # Optional environment variables:
 #
 # BINARY_ARCHIVES_HOOKS_FORCE:
@@ -60,6 +68,7 @@ fi
 SCRIPT_DIR=$(realpath "$(dirname "${BASH_SOURCE[0]}")")
 CHANGES_FILE="$1"
 ORCHESTRA_DOTDIR="$(realpath "$SCRIPT_DIR/../../.orchestra")"
+BINARY_ARCHIVES_BASE="$ORCHESTRA_DOTDIR/binary-archives"
 
 BRANCH="$COMPONENT_TARGET_BRANCH"
 S3_CONF_FILE=$(mktemp --tmpdir tmp.s3cmd-credentials-XXXXXXXXXX)
@@ -69,6 +78,12 @@ function cleanup() {
     rm -rf "$WORKDIR"
 }
 trap cleanup EXIT
+
+function git_lfs_pull() {
+    pushd "$(dirname "$1")" &> /dev/null
+    git lfs pull -I "$(basename "$(realpath "$1")")"
+    popd &> /dev/null
+}
 
 
 REDIST_PATHS=()
@@ -85,7 +100,6 @@ if [[ "${#REDIST_PATHS[@]}" -gt 0 || "${BINARY_ARCHIVES_HOOKS_FORCE:-}" -eq 1 ]]
     # S3 sync of binary archives
     #
 
-    BINARY_ARCHIVES_BASE="$ORCHESTRA_DOTDIR/binary-archives"
     cat - > "$S3_CONF_FILE" <<EOF
 [default]
 # Basic config
@@ -144,6 +158,7 @@ EOF
     # Get the current-branch revng-distributable tar file
     #
     TAR_FILE="$BINARY_ARCHIVES_BASE/public/linux-x86-64/revng-distributable-public-demo/default/${BRANCH////-}.tar.xz"
+    git_lfs_pull "$TAR_FILE"
 
     pushd "$(dirname "$TAR_FILE")" &> /dev/null
     git lfs pull -I "$(basename "$(realpath "$TAR_FILE")")"
@@ -211,6 +226,54 @@ EOF
               --delete-after \
               . \
               "$DOCS_RSYNC_TARGET:/"
+
+        popd &> /dev/null
+    fi
+
+    #
+    # Push presentation video and screenshots
+    #
+    if [[ "$BRANCH" = "master" ]]; then
+        mkdir "$WORKDIR/presentation_video"
+        pushd "$WORKDIR/presentation_video" &> /dev/null
+
+        # Extract video from tar from tar
+        VIDEO_TAR_FILE="$BINARY_ARCHIVES_BASE/private/linux-x86-64/revng-studio-tests/default/master.tar.xz"
+        git_lfs_pull "$VIDEO_TAR_FILE"
+        tar -xf "$VIDEO_TAR_FILE" --strip-components=3 'share/revng-studio/test-artifacts/'
+
+        PRESENTATION_VIDEO="test_end_to_end_py__test_presentation_video_run_config0.mkv"
+        PRESENTATION_POSTER="test_end_to_end_py__test_presentation_video_run_config0_poster.png"
+        UI_IMAGE="test_end_to_end_py__test_presentation_video_run_config0_c_code.png"
+
+        # Transcode the video to various formats for improved compatibility
+        # with browsers
+        mkdir -p out/videos
+        "$ORCHESTRA_DOTDIR/support/multi-encode/multi-encode.py" \
+            -i "$PRESENTATION_VIDEO" \
+            -o 'out/videos/presentation'
+
+        # Copy/modify the images for screenshots
+        cp "$PRESENTATION_POSTER" 'out/vsc_poster.png'
+        convert "$UI_IMAGE" -crop 84%x66%+0+0 - > 'out/vscode-ui.png'
+
+        # Push screenshots to the website
+        # Here we use sftp (via lftp) because, in sshd, it's handled internally
+        # and needs less configuration than an rsync server
+        base64 -d <<< "$WEBSITE_SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+        lftp -f <(grep -Po '\S.*$' <<< "
+            open $WEBSITE_PUSH_TARGET
+
+            cd assets; lcd out
+            put vsc_poster.png
+            put vscode-ui.png
+        ")
+
+        # Push videos to S3
+        cd out/videos
+        s3cmd --config="$S3_CONF_FILE" \
+              --acl-public \
+              sync ./ "$VIDEOS_S3_TARGET"
 
         popd &> /dev/null
     fi
