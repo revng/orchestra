@@ -154,6 +154,8 @@ FULL_PACKAGES+=(ripgrep)
 #
 FULL_PACKAGES+=(s3cmd)
 FULL_PACKAGES+=(podman)
+FULL_PACKAGES+=(lftp)
+FULL_PACKAGES+=(imagemagick)
 
 #
 # flamegraph.pl runtime dependencies
