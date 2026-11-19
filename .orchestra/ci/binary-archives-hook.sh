@@ -27,6 +27,8 @@ set -euo pipefail
 #   Prefix path where revng-distributable files will be copied to
 #   example: s3://<bucket name>/this/is/a/prefix/
 #
+# PODMAN_IMAGE_UPDATE_URL
+#   URL to use as the `update-url` key in config.json
 # PODMAN_REGISTRY_USER, PODMAN_REGISTRY_PASSWORD:
 #   Credentials to use to upload a revng-distributable image to docker hub
 # PODMAN_IMAGE_TARGET:
@@ -177,7 +179,8 @@ EOF
     #
     LOCAL_IMAGE="localhost/revng-image-$( (tr -dc a-z0-9 < /dev/urandom || true) | head -c 16)"
     # TODO: check again when upgrading to 24.04 if the 'sudo' can be dropped
-    sudo -i BRANCH="$BRANCH" "$ORCHESTRA_DOTDIR/support/revng-distributable/docker/build.sh" "$LOCAL_IMAGE" "$TAR_FILE"
+    sudo -i BRANCH="$BRANCH" UPDATE_URL="$PODMAN_IMAGE_UPDATE_URL" \
+        "$ORCHESTRA_DOTDIR/support/revng-distributable/docker/build.sh" "$LOCAL_IMAGE" "$TAR_FILE"
     sudo -i podman login -u "$PODMAN_REGISTRY_USER" \
         -p "$PODMAN_REGISTRY_PASSWORD" \
         "$(cut -d/ -f1 <<< "$PODMAN_IMAGE_TARGET")"

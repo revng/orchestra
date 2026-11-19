@@ -36,6 +36,9 @@ CONFIG_JSON+="\"top-level-files\": ${TOP_LEVEL_FILES/%,/]},"
 if [ -n "${BRANCH:-}" ]; then
     CONFIG_JSON+="\"branch\": \"$BRANCH\","
 fi
+if [ -n "${UPDATE_URL:-}" ]; then
+    CONFIG_JSON+="\"update-url\": \"${UPDATE_URL}\","
+fi
 
 podman build -t "$NAME" -f "$SCRIPT_DIR/Dockerfile" \
              --build-arg=CONFIG_JSON="${CONFIG_JSON/%,/}}" \

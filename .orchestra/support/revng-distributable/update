@@ -6,9 +6,10 @@ import shutil
 import sys
 from argparse import ArgumentParser
 from pathlib import Path
+from string import Template
 from subprocess import PIPE, Popen, check_call
 from tempfile import TemporaryDirectory
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlsplit, urlunsplit
 from urllib.request import BaseHandler, HTTPBasicAuthHandler, HTTPCookieProcessor
 from urllib.request import HTTPPasswordMgrWithDefaultRealm, Request, build_opener
 
@@ -50,41 +51,52 @@ def main():
     with open(config_path, "r") as config_json:
         configuration: dict = json.load(config_json)
 
+    def save_config():
+        with open(config_path, "w") as config_json:
+            json.dump(configuration, config_json, indent=4)
+            config_json.write("\n")
+
     argparser = ArgumentParser()
     argparser.add_argument(
-        "--check", action="store_true", help="Download and install updates if available"
+        "--check",
+        action="store_true",
+        help="Do not download anything, just check if this is the latest version",
     )
     argparser.add_argument(
-        "--force", action="store_true", help="Force update even if no new versions are available"
+        "--force",
+        action="store_true",
+        help="Force re-downloading and applying the update even if at the latest version",
     )
     argparser.add_argument("--switch-to", help="Change branch")
-    argparser.add_argument("--update-url", help="Manually specify the update URL")
+    argparser.add_argument("--update-url", help="Manually specify the update URL template")
 
     args = argparser.parse_args()
-
-    if args.switch_to and args.update_url:
-        log("Cannot specify both --switch-to and --update-url")
-        return 1
 
     if args.switch_to is not None:
         branch = args.switch_to
     else:
-        branch = configuration.get("branch")
-        if branch in (None, ""):
+        if (branch := configuration.get("branch")) in (None, ""):
             log("config.json does not have a branch specified")
             return 1
 
-    if args.update_url:
-        update_url = args.update_url
+    if args.update_url is not None:
+        raw_update_url = args.update_url
+    elif "update-url" in configuration:
+        raw_update_url = configuration["update-url"]
     else:
-        update_url = f"https://rev.ng/downloads/revng-distributable/{branch}.tar.xz"
+        # TODO: is is left as a fallback for older installations which lack the
+        #       `update-url` config, eventually this can be removed
+        raw_update_url = 'https://rev.ng/downloads/revng-distributable/${BRANCH}.tar.xz'
+    update_url = Template(raw_update_url).substitute({"BRANCH": branch})
+
+    configuration["update-url"] = raw_update_url
+    configuration["branch"] = branch
 
     handlers: list[BaseHandler] = [HTTPCookieProcessor()]
     if configuration.get("user") not in (None, ""):
         password_manager = HTTPPasswordMgrWithDefaultRealm()
-        password_manager.add_password(
-            None, "https://rev.ng/", configuration["user"], configuration["pass"]
-        )
+        base_url = urlunsplit(urlsplit(update_url)._replace(path=""))
+        password_manager.add_password(None, base_url, configuration["user"], configuration["pass"])
         handlers.append(HTTPBasicAuthHandler(password_manager))
 
     opener = build_opener(*handlers)
@@ -99,6 +111,7 @@ def main():
             log(f"No new version available for branch {branch}, reinstalling anyway.")
         else:
             log(f"You are using the latest version of branch {branch}")
+            save_config()
             return 0
     else:
         log(f"Update available for branch {branch} ({latest_version_tar_name})")
@@ -167,12 +180,9 @@ def main():
 
             # Update and save the configuration
             log("Committing new config.json...")
-            configuration["branch"] = branch
             configuration["top-level-files"] = [f.name for f in new_top_level_files]
             configuration["last-archive"] = latest_version_tar_name
-            with open(config_path, "w") as config_json:
-                json.dump(configuration, config_json, indent=4)
-                config_json.write("\n")
+            save_config()
 
         log("Done!")
 
