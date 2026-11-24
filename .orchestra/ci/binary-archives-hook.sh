@@ -32,6 +32,8 @@ set -euo pipefail
 # PODMAN_IMAGE_TARGET:
 #   The path where the revng-distributable image will be uploaded to
 #
+# DOCS_ADDITIONAL_JS
+#   String that will substitute the `additional.js` file
 # DOCS_SSH_PRIVATE_KEY
 #   Private key to push the docs via rsync
 # DOCS_RSYNC_TARGET
@@ -195,6 +197,7 @@ EOF
         tar -xf "$TAR_FILE" \
             --strip-components=6 \
             'revng-public-demo/root/share/doc/revng/html/'
+        echo -n "$DOCS_ADDITIONAL_JS" > javascripts/additional.js
         chmod -R u=rwX,go=rX .
 
         # register the ssh key and push the docs via rsync
