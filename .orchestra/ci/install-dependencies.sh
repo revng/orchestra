@@ -154,6 +154,8 @@ FULL_PACKAGES+=(ripgrep)
 #
 FULL_PACKAGES+=(s3cmd)
 FULL_PACKAGES+=(podman)
+FULL_PACKAGES+=(lftp)
+FULL_PACKAGES+=(imagemagick)
 
 #
 # flamegraph.pl runtime dependencies
@@ -179,6 +181,16 @@ FULL_PACKAGES+=(fakeroot)
 # Needed to run tests against the PRSS
 #
 FULL_PACKAGES+=(postgresql-18)
+
+#
+# Needed by revng-studio-tests
+#
+FULL_PACKAGES+=(xvfb)
+FULL_PACKAGES+=(ffmpeg)
+FULL_PACKAGES+=(xdotool)
+FULL_PACKAGES+=(fonts-dejavu-core)
+FULL_PACKAGES+=(fonts-noto-core)
+FULL_PACKAGES+=(fonts-noto-color-emoji)
 
 #
 # Actual installation of packages

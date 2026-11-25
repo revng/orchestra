@@ -1,0 +1,25 @@
+parts:
+  YUV444: -pix_fmt yuv444p
+  YUV420: -pix_fmt yuv420p
+  WEBM: -f webm
+  MP4: -movflags +faststart -f mp4
+  AOM_AV1: -c:v libaom-av1 -row-mt 1 -tiles 2x2 -g 30
+  SVT_AV1: -c:v libsvtav1 -svtav1-params fast-decode=1 -g 30
+  VP9: -c:v libvpx-vp9 -row-mt 1
+  H264: -c:v libx264 -preset veryslow
+  SCALE_DOUBLE: scale=w=iw*2:h=ih*2:flags=lanczos
+  FORCE_420: format=yuv420p
+preamble: ffmpeg -i
+encodings:
+- $AOM_AV1 $YUV444 -cpu-used $CPU8 -crf 0 $WEBM
+- $VP9 $YUV444 -lossless 1 $WEBM
+- $H264 $YUV444 -profile:v high444 -crf 0 $MP4
+- $SVT_AV1 $YUV444 -crf 15 $WEBM
+- $VP9 $YUV444 -crf 15 $WEBM
+- $H264 $YUV444 -crf 15 $MP4
+- -vf $SCALE_DOUBLE,$FORCE_420 $SVT_AV1 $YUV420 -crf 15 $WEBM
+- -vf $SCALE_DOUBLE,$FORCE_420 $VP9 $YUV420 -crf 15 $WEBM
+- -vf $SCALE_DOUBLE,$FORCE_420 $H264 $YUV420 -crf 15 $MP4
+- $SVT_AV1 $YUV420 -crf 15 $WEBM
+- $VP9 $YUV420 -crf 15 $WEBM
+- $H264 $YUV420 -crf 15 $MP4

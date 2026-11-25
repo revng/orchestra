@@ -27,10 +27,27 @@ set -euo pipefail
 #   Prefix path where revng-distributable files will be copied to
 #   example: s3://<bucket name>/this/is/a/prefix/
 #
+# PODMAN_IMAGE_UPDATE_URL
+#   URL to use as the `update-url` key in config.json
 # PODMAN_REGISTRY_USER, PODMAN_REGISTRY_PASSWORD:
 #   Credentials to use to upload a revng-distributable image to docker hub
 # PODMAN_IMAGE_TARGET:
 #   The path where the revng-distributable image will be uploaded to
+#
+# DOCS_ADDITIONAL_JS
+#   String that will substitute the `additional.js` file
+# DOCS_SSH_PRIVATE_KEY
+#   Private key to push the docs via rsync
+# DOCS_RSYNC_TARGET
+#   rsync target string where to copy the docs to
+#
+# WEBSITE_SSH_PRIVATE_KEY
+#   Private key to push screenshot/videos to the website via sftp
+# WEBSITE_PUSH_TARGET
+#   lftp target host to connect to, containing username and host
+# VIDEOS_S3_TARGET
+#   s3cmd target where the videos will be copied to, containing the bucket name
+#   and prefix
 #
 # Optional environment variables:
 #
@@ -51,6 +68,7 @@ fi
 SCRIPT_DIR=$(realpath "$(dirname "${BASH_SOURCE[0]}")")
 CHANGES_FILE="$1"
 ORCHESTRA_DOTDIR="$(realpath "$SCRIPT_DIR/../../.orchestra")"
+BINARY_ARCHIVES_BASE="$ORCHESTRA_DOTDIR/binary-archives"
 
 BRANCH="$COMPONENT_TARGET_BRANCH"
 S3_CONF_FILE=$(mktemp --tmpdir tmp.s3cmd-credentials-XXXXXXXXXX)
@@ -61,11 +79,18 @@ function cleanup() {
 }
 trap cleanup EXIT
 
+function git_lfs_pull() {
+    pushd "$(dirname "$1")" &> /dev/null
+    git lfs pull -I "$(basename "$(realpath "$1")")"
+    popd &> /dev/null
+}
+
 
 REDIST_PATHS=()
 while IFS= read -r PATH_CHANGE; do
     if [[ "$PATH_CHANGE" = 'public/linux-x86-64/revng-distributable/default/'* || \
-          "$PATH_CHANGE" = 'public/linux-x86-64/revng-distributable-public-demo/default/'* ]]; then
+          "$PATH_CHANGE" = 'public/linux-x86-64/revng-distributable-public-demo/default/'* || \
+          "$PATH_CHANGE" = 'private/linux-x86-64/revng-studio-distributable/default/'* ]]; then
         REDIST_PATHS+=("$PATH_CHANGE")
     fi
 done < "$CHANGES_FILE"
@@ -75,7 +100,6 @@ if [[ "${#REDIST_PATHS[@]}" -gt 0 || "${BINARY_ARCHIVES_HOOKS_FORCE:-}" -eq 1 ]]
     # S3 sync of binary archives
     #
 
-    BINARY_ARCHIVES_BASE="$ORCHESTRA_DOTDIR/binary-archives"
     cat - > "$S3_CONF_FILE" <<EOF
 [default]
 # Basic config
@@ -134,6 +158,7 @@ EOF
     # Get the current-branch revng-distributable tar file
     #
     TAR_FILE="$BINARY_ARCHIVES_BASE/public/linux-x86-64/revng-distributable-public-demo/default/${BRANCH////-}.tar.xz"
+    git_lfs_pull "$TAR_FILE"
 
     pushd "$(dirname "$TAR_FILE")" &> /dev/null
     git lfs pull -I "$(basename "$(realpath "$TAR_FILE")")"
@@ -170,7 +195,8 @@ EOF
     #
     LOCAL_IMAGE="localhost/revng-image-$( (tr -dc a-z0-9 < /dev/urandom || true) | head -c 16)"
     # TODO: check again when upgrading to 24.04 if the 'sudo' can be dropped
-    sudo -i BRANCH="$BRANCH" "$ORCHESTRA_DOTDIR/support/revng-distributable/docker/build.sh" "$LOCAL_IMAGE" "$TAR_FILE"
+    sudo -i BRANCH="$BRANCH" UPDATE_URL="$PODMAN_IMAGE_UPDATE_URL" \
+        "$ORCHESTRA_DOTDIR/support/revng-distributable/docker/build.sh" "$LOCAL_IMAGE" "$TAR_FILE"
     sudo -i podman login -u "$PODMAN_REGISTRY_USER" \
         -p "$PODMAN_REGISTRY_PASSWORD" \
         "$(cut -d/ -f1 <<< "$PODMAN_IMAGE_TARGET")"
@@ -190,6 +216,7 @@ EOF
         tar -xf "$TAR_FILE" \
             --strip-components=6 \
             'revng-public-demo/root/share/doc/revng/html/'
+        echo -n "$DOCS_ADDITIONAL_JS" > javascripts/additional.js
         chmod -R u=rwX,go=rX .
 
         # register the ssh key and push the docs via rsync
@@ -199,6 +226,54 @@ EOF
               --delete-after \
               . \
               "$DOCS_RSYNC_TARGET:/"
+
+        popd &> /dev/null
+    fi
+
+    #
+    # Push presentation video and screenshots
+    #
+    if [[ "$BRANCH" = "master" ]]; then
+        mkdir "$WORKDIR/presentation_video"
+        pushd "$WORKDIR/presentation_video" &> /dev/null
+
+        # Extract video from tar from tar
+        VIDEO_TAR_FILE="$BINARY_ARCHIVES_BASE/private/linux-x86-64/revng-studio-tests/default/master.tar.xz"
+        git_lfs_pull "$VIDEO_TAR_FILE"
+        tar -xf "$VIDEO_TAR_FILE" --strip-components=3 'share/revng-studio/test-artifacts/'
+
+        PRESENTATION_VIDEO="test_end_to_end_py__test_presentation_video_run_config0.mkv"
+        PRESENTATION_POSTER="test_end_to_end_py__test_presentation_video_run_config0_poster.png"
+        UI_IMAGE="test_end_to_end_py__test_presentation_video_run_config0_c_code.png"
+
+        # Transcode the video to various formats for improved compatibility
+        # with browsers
+        mkdir -p out/videos
+        "$ORCHESTRA_DOTDIR/support/multi-encode/multi-encode.py" \
+            -i "$PRESENTATION_VIDEO" \
+            -o 'out/videos/presentation'
+
+        # Copy/modify the images for screenshots
+        cp "$PRESENTATION_POSTER" 'out/vsc_poster.png'
+        convert "$UI_IMAGE" -crop 84%x66%+0+0 - > 'out/vscode-ui.png'
+
+        # Push screenshots to the website
+        # Here we use sftp (via lftp) because, in sshd, it's handled internally
+        # and needs less configuration than an rsync server
+        base64 -d <<< "$WEBSITE_SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+        lftp -f <(grep -Po '\S.*$' <<< "
+            open $WEBSITE_PUSH_TARGET
+
+            cd assets; lcd out
+            put vsc_poster.png
+            put vscode-ui.png
+        ")
+
+        # Push videos to S3
+        cd out/videos
+        s3cmd --config="$S3_CONF_FILE" \
+              --acl-public \
+              sync ./ "$VIDEOS_S3_TARGET"
 
         popd &> /dev/null
     fi

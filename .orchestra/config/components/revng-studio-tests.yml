@@ -1,0 +1,29 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:overlay", "overlay")
+#@ load("/lib/create-component.lib.yml", "single_build_component")
+
+#@yaml/text-templated-strings
+---
+#@ def revng_studio_tests_args():
+repository: revng-studio
+binary_archives: private
+build_dependencies:
+- revng-studio-native
+- revng-studio-tests-python-dependencies
+- test/revng-qa
+configure: |
+  mkdir -p "$BUILD_DIR"
+install: |
+  cd "$SOURCE_DIR/tests"
+  ARTIFACTS_DIR="${DESTDIR}${ORCHESTRA_ROOT}/share/revng-studio/test-artifacts"
+  mkdir -p "$ARTIFACTS_DIR"
+  export PLAYWRIGHT_NODEJS_PATH="$ORCHESTRA_ROOT/bin/node" \
+         LINKED_LIST_PATH=$(echo "$ORCHESTRA_ROOT"/share/revng/test/tests/analysis/Decompilation/clang/linked-lists-revng-qa.compiled-with-debug-info-*)
+  python -m pytest --revng-artifacts-dir="$ARTIFACTS_DIR"
+#@ end
+
+#@overlay/match by=overlay.all, expects=1
+#@overlay/match-child-defaults missing_ok=True
+---
+components:
+  revng-studio-tests: #@ single_build_component(**revng_studio_tests_args())
