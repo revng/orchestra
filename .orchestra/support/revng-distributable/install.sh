@@ -28,15 +28,15 @@ while IFS= read -r component; do
 done | \
 grep -vP '^share/doc/(?!revng)' | \
 grep -vE \
-  -e 'cmake' \
-  -e 'node_modules' \
-  -e 'node_cache' \
-  -e 'man/' \
+  -e '/[^/]+\.cmake$' \
   -e '^include/' \
+  -e '^lib64/node_modules/' \
   -e '^lib64/pkgconfig/' \
   -e '^share/aclocal/' \
   -e '^share/bash-completion/' \
   -e '^share/gcc-data/' \
+  -e '^share/man/' \
+  -e '^share/node_cache/' \
   -e '^share/orchestra/save_for_later' \
   -e '^share/qemu/' \
   -e '^share/revng/test/' \
