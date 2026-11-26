@@ -136,9 +136,7 @@ EOF
                 "$BINARY_ARCHIVES_S3_PATH/$REDIST_PATH"
             rm "$TEMP_FILE"
         elif [ -f "$FULL_REDIST_PATH" ]; then
-            pushd "$(dirname "$FULL_REDIST_PATH")" &> /dev/null
-            git lfs pull -I "$(basename "$FULL_REDIST_PATH")"
-            popd &> /dev/null
+            git_lfs_pull "$FULL_REDIST_PATH"
             s3cmd put --config="$S3_CONF_FILE" --acl-public \
                 "$FULL_REDIST_PATH" \
                 "$BINARY_ARCHIVES_S3_PATH/$REDIST_PATH"
@@ -159,10 +157,6 @@ EOF
     #
     TAR_FILE="$BINARY_ARCHIVES_BASE/public/linux-x86-64/revng-distributable-public-demo/default/${BRANCH////-}.tar.xz"
     git_lfs_pull "$TAR_FILE"
-
-    pushd "$(dirname "$TAR_FILE")" &> /dev/null
-    git lfs pull -I "$(basename "$(realpath "$TAR_FILE")")"
-    popd &> /dev/null
 
     #
     # Push revng wheel to pypi
